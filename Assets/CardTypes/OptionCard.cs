@@ -1,9 +1,11 @@
+using Singleplayer;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+
 
 public class OptionCard : MonoBehaviour
 {
@@ -35,7 +37,7 @@ public class OptionCard : MonoBehaviour
 
             case OptionCardType.Decision:
 
-                PanelEffectsManager.Instance.RequestForDecisionOptionChooseServerRpc((int)option);
+                PanelEffectsManager.Instance.DecisionOptionChoose((int)option);
                 break;
 
             case OptionCardType.Shop:
@@ -45,7 +47,7 @@ public class OptionCard : MonoBehaviour
             case OptionCardType.Bets:
 
                 BettingManager.Instance.DisablePicker();
-                BettingManager.Instance.RequestForAddPlayerBetServerRpc(GetBetFromCard());
+                BettingManager.Instance.AddPlayerBet(GetBetFromCard());
                 Destroy(gameObject);
                 break;
 

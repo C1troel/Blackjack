@@ -5,11 +5,13 @@ using Unity.Netcode;
 using System;
 using System.Linq;
 
-public class GlobalEventsManager : NetworkBehaviour
+namespace Multiplayer
 {
-    public static GlobalEventsManager Instance { get; private set; }
+    public class GlobalEventsManager : NetworkBehaviour
+    {
+        public static GlobalEventsManager Instance { get; private set; }
 
-    private static readonly List<EventInfo> _events = new List<EventInfo>()
+        private static readonly List<EventInfo> _events = new List<EventInfo>()
     {
         new("Equalization", true), // Ділить порівно гроші та фішки між усіма гравцями
         new("Hurry", true), // Наступний хід гравець витягне відразу 2 карти на хід
@@ -32,7 +34,7 @@ public class GlobalEventsManager : NetworkBehaviour
         new("Ludomania", false) // Кожен гравець примусово вступає в "Гру в блекджек" на ставку 25% від свого балансу в $ + (фішок)?, поділивши між вигравшими куш (якщо виграшна рука буде в 2ох або більше гравців)
     };
 
-    private static readonly List<EventInfo> _fateEvents = new List<EventInfo>()
+        private static readonly List<EventInfo> _fateEvents = new List<EventInfo>()
     {
         new("Heal", true), // Гравець негайно виліковує 20% здоров'я
         new("SafetyPatch", true), // Гравець отримує ефект "Заплатка"
@@ -50,300 +52,301 @@ public class GlobalEventsManager : NetworkBehaviour
         new("HalfCutMoney", false) // Гравець втрачає половину $
     };
 
-    private List<EventInfo> activeEvents = new List<EventInfo>();
+        private List<EventInfo> activeEvents = new List<EventInfo>();
 
-    public static List<EventInfo> Events
-    {
-        get { return _events; }
-        private set { }
-    }
-
-    public static List<EventInfo> FateEvents
-    {
-        get { return _fateEvents; }
-        private set { }
-    }
-
-    public override void OnNetworkSpawn()
-    {
-        if (Instance != null && Instance != this)
+        public static List<EventInfo> Events
         {
-            Destroy(gameObject);
-            return;
+            get { return _events; }
+            private set { }
         }
 
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
-
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-    public struct EventInfo
-    {
-        private string eventName;
-        private bool isGood;
-        private int roundsLeft;
-
-        public EventInfo(string eventName, bool isGood, int roundsLeft = 0)
+        public static List<EventInfo> FateEvents
         {
-            this.eventName = eventName;
-            this.isGood = isGood;
-            this.roundsLeft = roundsLeft;
+            get { return _fateEvents; }
+            private set { }
         }
 
-        public void DecreaseEventRounds() => --roundsLeft;
-
-        public string GetEventName => eventName;
-        public bool IsGood => isGood;
-        public int GetRoundsLeft => roundsLeft;
-    }
-
-    public bool CheckForActiveEvent(string eventName)
-    {
-        return activeEvents.Any(activeEvent => activeEvent.GetEventName == eventName);
-    }
-
-    private void OnTurnStart() // логіка на початку кожного ходу
-    {
-
-        for (int i = activeEvents.Count - 1; i >= 0; i--)
+        public override void OnNetworkSpawn()
         {
-            activeEvents[i].DecreaseEventRounds();
-
-            if (activeEvents[i].GetRoundsLeft == 0)
+            if (Instance != null && Instance != this)
             {
-                activeEvents.RemoveAt(i);
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+
+        void Start()
+        {
+
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+
+        }
+
+        public struct EventInfo
+        {
+            private string eventName;
+            private bool isGood;
+            private int roundsLeft;
+
+            public EventInfo(string eventName, bool isGood, int roundsLeft = 0)
+            {
+                this.eventName = eventName;
+                this.isGood = isGood;
+                this.roundsLeft = roundsLeft;
+            }
+
+            public void DecreaseEventRounds() => --roundsLeft;
+
+            public string GetEventName => eventName;
+            public bool IsGood => isGood;
+            public int GetRoundsLeft => roundsLeft;
+        }
+
+        public bool CheckForActiveEvent(string eventName)
+        {
+            return activeEvents.Any(activeEvent => activeEvent.GetEventName == eventName);
+        }
+
+        private void OnTurnStart() // логіка на початку кожного ходу
+        {
+
+            for (int i = activeEvents.Count - 1; i >= 0; i--)
+            {
+                activeEvents[i].DecreaseEventRounds();
+
+                if (activeEvents[i].GetRoundsLeft == 0)
+                {
+                    activeEvents.RemoveAt(i);
+                }
             }
         }
-    }
 
-    private void ShowUpTriggeredEventForPlayers(string eventName) => MapManager.Instance.ShowUpEventCardClientRpc(eventName);
+        private void ShowUpTriggeredEventForPlayers(string eventName) => MapManager.Instance.ShowUpEventCardClientRpc(eventName);
 
-    public void TriggerGlobalEvent(ulong playerInit, string eventName = null)
-    {
-        string triggeredEventName = eventName;
-
-        if (eventName == null)
+        public void TriggerGlobalEvent(ulong playerInit, string eventName = null)
         {
-            triggeredEventName = _events[UnityEngine.Random.Range(0, _events.Count)].GetEventName;
+            string triggeredEventName = eventName;
+
+            if (eventName == null)
+            {
+                triggeredEventName = _events[UnityEngine.Random.Range(0, _events.Count)].GetEventName;
+            }
+
+            switch (triggeredEventName)
+            {
+                case "Equalization":
+                    // Действие для "Equalization"
+                    Debug.Log("Equalization Processing...");
+                    break;
+
+                case "Hurry":
+                    // Действие для "Hurry"
+                    Debug.Log("Hurry Processing...");
+                    break;
+
+                case "Philantropy":
+                    // Действие для "Philantropy"
+                    Debug.Log("Philantropy Processing...");
+                    break;
+
+                case "Tornado":
+                    // Действие для "Tornado"
+                    Debug.Log("Tornado Processing...");
+                    break;
+
+                case "Plague":
+                    // Действие для "Plague"
+                    Debug.Log("Plague Processing...");
+                    break;
+
+                case "Bets":
+                    // Действие для "Bets"
+                    Debug.Log("Bets Processing...");
+                    break;
+
+                case "BadTrip":
+                    // Действие для "BadTrip"
+                    Debug.Log("BadTrip Processing...");
+                    break;
+
+                case "Penalty":
+                    // Действие для "Penalty"
+                    Debug.Log("Penalty Processing...");
+                    break;
+
+                case "Shopaholism":
+                    // Действие для "Shopaholism"
+                    Debug.Log("Shopaholism Processing...");
+                    break;
+
+                case "LineUp":
+                    // Действие для "LineUp"
+                    Debug.Log("LineUp Processing...");
+                    break;
+
+                case "Dealing":
+                    // Действие для "Dealing"
+                    Debug.Log("Dealing Processing...");
+                    break;
+
+                case "Quarantine":
+                    // Действие для "Quarantine"
+                    Debug.Log("Quarantine Processing...");
+                    break;
+
+                case "ToxicFumes":
+                    // Действие для "ToxicFumes"
+                    Debug.Log("ToxicFumes Processing...");
+                    break;
+
+                case "HuntingSeason":
+                    // Действие для "HuntingSeason"
+                    Debug.Log("HuntingSeason Processing...");
+                    break;
+
+                case "LeakyPockets":
+                    // Действие для "LeakyPockets"
+                    Debug.Log("LeakyPockets Processing...");
+                    break;
+
+                case "ArmedUp":
+                    // Действие для "ArmedUp"
+                    Debug.Log("ArmedUp Processing...");
+                    break;
+
+                case "Fortify":
+                    // Действие для "Fortify"
+                    Debug.Log("Fortify Processing...");
+                    break;
+
+                case "Ludomania":
+                    // Действие для "Ludomania"
+                    Debug.Log("Ludomania Processing...");
+                    break;
+
+                default:
+                    // Действие по умолчанию, если не найдено совпадение
+                    break;
+            }
+
         }
 
-        switch (triggeredEventName)
+        public void TriggerFateEvent(ulong playerInit)
         {
-            case "Equalization":
-                // Действие для "Equalization"
-                Debug.Log("Equalization Processing...");
-                break;
+            var fateEventName = _fateEvents[UnityEngine.Random.Range(0, _fateEvents.Count)].GetEventName;
 
-            case "Hurry":
-                // Действие для "Hurry"
-                Debug.Log("Hurry Processing...");
-                break;
+            switch (fateEventName)
+            {
+                case "Heal":
+                    // Гравець негайно виліковує 20% здоров'я
+                    Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
+                    break;
 
-            case "Philantropy":
-                // Действие для "Philantropy"
-                Debug.Log("Philantropy Processing...");
-                break;
+                case "SafetyPatch":
+                    // Гравець отримує ефект "Заплатка"
+                    Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
+                    break;
 
-            case "Tornado":
-                // Действие для "Tornado"
-                Debug.Log("Tornado Processing...");
-                break;
+                case "+SCards":
+                    // Гравець отримує 1 випадкову "Ігрову карту"
+                    Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
+                    break;
 
-            case "Plague":
-                // Действие для "Plague"
-                Debug.Log("Plague Processing...");
-                break;
+                case "+Money":
+                    // Гравець отримує 5$
+                    Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
+                    break;
 
-            case "Bets":
-                // Действие для "Bets"
-                Debug.Log("Bets Processing...");
-                break;
+                case "SProfitableExchange":
+                    // Гравець конвертує 5$ у 10 (фішок)
+                    Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
+                    break;
 
-            case "BadTrip":
-                // Действие для "BadTrip"
-                Debug.Log("BadTrip Processing...");
-                break;
+                case "+BCards":
+                    // Гравець отримує 3 випадкові "Ігрові карти"
+                    Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
+                    break;
 
-            case "Penalty":
-                // Действие для "Penalty"
-                Debug.Log("Penalty Processing...");
-                break;
+                case "DoubleMoney":
+                    // Гравець подвоює свої $
+                    Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
+                    break;
 
-            case "Shopaholism":
-                // Действие для "Shopaholism"
-                Debug.Log("Shopaholism Processing...");
-                break;
+                case "BProfitableExchange":
+                    // Гравець конвертує половину своїх $ у X2 (фішок)
+                    Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
+                    break;
 
-            case "LineUp":
-                // Действие для "LineUp"
-                Debug.Log("LineUp Processing...");
-                break;
+                case "Damage":
+                    // Гравець негайно втрачає 20% від макс. здоров'я
+                    Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
+                    break;
 
-            case "Dealing":
-                // Действие для "Dealing"
-                Debug.Log("Dealing Processing...");
-                break;
+                case "Wound":
+                    // Гравець отримує ефект "Рана"
+                    Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
+                    break;
 
-            case "Quarantine":
-                // Действие для "Quarantine"
-                Debug.Log("Quarantine Processing...");
-                break;
+                case "-SCards":
+                    // Гравець втрачає 1 випадкову "Ігрову карту"
+                    Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
+                    break;
 
-            case "ToxicFumes":
-                // Действие для "ToxicFumes"
-                Debug.Log("ToxicFumes Processing...");
-                break;
+                case "-Money":
+                    // Гравець втрачає 5$
+                    Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
+                    break;
 
-            case "HuntingSeason":
-                // Действие для "HuntingSeason"
-                Debug.Log("HuntingSeason Processing...");
-                break;
+                case "-BCards":
+                    // Гравець втрачає 3 випадкові "Ігрові карти"
+                    Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
+                    break;
 
-            case "LeakyPockets":
-                // Действие для "LeakyPockets"
-                Debug.Log("LeakyPockets Processing...");
-                break;
+                case "HalfCutMoney":
+                    // Гравець втрачає половину $
+                    Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
+                    break;
 
-            case "ArmedUp":
-                // Действие для "ArmedUp"
-                Debug.Log("ArmedUp Processing...");
-                break;
-
-            case "Fortify":
-                // Действие для "Fortify"
-                Debug.Log("Fortify Processing...");
-                break;
-
-            case "Ludomania":
-                // Действие для "Ludomania"
-                Debug.Log("Ludomania Processing...");
-                break;
-
-            default:
-                // Действие по умолчанию, если не найдено совпадение
-                break;
+                default:
+                    Debug.LogWarning($"Unknown event: {fateEventName}");
+                    break;
+            }
         }
 
-    }
-
-    public void TriggerFateEvent(ulong playerInit)
-    {
-        var fateEventName = _fateEvents[UnityEngine.Random.Range(0, _fateEvents.Count)].GetEventName;
-
-        switch (fateEventName)
+        /*public enum GoodEvents
         {
-            case "Heal":
-                // Гравець негайно виліковує 20% здоров'я
-                Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
-                break;
-
-            case "SafetyPatch":
-                // Гравець отримує ефект "Заплатка"
-                Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
-                break;
-
-            case "+SCards":
-                // Гравець отримує 1 випадкову "Ігрову карту"
-                Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
-                break;
-
-            case "+Money":
-                // Гравець отримує 5$
-                Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
-                break;
-
-            case "SProfitableExchange":
-                // Гравець конвертує 5$ у 10 (фішок)
-                Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
-                break;
-
-            case "+BCards":
-                // Гравець отримує 3 випадкові "Ігрові карти"
-                Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
-                break;
-
-            case "DoubleMoney":
-                // Гравець подвоює свої $
-                Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
-                break;
-
-            case "BProfitableExchange":
-                // Гравець конвертує половину своїх $ у X2 (фішок)
-                Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
-                break;
-
-            case "Damage":
-                // Гравець негайно втрачає 20% від макс. здоров'я
-                Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
-                break;
-
-            case "Wound":
-                // Гравець отримує ефект "Рана"
-                Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
-                break;
-
-            case "-SCards":
-                // Гравець втрачає 1 випадкову "Ігрову карту"
-                Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
-                break;
-
-            case "-Money":
-                // Гравець втрачає 5$
-                Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
-                break;
-
-            case "-BCards":
-                // Гравець втрачає 3 випадкові "Ігрові карти"
-                Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
-                break;
-
-            case "HalfCutMoney":
-                // Гравець втрачає половину $
-                Debug.Log($"{fateEventName} fateEvent is triggered for player {playerInit}");
-                break;
-
-            default:
-                Debug.LogWarning($"Unknown event: {fateEventName}");
-                break;
+            None = -1,
+            Equalization,
+            Hurry,
+            Philantropy,
+            Tornado,
+            Bets,
+            Shopaholism,
+            LineUp,
+            Dealing,
+            Quarantine,
+            ArmedUp,
+            Fortify,
+            Reshuffle
         }
-    }
 
-    /*public enum GoodEvents
-    {
-        None = -1,
-        Equalization,
-        Hurry,
-        Philantropy,
-        Tornado,
-        Bets,
-        Shopaholism,
-        LineUp,
-        Dealing,
-        Quarantine,
-        ArmedUp,
-        Fortify,
-        Reshuffle
+        public enum BadEvents
+        {
+            None = -1,
+            Plague = ,
+            BadTrip,
+            Penalty,
+            ToxicFumes,
+            HuntingSeason,
+            LeakyPockets,
+            Ludomania
+        }*/
     }
-
-    public enum BadEvents
-    {
-        None = -1,
-        Plague = ,
-        BadTrip,
-        Penalty,
-        ToxicFumes,
-        HuntingSeason,
-        LeakyPockets,
-        Ludomania
-    }*/
 }

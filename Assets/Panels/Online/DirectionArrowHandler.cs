@@ -4,51 +4,54 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-namespace Panel
+namespace Multiplayer
 {
-    public class DirectionArrowHandler : NetworkBehaviour
+    namespace Panel
     {
-        private PanelScript holdedPanel; // змінна, для збереження панелі, на яку переводе ця стрілка
-        private PanelScript.Pos pos;
-        private PlayerController playerInit; // змінна, для збереження Id гравця, для якого з'явилася стрілка
-        public event Action<PanelScript.Pos, PlayerController, PanelScript> chooseDirection;
-
-        public void HoldPanel(PanelScript panel, PlayerController initiator, PanelScript.Pos pos)
+        public class DirectionArrowHandler : NetworkBehaviour
         {
-            holdedPanel = panel;
-            playerInit = initiator;
-            this.pos = pos;
-        }
+            private PanelScript holdedPanel; // змінна, для збереження панелі, на яку переводе ця стрілка
+            private PanelScript.Pos pos;
+            private PlayerController playerInit; // змінна, для збереження Id гравця, для якого з'явилася стрілка
+            public event Action<PanelScript.Pos, PlayerController, PanelScript> chooseDirection;
 
-        private void OnMouseDown()
-        {
-            Debug.Log($"Player {NetworkManager.Singleton.LocalClientId} is clicked");
-
-            /*if (NetworkManager.Singleton.LocalClientId != playerInit.GetPlayerId)
-                return;*/
-
-            if (!IsServer || IsHost)
+            public void HoldPanel(PanelScript panel, PlayerController initiator, PanelScript.Pos pos)
             {
-                Debug.Log("ServerRequest");
-                RequestForDirectionChooseServerRpc(); // !мейбі буде велика нагрузка на сервер
+                holdedPanel = panel;
+                playerInit = initiator;
+                this.pos = pos;
             }
-            /*ChooseDirection();*/
-        }
 
-        [ServerRpc(RequireOwnership = false)]
-        private void RequestForDirectionChooseServerRpc(ServerRpcParams serverRpcParams = default) // !мейбі буде велика нагрузка на сервер
-        {
-            if (serverRpcParams.Receive.SenderClientId != playerInit.GetPlayerId)
+            private void OnMouseDown()
             {
-                return;
-            }
-            else
-                ChooseDirection();
-        }
+                Debug.Log($"Player {NetworkManager.Singleton.LocalClientId} is clicked");
 
-        private void ChooseDirection()
-        {
-            chooseDirection?.Invoke(pos, playerInit, holdedPanel);
+                /*if (NetworkManager.Singleton.LocalClientId != playerInit.GetPlayerId)
+                    return;*/
+
+                if (!IsServer || IsHost)
+                {
+                    Debug.Log("ServerRequest");
+                    RequestForDirectionChooseServerRpc(); // !мейбі буде велика нагрузка на сервер
+                }
+                /*ChooseDirection();*/
+            }
+
+            [ServerRpc(RequireOwnership = false)]
+            private void RequestForDirectionChooseServerRpc(ServerRpcParams serverRpcParams = default) // !мейбі буде велика нагрузка на сервер
+            {
+                if (serverRpcParams.Receive.SenderClientId != playerInit.GetPlayerId)
+                {
+                    return;
+                }
+                else
+                    ChooseDirection();
+            }
+
+            private void ChooseDirection()
+            {
+                chooseDirection?.Invoke(pos, playerInit, holdedPanel);
+            }
         }
     }
 }

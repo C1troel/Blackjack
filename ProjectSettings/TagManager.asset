@@ -9,6 +9,8 @@ TagManager:
   - HUD
   - Camera
   - Button
+  - Menu
+  - Entity
   layers:
   - Default
   - TransparentFX
