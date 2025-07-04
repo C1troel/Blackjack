@@ -91,7 +91,7 @@ namespace Singeplayer
         {
             int steps = UnityEngine.Random.Range(0, 12); // зм≥нна €ка повинна використовуватис€ зам≥сть tempSteps
 
-            int tempSteps = 3;
+            int tempSteps = 4;
 
             GetLastPlayerStepsCount += tempSteps;
 
@@ -130,7 +130,7 @@ namespace Singeplayer
 
                 case EntityType.Enemy:
                     entity.GetSteps(tempSteps);
-                    // потр≥бен метод, €кий вкаже куди потр≥бно йти ворогу, щоб д≥йти до гравц€
+                    HandleEnemyMovement();
                     entity.StartMove();
                     break;
 
@@ -140,6 +140,11 @@ namespace Singeplayer
                 default:
                     break;
             }
+        }
+
+        private void HandleEnemyMovement()
+        {
+            
         }
 
         private void AccessPlayerToTeleport(IEntity entity)
@@ -232,6 +237,10 @@ namespace Singeplayer
                             // н≥чого
                         }
                     }
+                }
+                else if (startNearPanels.Count == 0 && i == 0 && passedPanel == entity.GetCurrentPanel) // ф≥кс пошуку шл€ху(04.07.2025)
+                {
+                    break;
                 }
 
                 if (i == stepCount)

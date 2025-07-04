@@ -396,7 +396,7 @@ namespace Singleplayer
                     Debug.Log("Entities with mostHealth: ");
                     foreach (var player in entitiesWithMostHealth) // дебаг інфа
                     {
-                        Debug.Log($"Entity with name: {player.name}");
+                        Debug.Log($"Entity with name: {player.GetEntityName}");
                     }
 
                     break;
@@ -410,7 +410,7 @@ namespace Singleplayer
                     Debug.Log("Entity with leastHealth: ");
                     foreach (var player in playersWithLeastHealth) // дебаг інфа
                     {
-                        Debug.Log($"Entity with name: {player.name}");
+                        Debug.Log($"Entity with name: {player.GetEntityName}");
                     }
 
                     break;
@@ -424,7 +424,7 @@ namespace Singleplayer
                     Debug.Log("Players with mostMoney: ");
                     foreach (var player in playersWithMostMoney) // дебаг інфа
                     {
-                        Debug.Log($"Entity with name: {player.name}");
+                        Debug.Log($"Entity with name: {player.GetEntityName}");
                     }
 
                     break;
@@ -438,15 +438,15 @@ namespace Singleplayer
                     Debug.Log("Players with leastMoney: ");
                     foreach (var player in playersWithLeastMoney) // дебаг інфа
                     {
-                        Debug.Log($"Entity with name: {player.name}");
+                        Debug.Log($"Entity with name: {player.GetEntityName}");
                     }
 
                     break;
 
-                case OptionCard.DesicionRequirements.MostChips:
+                case OptionCard.DesicionRequirements.MostChips: // маніпуляції з фішками не підходять для одиночної гри
 
-                    Debug.Log("MostChipsRequirementPocessing...");
-                    int maxChips = entities.Max(player => player.GetEntityChips);
+                    /*Debug.Log("MostChipsRequirementPocessing...");
+                    int maxChips = entities.Max(player => player.GetEn);
                     var playersWithMostChips = entities.Where(player => player.GetEntityMoney == maxChips).ToList();
 
                     Debug.Log("Players with mostChips: ");
@@ -454,11 +454,11 @@ namespace Singleplayer
                     {
                         Debug.Log($"Entity with name: {player.name}");
                     }
-                    break;
+                    break;*/
 
-                case OptionCard.DesicionRequirements.LeastChips:
+                case OptionCard.DesicionRequirements.LeastChips: // маніпуляції з фішками не підходять для одиночної гри
 
-                    Debug.Log("LeastChipsRequirementPocessing...");
+                    /*Debug.Log("LeastChipsRequirementPocessing...");
                     int minChips = entities.Min(player => player.GetEntityChips);
                     var playersWithLeastChips = entities.Where(player => player.GetEntityMoney == minChips).ToList();
 
@@ -467,7 +467,7 @@ namespace Singleplayer
                     {
                         Debug.Log($"Entity with name: {player.name}");
                     }
-                    break;
+                    break;*/
 
                 case OptionCard.DesicionRequirements.MostCards:
 
@@ -658,6 +658,7 @@ namespace Singleplayer
             }
 
             MapManager.Instance.TempResetMapValuesInfo();
+            TurnManager.Instance.EndTurnRequest(entityInit);
             // Код для початку ходу наступного гравця
 
         }

@@ -23,6 +23,11 @@ namespace Singleplayer
             DontDestroyOnLoad(gameObject);
         }
 
+        public EnemyInfo[] GetAllEnemyInfos()
+        {
+            return Resources.LoadAll<EnemyInfo>(EnemiesInfoPath);
+        }
+
         public EnemyInfo GetEnemyInfo(string enemyName)
         {
             return Resources.Load<EnemyInfo>(EnemiesInfoPath + $"{enemyName}");

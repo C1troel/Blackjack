@@ -1,4 +1,3 @@
-using Singleplayer;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,7 +9,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Singeplayer
+namespace Singleplayer
 {
     public class BattleManager : MonoBehaviour
     {
@@ -103,45 +102,28 @@ namespace Singeplayer
             SetListenersToAddingButtons();
         }
 
-        private void StartDefend()
+        public void StartBattle(IEntity atk, IEntity def)
         {
-            StartCoroutine(FirstDealingCards());
-        }
+            if ((!CanAttack(atk)) || (!CanAttack(def)))
+                return;
 
-        private void Split()
-        {
-            StartCoroutine(FirstDealingCards(true));
-        }
+            SetupHands(atk, def);
 
-        private void AtkSplit()
-        {
-            atkPlayerSplitChoose = true;
-        }
+            GameManager.Instance.TogglePlayersHUD(false);
 
-        private void AtkSplitSkip()
-        {
-            atkPlayerSplitChoose = false;
-        }
+            CallBattleHUD();
 
-        private void StartAttack()
-        {
-            DefenderPlayerTurn();
-        }
+            SetupDeck();
 
-        private void AtkInsurance()
-        {
-            atkPlayerInsuranceChoose = true;
-        }
+            string atkName = ((MonoBehaviour)atk).GetComponent<Animator>().runtimeAnimatorController.name;
+            string defName = ((MonoBehaviour)def).GetComponent<Animator>().runtimeAnimatorController.name;
 
-        private void RequestForAtkInsuranceSkipServerRpc()
-        {
-            atkPlayerInsuranceChoose = false;
-        }
+            SpawnBattleAvatars(atkName, defName);
 
-        private void SetupHands(IEntity atkId, IEntity defId)
-        {
-            entitiesHands.Add(new Tuple<IEntity, List<NextCardScript>>(atkId, new List<NextCardScript>()));
-            entitiesHands.Add(new Tuple<IEntity, List<NextCardScript>>(defId, new List<NextCardScript>()));
+            AttackerPlayerTurn(atk);
+
+            // Видать сначала обом игрокам по 2 карти Диллер(Защитник)/Атакер
+
         }
 
         private void AttackerPlayerTurn(IEntity entity)
@@ -167,16 +149,32 @@ namespace Singeplayer
             }
         }
 
-        private void AtkForEnemy() // метод для реалізації атаки, противником
-        {
-
-        }
-
         private void AllowAtkForPlayer()
         {
             _atackButton.gameObject.SetActive(true);
 
             TESTAddingCardButtonsAtk.SetActive(true);
+        }
+
+        private void OnAttackButtonClick()
+        {
+            _atackButton.gameObject.SetActive(false);
+            Debug.Log("OnAttackButtonClick");
+            StartAttack();
+
+            TurnCardAddingButtons(false);
+            ResetAddingCardsTextBoxes(true);
+        }
+
+        private void AtkForEnemy() // метод для реалізації атаки, противником
+        {
+            // код перевірки того, чи є бойові карти у противника
+            StartAttack();
+        }
+
+        private void StartAttack()
+        {
+            DefenderPlayerTurn();
         }
 
         private void DefenderPlayerTurn()
@@ -187,7 +185,7 @@ namespace Singeplayer
             switch (defendingEntity.GetEntityType)
             {
                 case EntityType.Player:
-                    AllowAtkForPlayer();
+                    AllowDefForPlayer();
                     break;
 
                 case EntityType.Enemy:
@@ -203,11 +201,6 @@ namespace Singeplayer
             }
         }
 
-        private void DefForEnemy()
-        {
-
-        }
-
         private void AllowDefForPlayer()
         {
             #region TestAddingCards
@@ -219,6 +212,297 @@ namespace Singeplayer
             _splitDefButton.gameObject.SetActive(true);
 
             TESTAddingCardButtonsDef.SetActive(true);
+        }
+
+        private void OnDefendButtonClick()
+        {
+            _defendButton.gameObject.SetActive(false);
+            _splitDefButton.gameObject.SetActive(false);
+            Debug.Log("OnDefendButtonClick");
+            StartDefend();
+
+            TurnCardAddingButtons(false);
+            ResetAddingCardsTextBoxes(false);
+        }
+
+        private void OnSplitDefButtonClick()
+        {
+            _defendButton.gameObject.SetActive(false);
+            _splitDefButton.gameObject.SetActive(false);
+
+            Debug.Log("OnSplitDefButtonClick");
+            Split();
+
+            StopTimer();
+        }
+
+        private void DefForEnemy()
+        {
+            // код перевірки того, чи є захисні карти у противника
+            // також можливо додати шанс на вибір спліта
+            // також інші обробки, наприклад ефектів
+            StartDefend();
+        }
+
+        private void StartDefend()
+        {
+            StartCoroutine(FirstDealingCards());
+        }
+
+        private void Split()
+        {
+            StartCoroutine(FirstDealingCards(true));
+        }
+
+        private IEnumerator FirstDealingCards(bool isDefSplitting = false)
+        {
+            SpawnNextCard(-1, true, false); // сначала 1 карту для атакуючого
+            yield return new WaitForSeconds(cardSpawnDelay);
+
+            SpawnNextCard(-1, false, false); // 1 карту для захисника
+            yield return new WaitForSeconds(cardSpawnDelay);
+
+            SpawnNextCard(0, true, false); // 1 карту для атакуючого
+            yield return new WaitForSeconds(cardSpawnDelay);
+
+            SpawnNextCard(0, false, true); // 1 карту перевернуту для захисника
+            yield return new WaitForSeconds(cardSpawnDelay);
+
+            while (cardGiving != null)
+                yield return null;
+
+            StartCoroutine(ContinueBattle(isDefSplitting));
+        }
+
+        private IEnumerator ContinueBattle(bool isDefSplitting = false)
+        {
+            if (GetScoreFromString(entitiesHands[1].Item2[0].gameObject.transform
+                .Find("1Side").GetComponent<Image>().sprite.name) == 11)
+
+            {
+                yield return StartCoroutine(AtkInsuranceHandler());
+            }
+
+            RevealFacedDownCard();
+
+            yield return new WaitForSeconds(2);
+
+            yield return StartCoroutine(SummarizeAndDealDamage(isDefSplitting));
+
+            DisableBattleHUD();
+
+            #region debugInfo
+            foreach (var entity in GameManager.Instance.GetEntitiesList())
+            {
+                Debug.Log($"Entity with name {entity.GetEntityName} have {entity.GetEntityHp}");
+            }
+            #endregion
+
+            GameManager.Instance.TogglePlayersHUD(true);
+            entitiesHands[0].Item1.StartMove();
+
+            DeleteAllRestBattleHUDObject();
+        }
+
+        private IEnumerator SummarizeAndDealDamage(bool isDefSplitting = false)
+        {
+            int totalAtkScore = 0;
+            int totalDefScore = 0;
+
+            bool isAtkBlackJack = false;
+            bool isDefBlackJack = false;
+
+            bool isEvade = false;
+
+            for (int i = 0; i < entitiesHands[0].Item2.Count; i++)
+            {
+                totalAtkScore += GetScoreFromString(entitiesHands[0].Item2[i].gameObject.transform.Find("1Side").GetComponent<Image>().sprite.name);
+
+                if (totalAtkScore == 21 && i == 1)
+                {
+                    isAtkBlackJack = true;
+                    break;
+                }
+
+                if (i == 1)
+                {
+                    if (CheckForSplit(entitiesHands[0].Item2[i], entitiesHands[0].Item2[i - 1]) && atkPlayerInsuranceChoose != true)
+                    {
+                        yield return StartCoroutine(AtkSplitHandler());
+                        break;
+                    }
+                }
+            }
+
+            for (int i = 0; i < entitiesHands[1].Item2.Count; i++)
+            {
+                totalDefScore += GetScoreFromString(entitiesHands[1].Item2[i].gameObject.transform.Find("1Side").GetComponent<Image>().sprite.name);
+
+                if (totalDefScore == 21 && i == 1)
+                {
+                    isDefBlackJack = true;
+                    break;
+                }
+
+                if (i == 1 && isDefSplitting)
+                    isEvade = CheckForSplit(entitiesHands[1].Item2[i], entitiesHands[1].Item2[i - 1]);
+            }
+
+            Debug.Log($"totalDefScore: {totalDefScore}");
+
+            var atkPlayer = entitiesHands[0].Item1;
+            var defPlayer = entitiesHands[1].Item1;
+
+            if (isEvade && isDefSplitting) // Можлива ще якась логіка по типу анімації
+            {
+                Debug.Log($"Split!!!");
+                yield break;
+            }
+
+            if (atkPlayerSplitChoose == true)
+            {
+                atkPlayerSplitChoose = null;
+                Debug.Log($"ATKSplit!!!");
+                CardSplitting();
+                yield return StartCoroutine(SplitController(isDefSplitting));
+                yield return new WaitForSeconds(3);
+                yield break;
+            }
+            else if (atkPlayerSplitChoose == false)
+                Debug.Log($"SkipATKSplit!!!");
+
+            if (!isAtkBlackJack && (playerCardAdds.Item1 != 0))
+            {
+                yield return StartCoroutine(SpawnLeftCards(true));
+                totalAtkScore = SummarizeHandDamage(entitiesHands[0].Item2);
+            }
+            if (!isDefBlackJack && (playerCardAdds.Item2 != 0))
+            {
+                yield return StartCoroutine(SpawnLeftCards(false));
+                totalDefScore = SummarizeHandDamage(entitiesHands[1].Item2);
+            }
+
+            if (atkPlayerInsuranceChoose == true) // якщо гравець атаки застрахувався то він отримує негайно половину неблокуючих пошкоджень по собі
+            {
+                Debug.Log($"Insurance!!!");
+                GameManager.Instance.DealDamage(atkPlayer, totalAtkScore / 2);
+                yield break;
+            }
+
+            var totalDamage = totalAtkScore == totalDefScore ? 5 :
+                (totalAtkScore + atkPlayer.GetEntityAtk + 10) -
+                (isDefSplitting ? 0 : (totalDefScore + defPlayer.GetEntityDef));
+
+            Debug.Log($"totalAtkScore: {totalAtkScore}");
+            Debug.Log($"totalDefScore: {totalDefScore}");
+            Debug.Log($"TotalDamage: {totalDamage}");
+
+            if (isAtkBlackJack && isDefBlackJack) // Пуш = 5 пошкоджень
+            {
+                GameManager.Instance.DealDamage(defPlayer, 5);
+                Debug.Log($"Push!!!");
+                yield break;
+            }
+            else if (isAtkBlackJack) // коли блекджек у бійця атаки то він наносить подвоєні пошкодження захиснику та блокуючі пошкодження іншому випадковому гравцю
+            {
+                GameManager.Instance.DealDamage(defPlayer, totalDamage * 2);
+
+                var exceptionsEntitiesList = new List<IEntity>()
+                {
+                    atkPlayer,
+                    defPlayer
+                };
+                var anotherEntity = GameManager.Instance.GetRandomPlayerExcept(exceptionsEntitiesList);
+
+                GameManager.Instance.DealDamage(anotherEntity, totalDamage, true);
+                Debug.Log($"isAtkBlackJack!!!");
+                yield break;
+            }
+            else if (isDefBlackJack) // коли блекджек у бійця захисту то він відбиває всі пошкодження атакуючого назад та виліковується на половину цих пошкоджень
+            {
+                GameManager.Instance.DealDamage(atkPlayer, totalDamage);
+                GameManager.Instance.Heal(defPlayer, totalDamage / 2);
+                Debug.Log($"isDefBlackJack!!!");
+                yield break;
+            }
+
+            GameManager.Instance.DealDamage(defPlayer, totalDamage);
+        }
+
+        private int SummarizeHandDamage(List<NextCardScript> playerHand)
+        {
+            int handDamage = 0;
+
+            foreach (var card in playerHand)
+            {
+                handDamage += GetScoreFromString(card.gameObject.transform
+                    .Find("1Side").GetComponent<Image>().sprite.name);
+            }
+
+            return handDamage;
+        }
+
+        private IEnumerator AtkInsuranceHandler()
+        {
+            var atkEnity = entitiesHands[0].Item1;
+
+            switch (atkEnity.GetEntityType)
+            {
+                case EntityType.Player:
+                    AtkInsuranceForPlayer();
+                    break;
+
+                case EntityType.Enemy:
+                    AtkInsuranceForEnemy();
+                    break;
+
+                case EntityType.Ally:
+                    break;
+
+                default:
+                    break;
+            }
+
+            while (atkPlayerInsuranceChoose == null)
+            {
+                yield return null;
+            }
+        }
+
+        private void AtkInsuranceForPlayer()
+        {
+            AtkInsuranceButtonsTurn(true);
+        }
+
+        private void AtkInsuranceForEnemy() // Обробка страхування гравця атаки, для противників
+        {
+
+        }
+
+        private void AtkSplit()
+        {
+            atkPlayerSplitChoose = true;
+        }
+
+        private void AtkSplitSkip()
+        {
+            atkPlayerSplitChoose = false;
+        }
+
+        private void AtkInsurance()
+        {
+            atkPlayerInsuranceChoose = true;
+        }
+
+        private void RequestForAtkInsuranceSkipServerRpc()
+        {
+            atkPlayerInsuranceChoose = false;
+        }
+
+        private void SetupHands(IEntity atkId, IEntity defId)
+        {
+            entitiesHands.Add(new Tuple<IEntity, List<NextCardScript>>(atkId, new List<NextCardScript>()));
+            entitiesHands.Add(new Tuple<IEntity, List<NextCardScript>>(defId, new List<NextCardScript>()));
         }
 
         private void AttackButtonTurn(bool isTurningOn = true)
@@ -390,25 +674,6 @@ namespace Singeplayer
         }
 
         #region Корутины
-        private IEnumerator FirstDealingCards(bool isDefSplitting = false)
-        {
-            SpawnNextCard(-1, true, false); // сначала 1 карту для атакуючого
-            yield return new WaitForSeconds(cardSpawnDelay);
-
-            SpawnNextCard(-1, false, false); // 1 карту для захисника
-            yield return new WaitForSeconds(cardSpawnDelay);
-
-            SpawnNextCard(0, true, false); // 1 карту для атакуючого
-            yield return new WaitForSeconds(cardSpawnDelay);
-
-            SpawnNextCard(0, false, true); // 1 карту перевернуту для захисника
-            yield return new WaitForSeconds(cardSpawnDelay);
-
-            while (cardGiving != null)
-                yield return null;
-
-            StartCoroutine(ContinueBattle(isDefSplitting));
-        }
 
         private IEnumerator WaitForGiveCard(NextCardScript card, Vector2 destinationCords, GameObject cardContainer)
         {
@@ -442,29 +707,6 @@ namespace Singeplayer
             }
 
             objTransform.position = targetPosition;
-        }
-
-        private IEnumerator ContinueBattle(bool isDefSplitting = false)
-        {
-            if (GetScoreFromString(entitiesHands[1].Item2[0].gameObject.transform
-                .Find("1Side").GetComponent<Image>().sprite.name) == 11)
-
-            {
-                yield return StartCoroutine(AtkInsuranceHandler());
-            }
-
-            RevealFacedDownCard();
-
-            yield return new WaitForSeconds(2);
-
-            yield return StartCoroutine(SummarizeAndDealDamage(isDefSplitting));
-
-            DisableBattleHUD();
-
-            GameManager.Instance.TurnPlayersHUD(true);
-            entitiesHands[0].Item1.StartMove();
-
-            DeleteAllRestBattleHUDObject();
         }
 
         private IEnumerator AtkSplitHandler()
@@ -505,7 +747,7 @@ namespace Singeplayer
             AtkSplitButtonsTurn(true);
         }
 
-        private IEnumerator Starttimer(Activity act, int actTimer = 0)
+        /*private IEnumerator Starttimer(Activity act, int actTimer = 0)
         {
             timer = turnTime;
 
@@ -543,167 +785,7 @@ namespace Singeplayer
 
             timerRunning = null;
             yield break;
-        }
-
-        private IEnumerator AtkInsuranceHandler()
-        {
-            var atkEnity = entitiesHands[0].Item1;
-
-            switch (atkEnity.GetEntityType)
-            {
-                case EntityType.Player:
-                    AtkInsuranceForPlayer();
-                    break;
-
-                case EntityType.Enemy:
-                    AtkInsuranceForEnemy();
-                    break;
-
-                case EntityType.Ally:
-                    break;
-
-                default:
-                    break;
-            }
-
-            while (atkPlayerInsuranceChoose == null)
-            {
-                yield return null;
-            }
-        }
-
-        private void AtkInsuranceForEnemy() // Обробка страхування гравця атаки, для противників
-        {
-
-        }
-
-        private void AtkInsuranceForPlayer()
-        {
-            AtkInsuranceButtonsTurn(true);
-        }
-
-        private IEnumerator SummarizeAndDealDamage(bool isDefSplitting = false)
-        {
-            int totalAtkScore = 0;
-            int totalDefScore = 0;
-
-            bool isAtkBlackJack = false;
-            bool isDefBlackJack = false;
-
-            bool isEvade = false;
-
-            for (int i = 0; i < entitiesHands[0].Item2.Count; i++)
-            {
-                totalAtkScore += GetScoreFromString(entitiesHands[0].Item2[i].gameObject.transform.Find("1Side").GetComponent<Image>().sprite.name);
-
-                if (totalAtkScore == 21 && i == 1)
-                {
-                    isAtkBlackJack = true;
-                    break;
-                }
-
-                if (i == 1)
-                {
-                    if (CheckForSplit(entitiesHands[0].Item2[i], entitiesHands[0].Item2[i - 1]) && atkPlayerInsuranceChoose != true)
-                    {
-                        yield return StartCoroutine(AtkSplitHandler());
-                        break;
-                    }
-                }
-            }
-
-            for (int i = 0; i < entitiesHands[1].Item2.Count; i++)
-            {
-                totalDefScore += GetScoreFromString(entitiesHands[1].Item2[i].gameObject.transform.Find("1Side").GetComponent<Image>().sprite.name);
-
-                if (totalDefScore == 21 && i == 1)
-                {
-                    isDefBlackJack = true;
-                    break;
-                }
-
-                if (i == 1 && isDefSplitting)
-                    isEvade = CheckForSplit(entitiesHands[1].Item2[i], entitiesHands[1].Item2[i - 1]);
-            }
-
-            Debug.Log($"totalDefScore: {totalDefScore}");
-
-            var atkPlayer = entitiesHands[0].Item1;
-            var defPlayer = entitiesHands[1].Item1;
-
-            if (isEvade && isDefSplitting) // Можлива ще якась логіка по типу анімації
-            {
-                Debug.Log($"Split!!!");
-                yield break;
-            }
-
-            if (atkPlayerSplitChoose == true)
-            {
-                atkPlayerSplitChoose = null;
-                Debug.Log($"ATKSplit!!!");
-                CardSplitting();
-                yield return StartCoroutine(SplitController(isDefSplitting));
-                yield return new WaitForSeconds(3);
-                yield break;
-            }
-            else if (atkPlayerSplitChoose == false)
-                Debug.Log($"SkipATKSplit!!!");
-
-            if (!isAtkBlackJack && (playerCardAdds.Item1 != 0))
-            {
-                yield return StartCoroutine(SpawnLeftCards(true));
-                totalAtkScore = SummarizeHandDamage(entitiesHands[0].Item2);
-            }
-            if (!isDefBlackJack && (playerCardAdds.Item2 != 0))
-            {
-                yield return StartCoroutine(SpawnLeftCards(false));
-                totalDefScore = SummarizeHandDamage(entitiesHands[1].Item2);
-            }
-
-            if (atkPlayerInsuranceChoose == true) // якщо гравець атаки застрахувався то він отримує негайно половину неблокуючих пошкоджень по собі
-            {
-                Debug.Log($"Insurance!!!");
-                GameManager.Instance.DealDamage(atkPlayer, totalAtkScore / 2);
-                yield break;
-            }
-
-            var totalDamage = totalAtkScore == totalDefScore ? 5 :
-                (totalAtkScore + atkPlayer.GetEntityAtk + 10) -
-                (isDefSplitting ? 0 : (totalDefScore + defPlayer.GetEntityDef));
-
-            Debug.Log($"totalAtkScore: {totalAtkScore}");
-            Debug.Log($"totalDefScore: {totalDefScore}");
-            Debug.Log($"TotalDamage: {totalDamage}");
-
-            if (isAtkBlackJack && isDefBlackJack) // Пуш = 5 пошкоджень
-            {
-                GameManager.Instance.DealDamage(defPlayer, 5);
-                Debug.Log($"Push!!!");
-                yield break;
-            }
-            else if (isAtkBlackJack) // коли блекджек у бійця атаки то він наносить подвоєні пошкодження захиснику та блокуючі пошкодження іншому випадковому гравцю
-            {
-                GameManager.Instance.DealDamage(defPlayer, totalDamage * 2);
-
-                var exceptionsEntitiesList = new List<IEntity>();
-                exceptionsEntitiesList.Add(atkPlayer);
-                exceptionsEntitiesList.Add(defPlayer);
-                var anotherEntity = GameManager.Instance.GetRandomPlayerExcept(exceptionsEntitiesList);
-
-                GameManager.Instance.DealDamage(anotherEntity, totalDamage, true);
-                Debug.Log($"isAtkBlackJack!!!");
-                yield break;
-            }
-            else if (isDefBlackJack) // коли блекджек у бійця захисту то він відбиває всі пошкодження атакуючого назад та виліковується на половину цих пошкоджень
-            {
-                GameManager.Instance.DealDamage(atkPlayer, totalDamage);
-                GameManager.Instance.Heal(defPlayer, totalDamage / 2);
-                Debug.Log($"isDefBlackJack!!!");
-                yield break;
-            }
-
-            GameManager.Instance.DealDamage(defPlayer, totalDamage);
-        }
+        }*/
 
         private IEnumerator SpawnLeftCards(bool isForAtk)
         {
@@ -870,19 +952,6 @@ namespace Singeplayer
 
         #region Звичайні функції
 
-        private int SummarizeHandDamage(List<NextCardScript> playerHand)
-        {
-            int handDamage = 0;
-
-            foreach (var card in playerHand)
-            {
-                handDamage += GetScoreFromString(card.gameObject.transform
-                    .Find("1Side").GetComponent<Image>().sprite.name);
-            }
-
-            return handDamage;
-        }
-
         private bool CheckForSplit(NextCardScript card1, NextCardScript card2)
         {
             string card1Name = card1.gameObject.transform.Find("1Side").GetComponent<Image>().sprite.name; // Назва спрайту на лицевій стороні карти1
@@ -906,30 +975,6 @@ namespace Singeplayer
                 13 => 10,
                 _ => score,
             };
-        }
-
-        public void StartBattle(IEntity atk, IEntity def)
-        {
-            if ((!CanAttack(atk)) || (!CanAttack(def)))
-                return;
-
-            SetupHands(atk, def);
-
-            GameManager.Instance.TurnPlayersHUD(false);
-
-            CallBattleHUD();
-
-            SetupDeck();
-
-            string atkName = ((MonoBehaviour)atk).GetComponent<Animator>().runtimeAnimatorController.name;
-            string defName = ((MonoBehaviour)def).GetComponent<Animator>().runtimeAnimatorController.name;
-
-            SpawnBattleAvatars(atkName, defName);
-
-            AttackerPlayerTurn(atk);
-
-            // Видать сначала обом игрокам по 2 карти Диллер(Защитник)/Атакер
-
         }
 
         private void SetupBattleButtons()
@@ -979,27 +1024,6 @@ namespace Singeplayer
             }
         }
 
-        private void OnAttackButtonClick()
-        {
-            _atackButton.gameObject.SetActive(false);
-            Debug.Log("OnAttackButtonClick");
-            StartAttack();
-
-            TurnCardAddingButtons(false);
-            ResetAddingCardsTextBoxes(true);
-        }
-
-        private void OnDefendButtonClick()
-        {
-            _defendButton.gameObject.SetActive(false);
-            _splitDefButton.gameObject.SetActive(false);
-            Debug.Log("OnDefendButtonClick");
-            StartDefend();
-
-            TurnCardAddingButtons(false);
-            ResetAddingCardsTextBoxes(false);
-        }
-
         private void OnInsuranceButtonClick()
         {
             _insuranceButton.gameObject.SetActive(false);
@@ -1008,17 +1032,6 @@ namespace Singeplayer
             Debug.Log("OnInsuranceButtonClick");
 
             AtkInsurance();
-        }
-
-        private void OnSplitDefButtonClick()
-        {
-            _defendButton.gameObject.SetActive(false);
-            _splitDefButton.gameObject.SetActive(false);
-
-            Debug.Log("OnSplitDefButtonClick");
-            Split();
-
-            StopTimer();
         }
 
         private void OnSplitAtkButtonClick()

@@ -1,4 +1,4 @@
-using Singeplayer;
+using Singleplayer;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -120,7 +120,7 @@ namespace Singleplayer
         }
         #endregion
 
-        public void SetupEntity(string characterName)
+        public void SetupPlayer(string characterName)
         {
             characterInfo = InfosLoadManager.Instance.GetCharacterInfo(characterName);
 
@@ -181,7 +181,7 @@ namespace Singleplayer
             hp += value;
         }
 
-        public IEnumerator Move(PlayerController player, Direction direction = Direction.Standart, PanelScript panel = null)
+        public IEnumerator Move(IEntity player, Direction direction = Direction.Standart, PanelScript panel = null)
         {
             /*if (IsServer)
             {
@@ -217,14 +217,14 @@ namespace Singleplayer
 
             Vector2 destination = currentPos;
 
-            if (destinationInfo.Item2 == direction)
+            if (destinationInfo.Item2 == this.direction)
             {
                 destination = destinationInfo.Item1.transform.position;
                 Debug.Log("Direction good");
             }
             else
             {
-                direction = destinationInfo.Item2;
+                this.direction = destinationInfo.Item2;
                 TurnThePlayer(); // ~
                 destination = destinationInfo.Item1.transform.position;
             }
@@ -291,14 +291,14 @@ namespace Singleplayer
 
         public void TurnEntity()
         {
-            throw new System.NotImplementedException();
+            Debug.Log("Turning...");
         }
 
-        private void StartBattle(PlayerController Atk, PlayerController Def) // PlayerController Def - це заглушка, поки коду для ворогів немає
+        private void StartBattle(IEntity Atk, IEntity Def) // PlayerController Def - це заглушка, поки коду для ворогів немає
         {
             Debug.Log("BattlStart");
 
-            Debug.LogWarning($"ATK: {Atk.characterName} DEF: {Def.characterName}");
+            Debug.LogWarning($"ATK: {Atk.GetEntityName} DEF: {Def.GetEntityName}");
             // Потрібно написати менеджер битви для одиночної гри:
             BattleManager.Instance.StartBattle(Atk, Def);
         }
@@ -339,13 +339,13 @@ namespace Singleplayer
                 Debug.Log($"LeftSteps: {leftSteps}");
                 StopMoving();
                 // Далі повинен бути код початку бою з ворогом:
-                StartBattle(this, collision.GetComponent<PlayerController>());
+                StartBattle(this, collision.GetComponent<IEntity>());
             }
         }
 
         public void EnableAttacking() => isEventAttack = true;
 
-        public void AddEffectCardsUsages() => ++leftCards;
+        public void ResetEffectCardsUsages() => leftCards = characterInfo.DefaultCardUsages;
 
         public void DecreaseEffectCardsUsages() => --leftCards;
 

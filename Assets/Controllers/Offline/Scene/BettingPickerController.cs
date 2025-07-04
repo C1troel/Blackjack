@@ -98,15 +98,18 @@ using Singleplayer;
 
         public IEnumerator SetUpBets()
         {
-            while (GameManager.Instance == null)
-                yield return null;
+            PlayerController player = null;
 
-            var entity = GameManager.Instance.GetEntityWithType(EntityType.Player);
+            while (player == null)
+            {
+                player = GameManager.Instance.GetEntityWithType(EntityType.Player) as PlayerController;
+                yield return null;
+            }
 
             for (int i = 1; i < highestCardValue; i++)
             {
                 var betCard = Instantiate(bettingCardPref, bettingPickerContainer.transform);
-                betCard.GetComponent<OptionCard>().SetUpCardForBets(i, entity.GetEntitySuit);
+                betCard.GetComponent<OptionCard>().SetUpCardForBets(i, player.GetEntitySuit);
             }
         }
     }

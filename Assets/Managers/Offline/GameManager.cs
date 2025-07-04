@@ -14,20 +14,22 @@ namespace Singleplayer
         [SerializeField] string testPredefindCharacterName;
         [SerializeField] GameObject playerPref;
 
-        [SerializeField] List<PlayerController> entitiesList = new List<PlayerController>();
-
-        [SerializeField] GameObject spawnPanel;
+        [SerializeField] GameObject testPlayerSpawnPanel;
+        [SerializeField] GameObject testEnemySpawnPanel;
+        [SerializeField] GameObject inputBlock;
 
         [SerializeField] Canvas playerHUD;
 
         [SerializeField] MapManager mapManager; // потрібен інший менеджер мапи(офлайновий)
         [SerializeField] float playersZCordOffset;
 
-        private PlayerController playerData;
-
-        public static GameManager Instance { get; private set; }
-
         private float currentZCordForPlayers = 0.5f;
+
+        private PlayerController playerData;
+        private EnemySpawnManager enemySpawnManager;
+
+        private List<IEntity> entitiesList = new List<IEntity>();
+        public static GameManager Instance { get; private set; }
 
         private void Awake()
         {
@@ -39,15 +41,16 @@ namespace Singleplayer
 
             Instance = this;
             DontDestroyOnLoad(gameObject);
-
-            OnPlayerLoad(); // метод при завантажені гравця на мапу
         }
 
         private void Start()
         {
-
+            enemySpawnManager = EnemySpawnManager.Instance;
+            OnPlayerLoad();// метод при завантажені гравця на мапу
+            SpawnStartingEnemies();
+            TurnManager.Instance.InitializeTurnOrder(entitiesList);
         }
-
+        
         private void Update()
         {
         }
@@ -69,6 +72,15 @@ namespace Singleplayer
             MapManagerSubscription(player);
         }
 
+        private void SpawnStartingEnemies()
+        {
+            var spawnedEnemy = enemySpawnManager.SpawnEnemy(testEnemySpawnPanel.transform.position, EnemyType.Bodyguard);
+            entitiesList.Add(spawnedEnemy);
+            spawnedEnemy.gameObject.SetActive(true);
+            MapManagerSubscription(spawnedEnemy);
+        }
+
+        #region Старий код оновлення списку стану гравців
         /*private void UpdateClientScrollViewClientRpc() // Функція оновлення ScrollView(списка усіх поточних сутностей)
         {
             *//*if (IsServer)
@@ -104,8 +116,9 @@ namespace Singleplayer
                 newPlayerInfo.SetParent(content, false);
             }
         }*/
+        #endregion
 
-        private void UpdateAllHUDButtons(bool enable = false)
+        /*private void ToggleAllHUDButtons(bool enable = false)
         {
             foreach (Transform ui in playerHUD.transform)
             {
@@ -114,16 +127,21 @@ namespace Singleplayer
                     ui.GetComponent<Button>().interactable = enable;
                 }
             }
-        }
+        }*/
 
         private void UpdatePlayerHud(IEntity player)
         {
             playerHUD.transform.Find("CharacterModel").Find("PlayerHP").GetComponent<TextMeshProUGUI>().text = $"{player.GetEntityHp}/{player.GetEntityMaxHp}";
         }
 
-        public void TurnPlayersHUD(bool disable)
+        public void TogglePlayersHUD(bool disable)
         {
             playerHUD.gameObject.SetActive(disable);
+        }
+
+        private void ToggleInputBlock(bool isInteractive)
+        {
+            inputBlock.SetActive(true);
         }
 
         private void DrawRequest()
@@ -131,9 +149,15 @@ namespace Singleplayer
             if (CanPerformAction())
             { }
 
-            // оновлення кнопок худа
+            ToggleInputBlock(true); // оновлення кнопок худа
 
             mapManager.MakeADraw(playerData);
+        }
+
+        public void StartPlayerTurn(PlayerController player)
+        {
+            player.ResetEffectCardsUsages();
+            ToggleInputBlock(false);
         }
 
         public IEnumerator TeleportEntity(Vector2 cords, IEntity entity, PanelScript panelTrigger = null)
@@ -159,7 +183,7 @@ namespace Singleplayer
             return searchedEntity;
         }
 
-        public List<PlayerController> GetEntitiesList() => entitiesList;
+        public List<IEntity> GetEntitiesList() => entitiesList;
 
         public void DealDamage(IEntity entity, int damage, bool isBlockable = false)
         {
@@ -210,9 +234,9 @@ namespace Singleplayer
             return randomPlayer;
         }*/
 
-        public PlayerController GetRandomPlayerExcept(List<IEntity> exceptions)
+        public IEntity GetRandomPlayerExcept(List<IEntity> exceptions)
         {
-            PlayerController randomEntity = null;
+            IEntity randomEntity = null;
 
             if (!entitiesList.Any(entity => !exceptions.Contains(entity)))
                 return null;
@@ -241,10 +265,10 @@ namespace Singleplayer
             return playerList.Find(player => player.GetPlayerId == id);
         }*/
 
-        private void OnPlayerMoveEnd(ulong Id)
+        /*private void OnPlayerMoveEnd(ulong Id)
         {
-            UpdateAllHUDButtons(true);
-        }
+            ToggleInputBlock(true);
+        }*/
 
         public void TryToDraw() // Функція, щоб клієнт міг подати запрос про хід
         {
@@ -299,11 +323,11 @@ namespace Singleplayer
         {
             var playerObj = Instantiate(playerPref);
             var player = playerObj.GetComponent<PlayerController>();
-            player.SetupEntity(testPredefindCharacterName);
-            player.AddEffectCardsUsages();
+            player.SetupPlayer(testPredefindCharacterName);
+            player.ResetEffectCardsUsages();
             entitiesList.Add(player);
 
-            player.transform.position = new Vector3(spawnPanel.transform.position.x, spawnPanel.transform.position.y, currentZCordForPlayers);
+            player.transform.position = new Vector3(testPlayerSpawnPanel.transform.position.x, testPlayerSpawnPanel.transform.position.y, currentZCordForPlayers);
             currentZCordForPlayers = playersZCordOffset;
 
             return player;

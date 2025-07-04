@@ -87,10 +87,10 @@ namespace Singleplayer
             return nearPanels;
         }
 
-        public (PanelScript, Direction) GetNextPanelOrNull(PlayerController player)
+        public (PanelScript, Direction) GetNextPanelOrNull(IEntity entity)
         {
             int availablePanelsCount = _posOfPanels.Count(panel => panel != null);
-            Direction playerDirection = player.GetEntityDirection;
+            Direction playerDirection = entity.GetEntityDirection;
 
             /*if (availablePanelsCount == 1) // устаревший
             {
@@ -146,19 +146,46 @@ namespace Singleplayer
                     }
                 }
 
-                player.StopMoving();
-
-                for (int panelI = 0; panelI < _posOfPanels.Count; panelI++)
+                switch (entity.GetEntityType)
                 {
-                    if (_posOfPanels[panelI] == null)
-                        continue;
+                    case EntityType.Player:
 
-                    var currentPanelScript = _posOfPanels[panelI].GetComponent<PanelScript>();
+                        entity.StopMoving();
 
-                    if ((Pos)panelI == GetOppositePosOrNone((Pos)playerDirection))
-                        continue;
+                        for (int panelI = 0; panelI < _posOfPanels.Count; panelI++)
+                        {
+                            if (_posOfPanels[panelI] == null)
+                                continue;
 
-                    SpawnDirectionArrows(panelI, player);
+                            var currentPanelScript = _posOfPanels[panelI].GetComponent<PanelScript>();
+
+                            if ((Pos)panelI == GetOppositePosOrNone((Pos)playerDirection))
+                                continue;
+
+                            SpawnDirectionArrows(panelI, entity as PlayerController);
+                        }
+
+                        break;
+
+                    case EntityType.Enemy: // Покищо заглушка побудована на рандомі
+
+                        GameObject nextPanel = null;
+                        int randomIterator = 0;
+
+                        do
+                        {
+                            randomIterator = Random.Range(0, tempPanelList.Count);
+                            nextPanel = tempPanelList[randomIterator];
+                        }
+                        while (nextPanel == null);
+
+                        return (nextPanel.GetComponent<PanelScript>(), (Direction)randomIterator);
+
+                    case EntityType.Ally:
+                        break;
+
+                    default:
+                        break;
                 }
             }
 
@@ -330,8 +357,8 @@ namespace Singleplayer
 
             if (collision.gameObject.CompareTag("Entity"))
             {
-                var player = collision.gameObject.GetComponent<PlayerController>();
-                player.moveEndEvent += OnEntityStay;
+                var entity = collision.gameObject.GetComponent<IEntity>();
+                entity.moveEndEvent += OnEntityStay;
             }
         }
 
@@ -358,8 +385,8 @@ namespace Singleplayer
         {
             if (collision.gameObject.CompareTag("Entity"))
             {
-                var player = collision.gameObject.GetComponent<PlayerController>();
-                player.moveEndEvent -= OnEntityStay;
+                var entity = collision.gameObject.GetComponent<IEntity>();
+                entity.moveEndEvent -= OnEntityStay;
             }
         }
 

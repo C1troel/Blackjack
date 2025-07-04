@@ -21,3 +21,4 @@ MonoBehaviour:
   _canTriggerPanels: 0
   _enemyName: TestEnemy
   _entityType: 1
+  _enemyType: 1

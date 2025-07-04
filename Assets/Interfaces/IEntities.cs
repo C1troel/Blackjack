@@ -10,11 +10,10 @@ namespace Singleplayer
         void StartMove(Direction direction = (Direction)(-1), PanelScript panel = null); // PanelScript також потрібен офлайновий
         void MoveEnd();
         void StopMoving();
-        void SetupEntity(string entityName);
         void GetDamage(int value);
         void Heal(int value);
         void GetSteps(int value);
-        IEnumerator Move(PlayerController player, Direction direction = (Direction)(-1), PanelScript panel = null); // PanelScript та PlayerController також потрібен офлайновий
+        IEnumerator Move(IEntity entity, Direction direction = (Direction)(-1), PanelScript panel = null); // PanelScript та PlayerController також потрібен офлайновий
         void TurnEntity();
         void EnableAttacking();
 
@@ -26,11 +25,9 @@ namespace Singleplayer
         int GetEntityHp { get; }
         int GetEntityMaxHp { get; }
         int GetEntityMoney { get; }
-        int GetEntityChips { get; }
         int GetEntityAtk { get; }
         int GetEntityLeftCards { get; }
         bool GetEntityAttackAccess { get; }
-        string GetEntitySuit { get; }
         Direction GetEntityDirection { get; }
 
     }
