@@ -18,6 +18,7 @@ public class CharacterInfo : ScriptableObject
     [Header("Meta Info")]
     [SerializeField] private string _characterName;
     [SerializeField] private EntityType _entityType;
+    [SerializeField] private CharacterType _characterType;
     public int DefaultHp => _defaultHp;
     public int DefaultMoney => _defaultMoney;
     public int DefaultChips => _defaultChips;
@@ -26,4 +27,5 @@ public class CharacterInfo : ScriptableObject
     public int DefaultCardUsages => _defaultCardUsages;
     public string CharacterName => _characterName;
     public EntityType EntityType => _entityType;
+    public CharacterType CharacterType => _characterType;
 }

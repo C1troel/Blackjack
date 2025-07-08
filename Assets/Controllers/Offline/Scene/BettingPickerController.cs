@@ -98,11 +98,11 @@ using Singleplayer;
 
         public IEnumerator SetUpBets()
         {
-            PlayerController player = null;
+            BasePlayerController player = null;
 
             while (player == null)
             {
-                player = GameManager.Instance.GetEntityWithType(EntityType.Player) as PlayerController;
+                player = GameManager.Instance.GetEntityWithType(EntityType.Player) as BasePlayerController;
                 yield return null;
             }
 

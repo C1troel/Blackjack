@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Singleplayer
 {
-    public class TestEnemy : BaseEnemy
+    public class Bodyguard : BaseEnemy
     {
         public override void PerformAction()
         {

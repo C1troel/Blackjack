@@ -1,4 +1,3 @@
-using Singleplayer;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,42 +5,44 @@ using UnityEngine;
 
 namespace Singleplayer
 {
-    public class PlayerController : MonoBehaviour,IEntity
+    public abstract class BasePlayerController : MonoBehaviour,IEntity
     {
-
         public event Action<IEntity> moveEndEvent;
+
+        public event Action hpChangeEvent, statsChangeEvent, curencyChangeEvent;
+
         public Animator anim;
 
-        private CharacterInfo characterInfo;
+        protected CharacterInfo characterInfo;
 
-        private Camera playerCamera;
+        protected Camera playerCamera;
 
-        private PanelScript currentPanel; // потрібна реалізація PanelScript, тільки офлайнова
+        protected PanelScript currentPanel;
 
-        private Coroutine moving;
+        protected Coroutine moving;
 
-        private int hp;
-        private int currentMaxHp;
-        private int money;
-        private int chips;
-        private int atk;
-        private int def;
-        private int leftSteps;
-        private int leftCards;
-        private int defaultCardUsages;
+        protected int hp;
+        protected int currentMaxHp;
+        protected int money;
+        protected int chips;
+        protected int atk;
+        protected int def;
+        protected int leftSteps;
+        protected int leftCards;
+        protected int defaultCardUsages;
 
-        private float previousCordY = -1170f;
-        private float initialZ;
+        protected float previousCordY = -1170f;
+        protected float initialZ;
 
-        private float moveSpeed = 300f;
+        protected float moveSpeed = 300f;
 
-        private bool canMove = false;
-        private bool isEventAttack = false;
+        protected bool canMove = false;
+        protected bool isEventAttack = false;
 
-        private string cardSuit = "";
-        private string characterName = "";
+        protected string cardSuit = "";
+        protected string characterName = "";
 
-        private Direction direction;
+        protected Direction direction;
 
         void Start()
         {
@@ -72,6 +73,8 @@ namespace Singleplayer
 
             transform.position = new Vector3(transform.position.x, transform.position.y, initialZ);
         }
+
+        public abstract void ActivateAbility();
 
         #region PlayerActions
         public void Jump()
@@ -120,16 +123,21 @@ namespace Singleplayer
         }
         #endregion
 
-        public void SetupPlayer(string characterName)
+        public virtual void SetupPlayer(CharacterInfo characterInfo)
         {
-            characterInfo = InfosLoadManager.Instance.GetCharacterInfo(characterName);
+            this.characterInfo = characterInfo;
 
             hp = characterInfo.DefaultHp;
+            currentMaxHp = characterInfo.DefaultHp;
             money = characterInfo.DefaultMoney;
             chips = characterInfo.DefaultChips;
             atk = characterInfo.DefaultAtk;
             def = characterInfo.DefaultDef;
             defaultCardUsages = characterInfo.DefaultCardUsages;
+            characterName = characterInfo.CharacterName;
+
+            anim = gameObject.GetComponent<Animator>();
+
             direction = Direction.Right;
             //direction = ??? // код для визначення можливої траекторії руху після спавну гравця
 
@@ -151,7 +159,27 @@ namespace Singleplayer
             }
         }
 
-        public void GetDamage(int value)
+        public void Pay(int value, bool useChips)
+        {
+            if (useChips)
+                chips -= value;
+            else
+                money -= value;
+
+            CurencyChange();
+        }
+
+        public void GainMoney(int value, bool withChips)
+        {
+            if (withChips)
+                chips += value;
+            else
+                money += value;
+
+            CurencyChange();
+        }
+
+        public virtual void GetDamage(int value)
         {
             if (value <= 0)
             {
@@ -160,14 +188,11 @@ namespace Singleplayer
             }
 
             hp -= value;
+
+            HpChange();
         }
 
-        public void GetSteps(int value)
-        {
-            leftSteps = value;
-        }
-
-        public void Heal(int value)
+        public virtual void Heal(int value)
         {
             if (hp == currentMaxHp)
                 return;
@@ -179,9 +204,16 @@ namespace Singleplayer
             }
 
             hp += value;
+
+            HpChange();
         }
 
-        public IEnumerator Move(IEntity player, Direction direction = Direction.Standart, PanelScript panel = null)
+        public virtual void GetSteps(int value)
+        {
+            leftSteps = value;
+        }
+
+        public virtual IEnumerator Move(IEntity player, Direction direction = Direction.Standart, PanelScript panel = null)
         {
             /*if (IsServer)
             {
@@ -256,15 +288,12 @@ namespace Singleplayer
             Debug.Log("Turning...");
         }
 
-        public void MoveEnd()
-        {
-            if (moveEndEvent != null)
-            {
-                moveEndEvent(this);
-            }
-        }
+        public void MoveEnd() => moveEndEvent?.Invoke(this);
+        public void HpChange() => hpChangeEvent?.Invoke();
+        public void StatsChange() => statsChangeEvent?.Invoke();
+        public void CurencyChange() => curencyChangeEvent?.Invoke();
 
-        public void StartMove(Direction direction = Direction.Standart, PanelScript panel = null)
+        public virtual void StartMove(Direction direction = Direction.Standart, PanelScript panel = null)
         {
             if (panel == null)
             {
@@ -283,23 +312,22 @@ namespace Singleplayer
             Walk();
         }
 
-        public void StopMoving()
+        public virtual void StopMoving()
         {
             canMove = false;
             WalkOff();
         }
 
-        public void TurnEntity()
+        public virtual void TurnEntity()
         {
             Debug.Log("Turning...");
         }
 
-        private void StartBattle(IEntity Atk, IEntity Def) // PlayerController Def - це заглушка, поки коду для ворогів немає
+        private void TryToStartBattle(IEntity Atk, IEntity Def)
         {
             Debug.Log("BattlStart");
 
             Debug.LogWarning($"ATK: {Atk.GetEntityName} DEF: {Def.GetEntityName}");
-            // Потрібно написати менеджер битви для одиночної гри:
             BattleManager.Instance.StartBattle(Atk, Def);
         }
 
@@ -338,8 +366,7 @@ namespace Singleplayer
                 isEventAttack = false;
                 Debug.Log($"LeftSteps: {leftSteps}");
                 StopMoving();
-                // Далі повинен бути код початку бою з ворогом:
-                StartBattle(this, collision.GetComponent<IEntity>());
+                TryToStartBattle(this, collision.GetComponent<IEntity>());
             }
         }
 
@@ -362,5 +389,10 @@ namespace Singleplayer
         public bool GetEntityAttackAccess => isEventAttack;
         public string GetEntitySuit => cardSuit;
         public Direction GetEntityDirection => direction;
+    }
+
+    public enum CharacterType
+    {
+        TimeStopper = 0
     }
 }

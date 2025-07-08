@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Singeplayer
+namespace Singleplayer
 {
     public abstract class BaseEnemy : MonoBehaviour, IEntity
     {
@@ -59,6 +59,9 @@ namespace Singeplayer
             atk = enemyInfo.DefaultAtk;
             def = enemyInfo.DefaultDef;
             defaultCardUsages = enemyInfo.DefaultCardUsages;
+
+            animator = gameObject.GetComponent<Animator>();
+            
             direction = Direction.Left;
             //direction = ??? // код для визначення можливої траекторії руху після спавну ворога
         }
@@ -245,7 +248,7 @@ namespace Singeplayer
                 Debug.Log($"LeftSteps: {leftSteps}");
                 StopMoving();
                 // Далі повинен бути код початку бою з ворогом:
-                TryToStartBattle(this, collision.GetComponent<PlayerController>());
+                TryToStartBattle(this, collision.GetComponent<BasePlayerController>());
             }
         }
         #endregion
@@ -261,6 +264,7 @@ namespace Singeplayer
         public int GetEntityAtk => atk;
         public int GetEntityLeftCards => leftCards;
         public bool GetEntityAttackAccess => isEventAttack;
+        public bool CanTriggerPanels => canTriggerPanels;
         public string GetEntitySuit => ""; // optional
         public Direction GetEntityDirection => direction;
         #endregion

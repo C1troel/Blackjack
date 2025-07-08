@@ -51,7 +51,7 @@ namespace Singleplayer
                 {
                     case EntityType.Player:
 
-                        GameManager.Instance.StartPlayerTurn(currentTurnEntity as PlayerController);
+                        GameManager.Instance.StartPlayerTurn(currentTurnEntity as BasePlayerController);
                         // ќч≥куЇмо, поки гравець завершить х≥д
                         yield return new WaitUntil(() => isTurnActive == false);
 
@@ -84,12 +84,6 @@ namespace Singleplayer
             isTurnActive = false;
         }
 
-        public void EndPlayerTurn()
-        {
-            isTurnActive = false;
-            GameManager.Instance.TogglePlayersHUD(false);
-        }
-
         public void EndTurnRequest(IEntity requester)
         {
             if (requester != currentTurnEntity)
@@ -107,7 +101,7 @@ namespace Singleplayer
             // якщо гравець Ч ховаЇмо HUD
             if (currentTurnEntity.GetEntityType == EntityType.Player)
             {
-                GameManager.Instance.TogglePlayersHUD(false);
+                GameManager.Instance.ToggleInputBlock(true);
             }
 
             isTurnActive = false; // сигнал корутин≥, що можна переходити до наступного

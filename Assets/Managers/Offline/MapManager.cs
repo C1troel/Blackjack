@@ -91,7 +91,7 @@ namespace Singeplayer
         {
             int steps = UnityEngine.Random.Range(0, 12); // змінна яка повинна використовуватися замість tempSteps
 
-            int tempSteps = 4;
+            int tempSteps = 3;
 
             GetLastPlayerStepsCount += tempSteps;
 

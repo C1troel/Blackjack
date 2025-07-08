@@ -1,8 +1,10 @@
 using Panel;
 using Singeplayer;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,14 +21,15 @@ namespace Singleplayer
         [SerializeField] GameObject inputBlock;
 
         [SerializeField] Canvas playerHUD;
+        [SerializeField] PlayerHUDController playerHUDController;
 
         [SerializeField] MapManager mapManager; // потр≥бен ≥нший менеджер мапи(офлайновий)
         [SerializeField] float playersZCordOffset;
 
         private float currentZCordForPlayers = 0.5f;
 
-        private PlayerController playerData;
-        private EnemySpawnManager enemySpawnManager;
+        private BasePlayerController playerData;
+        private EntitySpawnManager enemySpawnManager;
 
         private List<IEntity> entitiesList = new List<IEntity>();
         public static GameManager Instance { get; private set; }
@@ -45,12 +48,41 @@ namespace Singleplayer
 
         private void Start()
         {
-            enemySpawnManager = EnemySpawnManager.Instance;
-            OnPlayerLoad();// метод при завантажен≥ гравц€ на мапу
+            enemySpawnManager = EntitySpawnManager.Instance;
+            OnPlayerLoad();
             SpawnStartingEnemies();
             TurnManager.Instance.InitializeTurnOrder(entitiesList);
         }
-        
+
+        public static void AddComponentByName(GameObject obj, string typeName)
+        {
+            Type type = Type.GetType(typeName);
+
+            /*if (type == null)
+            {
+                foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    type = asm.GetType(typeName);
+                    if (type != null)
+                        break;
+                }
+            }*/
+
+            if (type == null)
+            {
+                Debug.LogError($"ComponentHelper: Ќе вдалось знайти тип '{typeName}'");
+                return;
+            }
+
+            if (!typeof(Component).IsAssignableFrom(type))
+            {
+                Debug.LogError($"ComponentHelper: “ип '{typeName}' не Ї Component");
+                return;
+            }
+
+            obj.AddComponent(type);
+        }
+
         private void Update()
         {
         }
@@ -67,8 +99,9 @@ namespace Singleplayer
 
         private void OnPlayerLoad()
         {
-            var player = SpawnPlayerAndAddToList();
-            playerData = ((MonoBehaviour)player).GetComponent<PlayerController>();
+            var player = SpawnPlayerAndAddToList(testPlayerSpawnPanel.transform.position, CharacterType.TimeStopper);
+            playerData = ((MonoBehaviour)player).GetComponent<BasePlayerController>();
+            playerHUDController.ManagePlayerHud(player);
             MapManagerSubscription(player);
         }
 
@@ -129,19 +162,30 @@ namespace Singleplayer
             }
         }*/
 
-        private void UpdatePlayerHud(IEntity player)
+        /*private void UpdatePlayerHud(IEntity player)
         {
-            playerHUD.transform.Find("CharacterModel").Find("PlayerHP").GetComponent<TextMeshProUGUI>().text = $"{player.GetEntityHp}/{player.GetEntityMaxHp}";
+            var playerSceneView = playerHUD.transform.Find("CharacterModel");
+
+            for (int i = 0; i < playerSceneView.childCount; i++)
+            {
+                if (i == 0)
+                {
+                    var playerHpTextBox = playerSceneView.GetChild(i).GetComponent<TextMeshProUGUI>();
+                    playerHpTextBox.text = $"{player.GetEntityHp}/{player.GetEntityMaxHp}";
+                }
+            }
+        }*/
+
+        public void TogglePlayersHUD(bool enable)
+        {
+            Debug.Log($"PlayerHUD activeness before: {playerHUD.gameObject.activeSelf}");
+            playerHUD.gameObject.SetActive(enable);
+            Debug.Log($"PlayerHUD activeness after: {playerHUD.gameObject.activeSelf}");
         }
 
-        public void TogglePlayersHUD(bool disable)
+        public void ToggleInputBlock(bool isActive)
         {
-            playerHUD.gameObject.SetActive(disable);
-        }
-
-        private void ToggleInputBlock(bool isInteractive)
-        {
-            inputBlock.SetActive(true);
+            inputBlock.SetActive(isActive);
         }
 
         private void DrawRequest()
@@ -154,7 +198,7 @@ namespace Singleplayer
             mapManager.MakeADraw(playerData);
         }
 
-        public void StartPlayerTurn(PlayerController player)
+        public void StartPlayerTurn(BasePlayerController player)
         {
             player.ResetEffectCardsUsages();
             ToggleInputBlock(false);
@@ -195,11 +239,6 @@ namespace Singleplayer
 
             entity.GetDamage(isBlockable ? (damage - entity.GetEntityDef) : damage);
 
-            if (entity.GetEntityType == EntityType.Player)
-            {
-                UpdatePlayerHud(entity);
-            }
-
             // нижн≥й метод потр≥бно оновити п≥сл€ того, €к буде перел≥к ход≥в гравц€ та ворог≥в
             /*UpdateClientScrollViewClientRpc(ReturnPlayerInfos());*/
         }
@@ -208,11 +247,6 @@ namespace Singleplayer
         {
             float percentage = (float)amount / 100;
             entity.Heal(isPercentage ? ((int)(entity.GetEntityMaxHp * percentage)) : amount);
-
-            if (entity.GetEntityType == EntityType.Player)
-            {
-                UpdatePlayerHud(entity);
-            }
 
             // нижн≥й метод потр≥бно оновити п≥сл€ того, €к буде перел≥к ход≥в гравц€ та ворог≥в
             /*UpdateClientScrollViewClientRpc(ReturnPlayerInfos());*/
@@ -319,11 +353,9 @@ namespace Singleplayer
             UpdateHudClientRpc(player.GetPlayerInfo());
         }*/
 
-        private IEntity SpawnPlayerAndAddToList() // ‘ункц≥€ визиваЇтьс€ сервером, щоб при прогрузц≥ гравц€, додати його до перел≥ку сутностей
+        private IEntity SpawnPlayerAndAddToList(Vector3 cords, CharacterType characterType) // ‘ункц≥€ визиваЇтьс€ сервером, щоб при прогрузц≥ гравц€, додати його до перел≥ку сутностей
         {
-            var playerObj = Instantiate(playerPref);
-            var player = playerObj.GetComponent<PlayerController>();
-            player.SetupPlayer(testPredefindCharacterName);
+            var player = EntitySpawnManager.Instance.SpawnPlayableCharacter(cords, characterType);
             player.ResetEffectCardsUsages();
             entitiesList.Add(player);
 

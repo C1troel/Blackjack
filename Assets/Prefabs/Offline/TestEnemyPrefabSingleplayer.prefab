@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 579929843259076475}
   - component: {fileID: 3181694746793552942}
   - component: {fileID: 2640519337223209088}
-  - component: {fileID: 5530409393928178159}
   m_Layer: 0
   m_Name: TestEnemyPrefabSingleplayer
   m_TagString: Entity
@@ -181,16 +180,3 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &5530409393928178159
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4281116225631760918}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 43346d873dd886f43a74264642a791a2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animator: {fileID: 2640519337223209088}

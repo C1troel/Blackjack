@@ -27,6 +27,11 @@ namespace Singleplayer
         {
             return Resources.LoadAll<EnemyInfo>(EnemiesInfoPath);
         }
+        
+        public CharacterInfo[] GetAllCharacterInfos()
+        {
+            return Resources.LoadAll<CharacterInfo>(CharactersInfoPath);
+        }
 
         public EnemyInfo GetEnemyInfo(string enemyName)
         {

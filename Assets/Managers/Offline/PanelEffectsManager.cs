@@ -31,6 +31,8 @@ namespace Singleplayer
 
         private MapManager mapManager;
 
+        private BlackjackManager blackjackManager;
+
         private IEntity choosedEntity = null;
 
         private int? choosedOption = null;
@@ -55,6 +57,150 @@ namespace Singleplayer
         {
             gameManager = GameManager.Instance;
             mapManager = MapManager.Instance;
+            blackjackManager = BlackjackManager.Instance;
+        }
+
+        public IEnumerator TriggerPanelEffect(PanelEffect panelEffect, IEntity entityInit)
+        {
+            if ((entityInit.GetEntityType == EntityType.Enemy && (entityInit as BaseEnemy).CanTriggerPanels) 
+                || (entityInit.GetEntityType == EntityType.Player))
+            {
+                switch (panelEffect)
+                {
+                    case PanelEffect.None:
+                        Debug.Log("EmptyPanel");
+                        break;
+
+                    case PanelEffect.Portal:
+                        OnPortalPanelActivation(entityInit, panelEffect);
+                        break;
+
+                    case PanelEffect.Pursuit:
+
+                        PursuitPanelHandler(entityInit);
+
+                        while (choosedEntity == null)
+                            yield return null;
+
+                        OnPursuitActivation(choosedEntity, entityInit);
+
+                        break;
+
+                    case PanelEffect.Decision:
+
+                        OnDecisionPanelActivation(entityInit);
+
+                        while (choosedOption == null)
+                            yield return null;
+
+                        Debug.Log("Predecision debug log!");
+                        DecisionActivation(choosedOption, entityInit);
+                        Debug.Log("Decision panel activation end...");
+                        break;
+
+                    case PanelEffect.Shop:
+                        // –еал≥зувати коли будуть готов≥ карти з ефектами
+                        break;
+
+                    case PanelEffect.Event:
+                        Debug.Log("Event panel activation!");
+                        GlobalEventsManager.Instance.TriggerGlobalEvent(entityInit);
+                        Debug.Log("Event panel activation end...");
+                        break;
+
+                    case PanelEffect.Betting:
+                        OnBettingPanelActivation(entityInit, panelEffect);
+
+                        while (waitForPlayer != null)
+                            yield return null;
+
+                        Debug.Log("Betting panel processing end!");
+
+                        break;
+
+                    case PanelEffect.Backstab:
+                        Debug.Log("BackstabPanel");
+
+                        BackstabHandler(entityInit);
+
+                        while (choosedEntity == null)
+                            yield return null;
+
+                        OnBackStabActivation(choosedEntity);
+
+                        break;
+
+                    case PanelEffect.Recharge:
+
+                        OnRechargeActivation(entityInit);
+
+                        yield break;
+
+                    case PanelEffect.Hospital:
+
+                        Debug.Log("Hospital Panel");
+
+                        OnHospitalActivation(entityInit);
+
+                        break;
+
+                    case PanelEffect.Dealing:
+
+                        // «робити реал≥зац≥ю даноњ панел≥, п≥сл€ того, €к ефектн≥ карти будуть до к≥нц€ реал≥зован≥
+
+                        break;
+
+                    case PanelEffect.Payoff:
+
+                        Debug.Log("Payoff Panel");
+
+                        yield return StartCoroutine(OnPayoffActivation(entityInit));
+
+                        break;
+
+                    case PanelEffect.Fate:
+
+                        Debug.Log("Fate Panel");
+                        GlobalEventsManager.Instance.TriggerFateEvent(entityInit);
+                        Debug.Log("Fate panel activation end...");
+
+                        break;
+
+                    case PanelEffect.Disaster:
+
+                        Debug.Log("Disaster Panel");
+
+                        OnDisasterActivation(entityInit);
+
+                        break;
+
+                    case PanelEffect.Casino:
+                        break;
+
+                    case PanelEffect.IllegalCasino:
+
+                        blackjackManager.StartBlackjack();
+
+                        while (blackjackManager.isBlackjackGameRunning)
+                            yield return null;
+
+                        break;
+
+                    case PanelEffect.Spawn:
+                        break;
+
+                    default:
+                        Debug.Log("EmpyPanel");
+                        break;
+                }
+            }
+            else
+                Debug.Log($"Stayed entity: {entityInit.GetEntityName} cant trigger panels!");
+
+            MapManager.Instance.TempResetMapValuesInfo();
+            TurnManager.Instance.EndTurnRequest(entityInit);
+            //  од дл€ початку ходу наступного гравц€
+
         }
 
         public void PlayerActionEnd()
@@ -531,136 +677,5 @@ namespace Singleplayer
         }
 
         #endregion
-
-        public IEnumerator TriggerPanelEffect(PanelEffect panelEffect, IEntity entityInit)
-        {
-            switch (panelEffect)
-            {
-                case PanelEffect.None:
-                    Debug.Log("EmptyPanel");
-                    break;
-
-                case PanelEffect.Portal:
-                    OnPortalPanelActivation(entityInit, panelEffect);
-                    break;
-
-                case PanelEffect.Pursuit:
-
-                    PursuitPanelHandler(entityInit);
-
-                    while (choosedEntity == null)
-                        yield return null;
-
-                    OnPursuitActivation(choosedEntity, entityInit);
-
-                    break;
-
-                case PanelEffect.Decision:
-
-                    OnDecisionPanelActivation(entityInit);
-
-                    while (choosedOption == null)
-                        yield return null;
-
-                    Debug.Log("Predecision debug log!");
-                    DecisionActivation(choosedOption, entityInit);
-                    Debug.Log("Decision panel activation end...");
-                    break;
-
-                case PanelEffect.Shop:
-                    // –еал≥зувати коли будуть готов≥ карти з ефектами
-                    break;
-
-                case PanelEffect.Event:
-                    Debug.Log("Event panel activation!");
-                    GlobalEventsManager.Instance.TriggerGlobalEvent(entityInit);
-                    Debug.Log("Event panel activation end...");
-                    break;
-
-                case PanelEffect.Betting:
-                    OnBettingPanelActivation(entityInit, panelEffect);
-
-                    while (waitForPlayer != null)
-                        yield return null;
-
-                    Debug.Log("Betting panel processing end!");
-
-                    break;
-
-                case PanelEffect.Backstab:
-                    Debug.Log("BackstabPanel");
-
-                    BackstabHandler(entityInit);
-
-                    while (choosedEntity == null)
-                        yield return null;
-
-                    OnBackStabActivation(choosedEntity);
-
-                    break;
-
-                case PanelEffect.Recharge:
-
-                    OnRechargeActivation(entityInit);
-
-                    yield break;
-
-                case PanelEffect.Hospital:
-
-                    Debug.Log("Hospital Panel");
-
-                    OnHospitalActivation(entityInit);
-
-                    break;
-
-                case PanelEffect.Dealing:
-
-                    // «робити реал≥зац≥ю даноњ панел≥, п≥сл€ того, €к ефектн≥ карти будуть до к≥нц€ реал≥зован≥
-
-                    break;
-
-                case PanelEffect.Payoff:
-
-                    Debug.Log("Payoff Panel");
-
-                    yield return StartCoroutine(OnPayoffActivation(entityInit));
-
-                    break;
-
-                case PanelEffect.Fate:
-
-                    Debug.Log("Fate Panel");
-                    GlobalEventsManager.Instance.TriggerFateEvent(entityInit);
-                    Debug.Log("Fate panel activation end...");
-
-                    break;
-
-                case PanelEffect.Disaster:
-
-                    Debug.Log("Disaster Panel");
-
-                    OnDisasterActivation(entityInit);
-
-                    break;
-
-                case PanelEffect.Casino:
-                    break;
-
-                case PanelEffect.IllegalCasino:
-                    break;
-
-                case PanelEffect.Spawn:
-                    break;
-
-                default:
-                    Debug.Log("EmpyPanel");
-                    break;
-            }
-
-            MapManager.Instance.TempResetMapValuesInfo();
-            TurnManager.Instance.EndTurnRequest(entityInit);
-            //  од дл€ початку ходу наступного гравц€
-
-        }
     }
 }

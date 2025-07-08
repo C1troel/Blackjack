@@ -52,9 +52,9 @@ namespace Singleplayer
         public RuntimeAnimatorController GetAnimatorController(string controllerName, bool isSprite = true)
         {
             if (isSprite)
-                return Resources.Load<RuntimeAnimatorController>(animatorControllersPath + controllerName);
-            else
                 return Resources.Load<RuntimeAnimatorController>(animatorControllersPath + controllerName + "_RectT");
+            else
+                return Resources.Load<RuntimeAnimatorController>(animatorControllersPath + controllerName);
         }
     }
 }

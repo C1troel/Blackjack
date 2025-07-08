@@ -162,7 +162,7 @@ namespace Singleplayer
                             if ((Pos)panelI == GetOppositePosOrNone((Pos)playerDirection))
                                 continue;
 
-                            SpawnDirectionArrows(panelI, entity as PlayerController);
+                            SpawnDirectionArrows(panelI, entity as BasePlayerController);
                         }
 
                         break;
@@ -210,7 +210,7 @@ namespace Singleplayer
             }
         }
 
-        private void SpawnDirectionArrows(int pos, PlayerController player)
+        private void SpawnDirectionArrows(int pos, BasePlayerController player)
         {
             Pos actualPos = (Pos)pos;
 
@@ -279,7 +279,7 @@ namespace Singleplayer
                 arrow.GetComponent<SpriteRenderer>().flipX = true;
         }
 
-        private void OnPlayerDirectionChoose(Pos pos, PlayerController initiator, PanelScript panel)
+        private void OnPlayerDirectionChoose(Pos pos, BasePlayerController initiator, PanelScript panel)
         {
             initiator.StartMove((Direction)pos, panel);
             DeleteAllArrows();

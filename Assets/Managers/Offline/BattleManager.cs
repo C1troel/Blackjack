@@ -8,6 +8,7 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 namespace Singleplayer
 {
@@ -239,7 +240,7 @@ namespace Singleplayer
         private void DefForEnemy()
         {
             // код перевірки того, чи є захисні карти у противника
-            // також можливо додати шанс на вибір спліта
+            // також можливо додати шанс на вибір спліта / не шанс а перевірка на те, що він і так програє
             // також інші обробки, наприклад ефектів
             StartDefend();
         }
@@ -476,7 +477,10 @@ namespace Singleplayer
 
         private void AtkInsuranceForEnemy() // Обробка страхування гравця атаки, для противників
         {
-
+            if (Random.Range(1, 101) <= 5) // приблизний шанс блекджеку з перших двох карт
+                atkPlayerInsuranceChoose = true;
+            else
+                atkPlayerInsuranceChoose = false;
         }
 
         private void AtkSplit()
@@ -739,7 +743,10 @@ namespace Singleplayer
 
         private void AtkSplitForEnemy()
         {
-
+            if (Random.Range(1, 101) <= 50)
+                atkPlayerSplitChoose = true;
+            else
+                atkPlayerSplitChoose = false;
         }
 
         private void AllowSplitForPlayer()

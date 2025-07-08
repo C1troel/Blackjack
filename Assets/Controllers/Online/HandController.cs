@@ -1,10 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Singleplayer
+namespace Multiplayer
 {
     public class HandController : MonoBehaviour
     {
@@ -15,68 +16,21 @@ namespace Singleplayer
 
         public bool isDoubled { get; private set; }
 
-        public bool hasBlackjack { get; private set; }
-
-        public bool isInsured { get; private set; }
-
         public int handBet { get; private set; }
 
-        public void ManageHandForPlayer(int playerBet)
+        public bool isSplitted { get; private set; }
+        public ulong handPlayerId { get; private set; } = 22; // Означає, що рука належить дилеру
+
+        public void ManageHandForPlayer(ulong playerId, int playerBet)
         {
+            handPlayerId = playerId;
             handBet = playerBet;
             gameObject.SetActive(true);
         }
 
-        public bool CheckForBlackjack()
+        public int GetPlayerHandScores()
         {
-            if (GetCardsCount() == 2 && GetHandScores() == 21)
-            {
-                hasBlackjack = true;
-                return true;
-            }
-            else
-            {
-                hasBlackjack = false;
-                return false;
-            }
-        }
-
-        public void Insure()
-        {
-            handBet /= 2;
-            isInsured = true;
-        }
-
-        public void DoubleDown()
-        {
-            handBet *= 2;
-            isDoubled = true;
-        }
-
-        public int GetCardsCount()
-        {
-            var firstCard = GetHandFirstCard();
-            if (firstCard == null)
-            {
-                Debug.Log("Try to get cardsCount from empty hand");
-                return 0;
-            }
-
-            int cardsCount = 1;
-            return cardsCount += firstCard.GetAddCardsContainer.transform.childCount;
-        }
-
-        public BlackjackCard GetHandFirstCard()
-        {
-            return cardsContainer.GetComponentInChildren<BlackjackCard>();
-        }
-
-        public int GetHandScores()
-        {
-            var firstCard = GetHandFirstCard();
-
-            if (firstCard == null)
-                return 0;
+            var firstCard = cardsContainer.transform.GetChild(0);
 
             int handScore = firstCard.GetComponent<BlackjackCard>().GetScores();
 
@@ -102,7 +56,5 @@ namespace Singleplayer
                 yield return null;
             }
         }
-
-        public GameObject GetCardsContainer => cardsContainer;
     }
 }
