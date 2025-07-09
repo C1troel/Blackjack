@@ -1,4 +1,3 @@
-using Singleplayer;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,6 +19,7 @@ namespace Singleplayer
         protected PanelScript currentPanel;
         protected Coroutine moving;
         protected EnemyInfo enemyInfo;
+        protected List<IEffectCardLogic> effectCardsList;
 
         public event Action<IEntity> moveEndEvent;
         public Animator animator;
@@ -213,6 +213,19 @@ namespace Singleplayer
         #region Маніпуляції з ефектними картами
         public void ResetEffectCardsUsages() => leftCards = enemyInfo.DefaultCardUsages;
         public void DecreaseEffectCardsUsages() => --leftCards;
+
+        public void ReceiveEffectCard(IEffectCardLogic card)
+        {
+            if (effectCardsList.Count == enemyInfo.MaxEffectCards)
+            {
+                Debug.Log($"Cannot add more cards for entity with name: {enemyInfo.CharacterName}" +
+                    $", cuz maxEffectCards are {enemyInfo.MaxEffectCards} and now he has {effectCardsList.Count}");
+
+                return;
+            }
+
+            effectCardsList.Add(card);
+        }
         #endregion
 
         #region Сутичка з іншою сутністю
@@ -250,6 +263,12 @@ namespace Singleplayer
                 // Далі повинен бути код початку бою з ворогом:
                 TryToStartBattle(this, collision.GetComponent<BasePlayerController>());
             }
+        }
+
+        private void OnMouseDown()
+        {
+            Debug.Log($"Entity with name: {this.GetEntityName} was clicked");
+            PanelEffectsManager.Instance.TryToChooseEntity(this);
         }
         #endregion
 

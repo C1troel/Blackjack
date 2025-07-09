@@ -1,12 +1,10 @@
-using EffectCards;
-using Singleplayer;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace Singeplayer
+namespace Singleplayer
 {
     public class MapManager : MonoBehaviour
     {
@@ -386,20 +384,20 @@ namespace Singeplayer
             highlightedPathEnders = pathEnders;
         }
 
-        private void UseEffect(EffectCardHandler.Effect effect, IEntity entity)
+        /*private void UseEffect(EffectCardHandler.Effect effect, IEntity entity)
         {
             switch (effect)
             {
                 case EffectCardHandler.Effect.DecreaseHP:
                     entity.GetDamage(20);
-                    /*gameManager.UpdateAllPlayersScrollViewInfo();
-                    gameManager.UpdatePlayerHUD(entity);*/
+                    *//*gameManager.UpdateAllPlayersScrollViewInfo();
+                    gameManager.UpdatePlayerHUD(entity);*//*
                     break;
 
                 default:
                     break;
             }
-        }
+        }*/
         #endregion
 
         /*[ClientRpc]
@@ -408,14 +406,14 @@ namespace Singeplayer
 
         }*/
 
-        public void UseCardServerRpc(EffectCardHandler.Effect cardEffect, IEntity entity)
+        /*public void UseCardServerRpc(EffectCardHandler.Effect cardEffect, IEntity entity)
         {
             if (entity.GetEntityLeftCards > 0)
             {
                 RevealEffectCardClientRpc();
                 UseEffect(cardEffect, entity);
             }
-        }
+        }*/
 
         private void RevealEffectCardClientRpc()
         {

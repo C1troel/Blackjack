@@ -15,6 +15,7 @@ namespace Singleplayer
         [SerializeField] private int _defaultMoney;
         [SerializeField] private int _defaultDef;
         [SerializeField] private int _defaultCardUsages;
+        [SerializeField] private int _maxEffectCards;
         [SerializeField] private bool _isBoss;
         [SerializeField] private bool _canTriggerPanels;
 
@@ -27,6 +28,7 @@ namespace Singleplayer
         public int DefaultAtk => _defaultAtk;
         public int DefaultDef => _defaultDef;
         public int DefaultCardUsages => _defaultCardUsages;
+        public int MaxEffectCards => _defaultCardUsages;
         public bool CanTriggerPanels => _canTriggerPanels;
         public bool IsBoss => _isBoss;
         public string CharacterName => _enemyName;

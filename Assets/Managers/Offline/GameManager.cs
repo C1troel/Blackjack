@@ -1,5 +1,3 @@
-using Panel;
-using Singeplayer;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -52,6 +50,12 @@ namespace Singleplayer
             OnPlayerLoad();
             SpawnStartingEnemies();
             TurnManager.Instance.InitializeTurnOrder(entitiesList);
+            TestAddingEffectCards(GetEntityWithType(EntityType.Player));
+        }
+
+        private void TestAddingEffectCards(IEntity entity)
+        {
+            EffectCardDealer.Instance.DealRandomEffectCard(entity);
         }
 
         public static void AddComponentByName(GameObject obj, string typeName)
@@ -200,6 +204,7 @@ namespace Singleplayer
 
         public void StartPlayerTurn(BasePlayerController player)
         {
+            DealDamage(player, 80, false);
             player.ResetEffectCardsUsages();
             ToggleInputBlock(false);
         }
@@ -231,7 +236,7 @@ namespace Singleplayer
 
         public void DealDamage(IEntity entity, int damage, bool isBlockable = false)
         {
-            if (entity.GetCurrentPanel.GetEffectPanelInfo.effect == PanelEffect.Hospital)
+            if (entity.GetCurrentPanel != null && entity.GetCurrentPanel.GetEffectPanelInfo.effect == PanelEffect.Hospital)
             {
                 Debug.Log($"Cant damage entity nameData: {((MonoBehaviour)entity).name}");
                 return;

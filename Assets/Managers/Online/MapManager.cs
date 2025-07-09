@@ -1,4 +1,4 @@
-using EffectCards;
+using Multiplayer.EffectCards;
 using Multiplayer.Panel;
 using Panel;
 using System;

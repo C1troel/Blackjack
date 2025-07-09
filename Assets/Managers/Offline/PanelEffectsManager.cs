@@ -10,7 +10,6 @@ using Debug = UnityEngine.Debug;
 using JSG.FortuneSpinWheel;
 using Multiplayer.Panel;
 using Random = UnityEngine.Random;
-using Singeplayer;
 
 namespace Singleplayer
 {
@@ -40,6 +39,8 @@ namespace Singleplayer
         private List<OptionCard.DecisionOptions> availablePlayerDecisionOptions;
 
         private Coroutine waitForPlayer;
+
+        private Coroutine choosingRoutine;
 
         private void Awake()
         {
@@ -225,18 +226,26 @@ namespace Singleplayer
             fortuneWheel.StartSpin();
         }
 
-        private void ActivateChoosing(ulong[] exceptionsId = null) // треба розробити нормальний вивід противників
+        private IEnumerator ActivateChoosing(ulong[] exceptionsId = null) // треба розробити нормальний вивід противників
         {
             Debug.Log("Choosing activated");
-            /*foreach (Transform playerInfo in playerInfosContainer)
+
+            while (choosedEntity == null)
+                yield return null;
+
+            Debug.Log($"Choosed entity is {choosedEntity.GetEntityName}");
+            choosingRoutine = null;
+        }
+
+        public void TryToChooseEntity(IEntity entity)
+        {
+            if (choosingRoutine != null)
+                choosedEntity = entity;
+            else
             {
-                var info = playerInfo.GetComponent<TestPlayerInfoHandler>();
-
-                if (exceptionsId != null && exceptionsId.Contains(info.PlayerId))
-                    continue;
-
-                info.ActivateButton();
-            }*/
+                Debug.Log("Choosing is not active!");
+                return;
+            }
         }
 
         private void AddChoiceForDecision(int option) =>
@@ -414,7 +423,7 @@ namespace Singleplayer
             switch (entityInit.GetEntityType)
             {
                 case EntityType.Player:
-                    ActivateChoosing();
+                    choosingRoutine = StartCoroutine(ActivateChoosing());
                     break;
 
                 case EntityType.Enemy:
@@ -455,7 +464,7 @@ namespace Singleplayer
             switch (entityInit.GetEntityType)
             {
                 case EntityType.Player:
-                    ActivateChoosing();
+                    choosingRoutine = StartCoroutine(ActivateChoosing());
                     break;
 
                 case EntityType.Enemy:

@@ -8,6 +8,7 @@ namespace Singleplayer
     {
         [SerializeField] private string CharactersInfoPath;
         [SerializeField] private string EnemiesInfoPath;
+        [SerializeField] private string EffectCardsInfoPath;
 
         public static InfosLoadManager Instance { get; private set; }
 
@@ -23,6 +24,11 @@ namespace Singleplayer
             DontDestroyOnLoad(gameObject);
         }
 
+        public EffectCardInfo[] GetAllEffectCardInfos()
+        {
+            return Resources.LoadAll<EffectCardInfo>(EffectCardsInfoPath);
+        }
+
         public EnemyInfo[] GetAllEnemyInfos()
         {
             return Resources.LoadAll<EnemyInfo>(EnemiesInfoPath);
@@ -31,6 +37,11 @@ namespace Singleplayer
         public CharacterInfo[] GetAllCharacterInfos()
         {
             return Resources.LoadAll<CharacterInfo>(CharactersInfoPath);
+        }
+
+        public EffectCardInfo GetEffectCardInfo(string effectCardName)
+        {
+            return Resources.Load<EffectCardInfo>(EffectCardsInfoPath + $"{effectCardName}");
         }
 
         public EnemyInfo GetEnemyInfo(string enemyName)

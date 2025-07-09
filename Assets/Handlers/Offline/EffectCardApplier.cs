@@ -1,10 +1,9 @@
-using Multiplayer;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace EffectCards
+namespace Singleplayer
 {
     public class EffectCardApplier : MonoBehaviour, IDropHandler
     {
@@ -12,15 +11,13 @@ namespace EffectCards
         public void OnDrop(PointerEventData eventData)
         {
             /*inputBlock.SetActive(true);*/
-            Debug.LogWarning("OnDrop");
+            Debug.Log("OnEffectCardDrop");
             GameObject usedCard = eventData.pointerDrag;
-            EffectCardHandler effectCard = usedCard.GetComponent<EffectCardHandler>();
+            BaseEffectCard effectCard = usedCard.GetComponent<BaseEffectCard>();
             /*effectCard.parentAfterDrag = transform;
             effectCard.UseCard();*/
 
-            MapManager.Instance.UseCardServerRpc(effectCard.GetEffect);
-
-            Destroy(usedCard);
+            effectCard.UseCard();
         }
     }
 }
