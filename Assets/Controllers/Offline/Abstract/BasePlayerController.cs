@@ -1,7 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
+using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 namespace Singleplayer
 {
@@ -21,6 +25,10 @@ namespace Singleplayer
 
         protected Coroutine moving;
 
+        protected List<MoveCard> moveCardsDeck = new List<MoveCard>();
+        protected List<MoveCard> activeMoveCardsDeck = new List<MoveCard>();
+        protected List<Sprite> spritesForMoveCardsDeck = new List<Sprite>();
+
         protected int hp;
         protected int currentMaxHp;
         protected int money;
@@ -39,7 +47,7 @@ namespace Singleplayer
         protected bool canMove = false;
         protected bool isEventAttack = false;
 
-        protected string cardSuit = "";
+        protected string cardSuit = "Diamond"; // хардкод
         protected string characterName = "";
 
         protected Direction direction;
@@ -47,6 +55,7 @@ namespace Singleplayer
         void Start()
         {
             initialZ = transform.position.z; // Сохраняем начальную координату z
+            SetupMoveCardsDeckPlayerSuit();
         }
 
         void Update()
@@ -72,6 +81,45 @@ namespace Singleplayer
             }
 
             transform.position = new Vector3(transform.position.x, transform.position.y, initialZ);
+        }
+
+        private void SetupMoveCardsDeckPlayerSuit()
+        {
+            spritesForMoveCardsDeck = SpriteLoadManager.Instance.GetAllBasicCardSpritesOfSuit(cardSuit);
+
+            spritesForMoveCardsDeck.RemoveAll(sprite =>
+            {
+                if (sprite.name.Length < 2) return false;
+
+                string numPart = sprite.name.Substring(sprite.name.Length - 2);
+                return int.TryParse(numPart, out int val) && val >= 11;
+            });
+
+            moveCardsDeck = new List<MoveCard>();
+
+            foreach (var sprite in spritesForMoveCardsDeck)
+            {
+                moveCardsDeck.Add(new MoveCard(sprite));
+            }
+        }
+
+        private void SetupActiveMoveCardsDeck()
+        {
+            activeMoveCardsDeck.AddRange(moveCardsDeck);
+
+            System.Random random = new System.Random();
+            activeMoveCardsDeck = activeMoveCardsDeck.OrderBy(x => random.Next()).ToList();
+        }
+
+        public MoveCard GetNextMoveCard()
+        {
+            if (activeMoveCardsDeck == null || activeMoveCardsDeck.Count == 0)
+                SetupActiveMoveCardsDeck();
+
+            int index = Random.Range(0, activeMoveCardsDeck.Count);
+            MoveCard nextCard = activeMoveCardsDeck[index];
+            activeMoveCardsDeck.RemoveAt(index);
+            return nextCard;
         }
 
         public abstract void ActivateAbility();
@@ -394,5 +442,57 @@ namespace Singleplayer
     public enum CharacterType
     {
         TimeStopper = 0
+    }
+
+    public class MoveCard
+    {
+        public Sprite frontSide { get; private set; }
+        public Sprite backSide {  get; private set; }
+
+        public MoveCard(Sprite frontSidePrint)
+        {
+            frontSide = frontSidePrint;
+        }
+
+        public void PrintBackSide(Sprite backSidePrint) => backSide = backSidePrint;
+
+        public int GetSteps(bool fromFrontSide)
+        {
+            string spriteName = string.Empty;
+
+            if (fromFrontSide)
+                spriteName = frontSide.name;
+            else
+                spriteName = backSide.name;
+
+            return int.Parse(spriteName.Substring(spriteName.Length - 2));
+        }
+
+        public int GetSteps(Sprite sprite)
+        {
+            string spriteName = sprite.name;
+
+            if (sprite != backSide && sprite != frontSide)
+            {
+                Debug.Log("Thats isn`t sprite from this moveCard");
+                return 0;
+            }
+
+            return GetScoreFromString(spriteName);
+        }
+
+        private int GetScoreFromString(string str)
+        {
+            int score = int.Parse(str.Substring(str.Length - 2));
+
+            return score switch
+            {
+                1 => 11,
+                11 => 10,
+                12 => 10,
+                13 => 10,
+                _ => score,
+            };
+        }
     }
 }

@@ -50,13 +50,62 @@ namespace Singleplayer
             OnPlayerLoad();
             SpawnStartingEnemies();
             TurnManager.Instance.InitializeTurnOrder(entitiesList);
-            TestAddingEffectCards(GetEntityWithType(EntityType.Player));
+
+            #region Tests
+            /*StartCoroutine(TestAwaitAndReturnEntitiesAtDistanceFromEntity(entitiesList[0], 6));*/
+            /*StartCoroutine(TestAwaitAndGetShortestAvailablePathBetweenPanels(entitiesList[1], entitiesList[0]));*/
+            /*StartCoroutine(TestAwaitAndReturnDistanceBetweenEntities(entitiesList[0], entitiesList[1]));*/
+            /*TestAddingEffectCards(GetEntityWithType(EntityType.Player));*/
+            #endregion
         }
 
-        private void TestAddingEffectCards(IEntity entity)
+        private IEnumerator TestAwaitAndReturnEntitiesAtDistanceFromEntity(IEntity startEntity, int distance)
+        {
+            yield return new WaitForSeconds(5);
+
+            var foundEntitiesList = MapManager.FindEntitiesAtDistance(startEntity.GetCurrentPanel, distance);
+
+            if (foundEntitiesList.Count == 0)
+            {
+                Debug.Log($"Doesn`t find any entity at distance {distance} from entity {startEntity.GetEntityName}");
+            }
+            else
+            {
+                Debug.Log($"Found entities at distance {distance} from entity {startEntity.GetEntityName}");
+
+                foreach (var entity in foundEntitiesList)
+                {
+                    Debug.Log($"Found entity with name {entity.GetEntityName} within {distance} panels");
+                }
+            }
+        }
+
+        private IEnumerator TestAwaitAndReturnDistanceBetweenEntities(IEntity startEntity, IEntity targetEntity)
+        {
+            yield return new WaitForSeconds(5);
+
+            var shortestPanelsAmount = MapManager.FindDistanceBetweenPanels(startEntity.GetCurrentPanel, targetEntity.GetCurrentPanel);
+            Debug.Log($"Shortes panels amount from entity {startEntity} to {targetEntity} is {shortestPanelsAmount}");
+        }
+        
+        private IEnumerator TestAwaitAndGetShortestAvailablePathBetweenPanels(IEntity startEntity, IEntity targetEntity)
+        {
+            yield return new WaitForSeconds(5);
+
+            var shortestPath = MapManager.FindShortestPathConsideringDirection(startEntity.GetCurrentPanel, targetEntity.GetCurrentPanel, startEntity);
+
+            Debug.Log($"Shortest path from {startEntity.GetEntityName} to {targetEntity.GetEntityName} contains {shortestPath.Count} panels");
+
+            foreach (var panel in shortestPath)
+            {
+                Debug.Log($"{panel.name}");
+            }
+        }
+
+        /*private void TestAddingEffectCards(IEntity entity)
         {
             EffectCardDealer.Instance.DealRandomEffectCard(entity);
-        }
+        }*/
 
         public static void AddComponentByName(GameObject obj, string typeName)
         {
@@ -209,7 +258,12 @@ namespace Singleplayer
             ToggleInputBlock(false);
         }
 
-        public IEnumerator TeleportEntity(Vector2 cords, IEntity entity, PanelScript panelTrigger = null)
+        public void TeleportEntity(Vector2 cords, IEntity entity, PanelScript panelTrigger = null)
+        {
+            StartCoroutine(TeleportEntityRoutine(cords, entity, panelTrigger));
+        }
+
+        private IEnumerator TeleportEntityRoutine(Vector2 cords, IEntity entity, PanelScript panelTrigger = null)
         {
             var targetTeleportPosition = new Vector3(cords.x, cords.y, currentZCordForPlayers);
             Debug.Log($"Teleporting Entity with name: {entity.GetEntityName}");
@@ -222,7 +276,7 @@ namespace Singleplayer
                     yield return null;
 
                 StartCoroutine(PanelEffectsManager.Instance
-                    .TriggerPanelEffect(entity.GetCurrentPanel.GetEffectPanelInfo.effect, entity));
+                    .TriggerPanelEffect(entity.GetCurrentPanel, entity));
             }
         }
 
@@ -236,7 +290,7 @@ namespace Singleplayer
 
         public void DealDamage(IEntity entity, int damage, bool isBlockable = false)
         {
-            if (entity.GetCurrentPanel != null && entity.GetCurrentPanel.GetEffectPanelInfo.effect == PanelEffect.Hospital)
+            if (entity.GetCurrentPanel != null && entity.GetCurrentPanel.GetEffectPanelInfo.effect == PanelEffect.VIPClub)
             {
                 Debug.Log($"Cant damage entity nameData: {((MonoBehaviour)entity).name}");
                 return;

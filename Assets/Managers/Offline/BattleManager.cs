@@ -300,7 +300,10 @@ namespace Singleplayer
             #endregion
 
             GameManager.Instance.TogglePlayersHUD(true);
-            entitiesHands[0].Item1.StartMove();
+
+            var entityInit = entitiesHands[0].Item1;
+
+            entityInit.StartMove();
 
             DeleteAllRestBattleHUDObject();
         }

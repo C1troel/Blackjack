@@ -1,12 +1,15 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Singleplayer
 {
     public class PanelScript : MonoBehaviour
     {
+        private const string EFFECT_PANEL_SCRIPTS_MARKER = "PanelEffect";
         public enum Pos
         {
             None = -1,
@@ -20,6 +23,7 @@ namespace Singleplayer
         [SerializeField] private List<GameObject> _posOfPanels = new List<GameObject>(Enumerable.Repeat<GameObject>(null, 4));
         [SerializeField] private GameObject directionArrowPrefab;
         [SerializeField] private EffectPanelInfoSingleplayer _effectPanelInfo;
+        [SerializeField] private IPanelEffect panelEffect;
 
         private List<GameObject> arrowsList = new List<GameObject>();
 
@@ -30,9 +34,41 @@ namespace Singleplayer
             _sidePanels = new List<GameObject>(Enumerable.Repeat<GameObject>(null, 4));
         }*/
 
+        private void Start()
+        {
+            if (this._effectPanelInfo != null)
+                TestAttachPanelEffect();
+        }
+
         private void Update()
         {
 
+        }
+
+        public IEnumerator TriggerPanelEffect(IEntity entityInit, Action onComplete)
+        {
+            yield return StartCoroutine(panelEffect.Execute(entityInit, onComplete));
+        }
+
+        private void TestAttachPanelEffect()
+        {
+            panelEffect = GetPanelEffectInstance(_effectPanelInfo);
+        }
+
+        private IPanelEffect GetPanelEffectInstance(EffectPanelInfoSingleplayer effectPanelnfo)
+        {
+            string typeName = $"{this.GetType().Namespace}.{_effectPanelInfo.effect}{EFFECT_PANEL_SCRIPTS_MARKER}";
+            var effectType = Type.GetType(typeName);
+
+            if (effectType == null)
+            {
+                Debug.LogError($"Unknown panel effect type: {effectPanelnfo.effect}");
+                return null;
+            }
+
+            IPanelEffect panelEffect = Activator.CreateInstance(effectType) as IPanelEffect;
+
+            return panelEffect;
         }
 
         public void RemoveHighlight()
@@ -85,6 +121,39 @@ namespace Singleplayer
                 return new List<PanelScript>();
 
             return nearPanels;
+        }
+
+        public List<(PanelScript panel, Direction dir)> GetAvailableForwardPanels(Direction fromDirection)
+        {
+            var result = new List<(PanelScript panel, Direction dir)>();
+
+            for (int i = 0; i < _posOfPanels.Count; i++)
+            {
+                var neighborObj = _posOfPanels[i];
+                if (neighborObj == null)
+                    continue;
+
+                var directionToNeighbor = (Direction)i;
+
+                // Исключаем обратное направление
+                if (directionToNeighbor == MapManager.GetOppositeDirection(fromDirection))
+                    continue;
+
+                var neighborPanel = neighborObj.GetComponent<PanelScript>();
+                if (neighborPanel != null)
+                    result.Add((neighborPanel, directionToNeighbor));
+            }
+
+            return result;
+        }
+
+        public PanelScript GetNeighborByIndex(int index)
+        {
+            if (index < 0 || index >= _posOfPanels.Count)
+                return null;
+
+            var obj = _posOfPanels[index];
+            return obj != null ? obj.GetComponent<PanelScript>() : null;
         }
 
         public (PanelScript, Direction) GetNextPanelOrNull(IEntity entity)
@@ -167,7 +236,7 @@ namespace Singleplayer
 
                         break;
 
-                    case EntityType.Enemy: // Покищо заглушка побудована на рандомі
+                    case EntityType.Enemy: // Покищо заглушка побудована на рандомі(хоча для переміщення боса підходить)
 
                         GameObject nextPanel = null;
                         int randomIterator = 0;
@@ -378,7 +447,7 @@ namespace Singleplayer
         {
             // код для перевірки того чи гравець взагалі може телепортуватися
             var player = GameManager.Instance.GetEntityWithType(EntityType.Player);
-            StartCoroutine(GameManager.Instance.TeleportEntity(gameObject.transform.position, player, this));
+            GameManager.Instance.TeleportEntity(gameObject.transform.position, player, this);
         }
 
         private void OnTriggerExit2D(Collider2D collision)
@@ -400,7 +469,7 @@ namespace Singleplayer
 
             Debug.Log("OnPlayerStay");
             StartCoroutine(PanelEffectsManager.Instance
-                .TriggerPanelEffect(_effectPanelInfo.effect, entity));
+                .TriggerPanelEffect(this, entity));
         }
 
         private Pos GetPosRelativelyFromOtherPanelOrNone(GameObject otherPanel)
@@ -460,17 +529,15 @@ namespace Singleplayer
         None = -1,
         Portal,
         Pursuit,
-        Decision,
         Shop,
         Event,
-        Betting,
         Backstab,
         Recharge,
-        Hospital,
+        VIPClub,
         Dealing,
         Payoff,
         Fate,
-        Disaster,
+        BadBeat,
         Casino,
         IllegalCasino,
         Spawn

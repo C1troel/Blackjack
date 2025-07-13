@@ -70,7 +70,7 @@ namespace Singleplayer
 
         private void OnAnimationEnd()
         {
-            ApplyEffect();
+            MapManager.Instance.OnEffectCardPlayed(this);
             Destroy(gameObject);
         }
 
@@ -98,6 +98,8 @@ namespace Singleplayer
 
         public List<EffectCardMaterial> GetCardMaterials => effectCardInfo.EffectCardMaterials;
         public EffectCardDmgType GetCardDmgType => effectCardInfo.EffectCardDmgType;
+
+        public Sprite GetEffectSprite() => effectCardInfo.EffectCardSprite;
     }
 
     public enum EffectCardType

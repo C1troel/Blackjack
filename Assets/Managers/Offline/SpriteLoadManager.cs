@@ -49,6 +49,29 @@ namespace Singleplayer
             return sprite;
         }
 
+        public List<Sprite> GetAllBasicCardSpritesOfSuit(string suitName)
+        {
+            List<Sprite> matchedSprites = new List<Sprite>();
+
+            Sprite[] allSprites = Resources.LoadAll<Sprite>(basicCardsPath);
+
+            if (allSprites == null || allSprites.Length == 0)
+            {
+                Debug.LogWarning($"No sprites found in path: {basicCardsPath}");
+                return matchedSprites;
+            }
+
+            foreach (var sprite in allSprites)
+            {
+                if (sprite.name.StartsWith(suitName))
+                {
+                    matchedSprites.Add(sprite);
+                }
+            }
+
+            return matchedSprites;
+        }
+
         public RuntimeAnimatorController GetAnimatorController(string controllerName, bool isSprite = true)
         {
             if (isSprite)

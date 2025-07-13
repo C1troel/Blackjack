@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58c2bcdaa9a73694aa64cebcf076ca56, type: 3}
   m_Name: Shop
   m_EditorClassIdentifier: 
-  _effect: 3
+  _effect: 2
   _sprite: {fileID: 0}
   _panelPrefab: {fileID: 2399929201648208755, guid: 85e6aad2b3fbfdb4da5fa15b8c9ec49d, type: 3}
   _isSpawn: 0

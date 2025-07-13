@@ -10,6 +10,8 @@ using Debug = UnityEngine.Debug;
 using JSG.FortuneSpinWheel;
 using Multiplayer.Panel;
 using Random = UnityEngine.Random;
+using UnityEditor;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Singleplayer
 {
@@ -61,9 +63,21 @@ namespace Singleplayer
             blackjackManager = BlackjackManager.Instance;
         }
 
-        public IEnumerator TriggerPanelEffect(PanelEffect panelEffect, IEntity entityInit)
+        public IEnumerator TriggerPanelEffect(PanelScript panel, IEntity entityInit)
         {
-            if ((entityInit.GetEntityType == EntityType.Enemy && (entityInit as BaseEnemy).CanTriggerPanels) 
+            if (!CanTriggerEffect(entityInit))
+            {
+                Debug.Log($"Entity {entityInit.GetEntityName} can't trigger panels.");
+                EndPanelEffect(entityInit);
+                yield break;
+            }
+
+            bool isComplete = false;
+            yield return StartCoroutine(panel.TriggerPanelEffect(entityInit, () => isComplete = true));
+            yield return new WaitUntil(() => isComplete);
+
+            EndPanelEffect(entityInit);
+            /*if ((entityInit.GetEntityType == EntityType.Enemy && (entityInit as BaseEnemy).CanTriggerPanels) 
                 || (entityInit.GetEntityType == EntityType.Player))
             {
                 switch (panelEffect)
@@ -200,8 +214,75 @@ namespace Singleplayer
 
             MapManager.Instance.TempResetMapValuesInfo();
             TurnManager.Instance.EndTurnRequest(entityInit);
-            //  од дл€ початку ходу наступного гравц€
+            //  од дл€ початку ходу наступного гравц€*/
 
+        }
+
+        private void EndPanelEffect(IEntity entity)
+        {
+            MapManager.Instance.TempResetMapValuesInfo();
+            TurnManager.Instance.EndTurnRequest(entity);
+        }
+
+        private bool CanTriggerEffect(IEntity entity)
+        {
+            switch (entity.GetEntityType)
+            {
+                case EntityType.Player:
+                    return true;
+
+                case EntityType.Enemy:
+
+                    var enemy = entity as BaseEnemy;
+                    return enemy.CanTriggerPanels;
+
+                case EntityType.Ally:
+                    return false;
+
+                default:
+                    return false;
+            }
+        }
+
+        public void StartChoosingTarget(Action<IEntity> callback)
+        {
+            StartCoroutine(ActivateChoosing(callback));
+        }
+
+        private IEnumerator ActivateChoosing(Action<IEntity> callback)
+        {
+            Debug.Log("Choosing a target...");
+            IEntity chosen = null;
+
+            choosingRoutine = StartCoroutine(WaitForEntitySelection(entity =>
+            {
+                chosen = entity;
+            }));
+
+            yield return new WaitUntil(() => chosen != null);
+            callback?.Invoke(chosen);
+        }
+
+        private IEnumerator WaitForEntitySelection(Action<IEntity> callback)
+        {
+            choosedEntity = null;
+            while (choosedEntity == null)
+                yield return null;
+            callback(choosedEntity);
+            choosingRoutine = null;
+        }
+
+        public void StartDecisionPick(Action<int> callback)
+        {
+            StartCoroutine(WaitForDecision(callback));
+        }
+
+        private IEnumerator WaitForDecision(Action<int> callback)
+        {
+            choosedOption = null;
+            while (choosedOption == null)
+                yield return null;
+            callback?.Invoke(choosedOption.Value);
         }
 
         public void PlayerActionEnd()

@@ -7,6 +7,7 @@ namespace Singleplayer
     [CreateAssetMenu(fileName = "EffectCardInfo", menuName = "Infos/New EffectCardInfo")]
     public class EffectCardInfo : ScriptableObject
     {
+        [SerializeField] Sprite _effectCardSprite;
         [SerializeField] List<EffectCardMaterial> _effectCardMaterials;
         [SerializeField] EffectCardDmgType _effectCardDmgType;
         [SerializeField] EffectCardType _effectCardType;
@@ -14,5 +15,6 @@ namespace Singleplayer
         public List<EffectCardMaterial> EffectCardMaterials => _effectCardMaterials;
         public EffectCardDmgType EffectCardDmgType => _effectCardDmgType;
         public EffectCardType EffectCardType => _effectCardType;
+        public Sprite EffectCardSprite => _effectCardSprite;
     }
 }

@@ -62,7 +62,7 @@ namespace Singleplayer
 
             animator = gameObject.GetComponent<Animator>();
             
-            direction = Direction.Left;
+            direction = Direction.Right; // Left
             //direction = ??? // код для визначення можливої траекторії руху після спавну ворога
         }
 
@@ -70,7 +70,7 @@ namespace Singleplayer
 
         public virtual void PerformAction()
         {
-            Debug.Log("This enemy doesn`t have any actions...");
+            
         }
 
         #endregion
@@ -80,6 +80,9 @@ namespace Singleplayer
 
         public virtual void StartMove(Direction direction = Direction.Standart, PanelScript panel = null)
         {
+            if (!isBoss)
+                StartMoveToPlayer();
+
             if (panel == null)
             {
                 canMove = true;
@@ -163,6 +166,66 @@ namespace Singleplayer
                 WalkOff();
                 MoveEnd();
             }
+
+            moving = null;
+        }
+        
+        public virtual void StartMoveToPlayer()
+        {
+            var player = GameManager.Instance.GetEntityWithType(EntityType.Player);
+
+            var foundPathToPlayer = MapManager.FindShortestPathConsideringDirection(currentPanel, player.GetCurrentPanel, this);
+            foundPathToPlayer.RemoveAt(0);
+
+            #region DebugInfo
+
+            Debug.Log("Found enemy path to player:");
+            foreach (var panel in foundPathToPlayer)
+            {
+                Debug.Log(panel.name);
+            }
+
+            #endregion
+
+            moving = StartCoroutine(MoveToPlayer(foundPathToPlayer));
+            canMove = true;
+            Walk();
+        }
+
+        public virtual IEnumerator MoveToPlayer(List<PanelScript> pathToPlayer)
+        {
+            Walk();
+
+            foreach (var panel in pathToPlayer)
+            {
+                var currentStayedPanel = currentPanel;
+                var currentPos = transform.position;
+                var destination = panel.transform.position;
+
+                while (Vector2.Distance(currentPos, destination) > 0.01f)
+                {
+                    currentPos = Vector2.MoveTowards(currentPos, destination, moveSpeed * Time.deltaTime);
+                    transform.position = currentPos;
+
+                    yield return null;
+                }
+
+                transform.position = new Vector3(destination.x, destination.y, transform.position.z);
+
+                Debug.Log($"Direction before stand on panel {panel.name} is {this.direction}");
+                this.direction = MapManager.GetDirectionFromTo(currentStayedPanel, panel);
+                this.currentPanel = panel;
+                Debug.Log($"Direction after stand on panel {panel.name} is {this.direction}");
+
+                leftSteps -= 1;
+                Debug.LogWarning($"Left Steps: {leftSteps}");
+
+                if (leftSteps == 0)
+                    break;
+            }
+
+            WalkOff();
+            MoveEnd();
 
             moving = null;
         }

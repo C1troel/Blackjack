@@ -10,7 +10,7 @@ namespace Singleplayer
     {
         [SerializeField] private List<GameObject> panels;
         [SerializeField] private GameObject parentOfAllPanels; // на даний момент використовується для помічення кожної панелі при телепортації
-        [SerializeField] private GameObject usedCard;
+        [SerializeField] private EffectRevealCard usedCard;
 
         private GameManager gameManager;
         public static MapManager Instance { get; private set; }
@@ -89,7 +89,7 @@ namespace Singleplayer
         {
             int steps = UnityEngine.Random.Range(0, 12); // змінна яка повинна використовуватися замість tempSteps
 
-            int tempSteps = 3;
+            int tempSteps = 2;
 
             GetLastPlayerStepsCount += tempSteps;
 
@@ -121,14 +121,18 @@ namespace Singleplayer
             switch (entity.GetEntityType)
             {
                 case EntityType.Player:
-                    entity.GetSteps(tempSteps);
+
+                    HandlePlayerMovement(entity as BasePlayerController);
+
+                    /*entity.GetSteps(tempSteps);
                     PathBuilding(entity.GetCurrentPanel, tempSteps, entity);
-                    entity.StartMove();
+                    *//*HighlightReachablePanels(entity.GetCurrentPanel, tempSteps, entity);*//*
+                    entity.StartMove();*/
                     break;
 
                 case EntityType.Enemy:
                     entity.GetSteps(tempSteps);
-                    HandleEnemyMovement();
+                    /*HandleEnemyMovement(entity as BaseEnemy);*/
                     entity.StartMove();
                     break;
 
@@ -140,10 +144,32 @@ namespace Singleplayer
             }
         }
 
-        private void HandleEnemyMovement()
+        private void HandlePlayerMovement(BasePlayerController player)
         {
-            
+            var moveCard = player.GetNextMoveCard();
+
+            int choosedPlayerSteps = 0;
+
+            void AwaitPlayerMoveCardChoosing(int choosedSteps)
+            {
+                choosedPlayerSteps = choosedSteps;
+                Debug.Log($"Player choosed: {choosedSteps}");
+                player.GetSteps(choosedPlayerSteps);
+                PathBuilding(player.GetCurrentPanel, choosedPlayerSteps, player);
+                player.StartMove();
+
+                usedCard.MoveCardValueSelectedEvent -= AwaitPlayerMoveCardChoosing;
+            }
+
+            usedCard.MoveCardValueSelectedEvent += AwaitPlayerMoveCardChoosing;
+
+            usedCard.RevealMoveCard(moveCard);
         }
+
+        /*private void HandleEnemyMovement(BaseEnemy enemy)
+        {
+            enemy.StartMoveToPlayer();
+        }*/
 
         private void AccessPlayerToTeleport(IEntity entity)
         {
@@ -177,6 +203,7 @@ namespace Singleplayer
             }
         }
 
+        #region Пошуки шляху
         private void PathBuilding(PanelScript startPanel, int stepCount, IEntity entity)
         {
             var pathEnders = new List<PanelScript>();
@@ -384,6 +411,221 @@ namespace Singleplayer
             highlightedPathEnders = pathEnders;
         }
 
+        private void HighlightReachablePanels(PanelScript startPanel, int maxSteps, IEntity entity)
+        {
+            if (startPanel == null || entity == null || maxSteps <= 0)
+                return;
+
+            HashSet<(PanelScript, Direction)> visited = new();
+            HashSet<PanelScript> result = new();
+
+            Queue<(PanelScript panel, Direction dir, int stepsLeft)> queue = new();
+            Direction startDirection = entity.GetEntityDirection;
+
+            queue.Enqueue((startPanel, startDirection, maxSteps));
+            visited.Add((startPanel, startDirection));
+
+            while (queue.Count > 0)
+            {
+                var (currentPanel, currentDir, stepsLeft) = queue.Dequeue();
+
+                if (stepsLeft == 0)
+                {
+                    result.Add(currentPanel);
+                    continue;
+                }
+
+                var forwardPanels = currentPanel.GetAvailableForwardPanels(currentDir);
+
+                foreach (var (neighbor, newDir) in forwardPanels)
+                {
+                    var key = (neighbor, newDir);
+                    if (visited.Contains(key))
+                        continue;
+
+                    visited.Add(key);
+                    queue.Enqueue((neighbor, newDir, stepsLeft - 1));
+                }
+            }
+
+            // Подсветка результата
+            foreach (var panel in result)
+                panel.HighlightAsPathEnder();
+
+            highlightedPathEnders = result.ToList();
+        }
+
+
+
+
+
+        public static int FindDistanceBetweenPanels(PanelScript start, PanelScript target)
+        {
+            if (start == target)
+                return 0;
+
+            Queue<(PanelScript panel, int distance)> queue = new();
+            HashSet<PanelScript> visited = new();
+
+            queue.Enqueue((start, 0));
+            visited.Add(start);
+
+            while (queue.Count > 0)
+            {
+                var (currentPanel, distance) = queue.Dequeue();
+
+                foreach (var neighbor in currentPanel.GetAvailableNearPanelsOrNull(null))
+                {
+                    if (neighbor == target)
+                        return distance + 1;
+
+                    if (!visited.Contains(neighbor))
+                    {
+                        visited.Add(neighbor);
+                        queue.Enqueue((neighbor, distance + 1));
+                    }
+                }
+            }
+
+            return -1;
+        }
+
+        public static List<PanelScript> FindShortestPathConsideringDirection(PanelScript start, PanelScript target, IEntity entity)
+        {
+            if (start == null || target == null || entity == null)
+                return null;
+
+            // Удаляем прежнюю проверку "если панели равны", чтобы можно было найти обходной путь
+            // if (start == target) return new List<PanelScript> { start };
+
+            Queue<(PanelScript panel, Direction direction)> queue = new Queue<(PanelScript, Direction)>();
+            Dictionary<(PanelScript, Direction), (PanelScript, Direction)> cameFrom = new Dictionary<(PanelScript, Direction), (PanelScript, Direction)>();
+            HashSet<(PanelScript, Direction)> visited = new HashSet<(PanelScript, Direction)>();
+
+            Direction startDirection = entity.GetEntityDirection;
+
+            queue.Enqueue((start, startDirection));
+            visited.Add((start, startDirection));
+            cameFrom[(start, startDirection)] = (null, Direction.Standart);
+
+            while (queue.Count > 0)
+            {
+                var (currentPanel, currentDirection) = queue.Dequeue();
+
+                for (int i = 0; i < 4; i++)
+                {
+                    PanelScript neighbor = currentPanel.GetNeighborByIndex(i);
+                    if (neighbor == null)
+                        continue;
+
+                    Direction newDirection = (Direction)i;
+
+                    // Запрещаем двигаться назад (в противоположную сторону)
+                    if (newDirection == GetOppositeDirection(currentDirection))
+                        continue;
+
+                    var state = (neighbor, newDirection);
+                    if (visited.Contains(state))
+                        continue;
+
+                    visited.Add(state);
+                    cameFrom[state] = (currentPanel, currentDirection);
+                    queue.Enqueue(state);
+
+                    // Условие выхода: мы пришли на ту же панель, где стоит цель, но с другой стороны
+                    if (neighbor == target && neighbor != start)
+                    {
+                        List<PanelScript> path = new List<PanelScript>();
+                        var current = state;
+
+                        while (current.Item1 != null)
+                        {
+                            path.Add(current.Item1);
+                            current = cameFrom[current];
+                        }
+
+                        path.Reverse();
+                        return path;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+
+        public static Direction GetDirectionFromTo(PanelScript from, PanelScript to)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                var neighbor = from.GetNeighborByIndex(i); // сделай такой метод или напрямую обращайся к _posOfPanels[i]
+                if (neighbor == to)
+                    return (Direction)i;
+            }
+
+            return Direction.Standart;
+        }
+
+        public static Direction GetOppositeDirection(Direction dir)
+        {
+            switch (dir)
+            {
+                case Direction.Left: return Direction.Right;
+                case Direction.Right: return Direction.Left;
+                case Direction.Top: return Direction.Bottom;
+                case Direction.Bottom: return Direction.Top;
+                default: return Direction.Standart;
+            }
+        }
+
+        public static List<IEntity> FindEntitiesAtDistance(PanelScript start, int targetDistance)
+        {
+            List<IEntity> foundEntities = new List<IEntity>();
+
+            if (start == null || targetDistance < 0)
+                return foundEntities;
+
+            Queue<(PanelScript panel, int distance)> queue = new();
+            HashSet<PanelScript> visited = new();
+
+            queue.Enqueue((start, 0));
+            visited.Add(start);
+
+            while (queue.Count > 0)
+            {
+                var (currentPanel, distance) = queue.Dequeue();
+
+                if (distance == targetDistance)
+                {
+                    Collider2D[] colliders = Physics2D.OverlapCircleAll(currentPanel.transform.position, 0.1f);
+                    foreach (var collider in colliders)
+                    {
+                        if (collider.TryGetComponent<IEntity>(out var entity))
+                        {
+                            if (!foundEntities.Contains(entity))
+                                foundEntities.Add(entity);
+                        }
+                    }
+
+                    continue;
+                }
+
+                foreach (var neighbor in currentPanel.GetAvailableNearPanelsOrNull(null))
+                {
+                    if (!visited.Contains(neighbor))
+                    {
+                        visited.Add(neighbor);
+                        queue.Enqueue((neighbor, distance + 1));
+                    }
+                }
+            }
+
+            return foundEntities;
+        }
+
+
+        #endregion
+
         /*private void UseEffect(EffectCardHandler.Effect effect, IEntity entity)
         {
             switch (effect)
@@ -415,9 +657,17 @@ namespace Singleplayer
             }
         }*/
 
-        private void RevealEffectCardClientRpc()
+        public void OnEffectCardPlayed(BaseEffectCard effectCard)
         {
-            usedCard.SetActive(true);
+            usedCard.EffectRevealEvent += () => OnEffectCardRevealEnd(effectCard);
+            usedCard.RevealEffect(effectCard.GetEffectSprite());
+        }
+
+        private void OnEffectCardRevealEnd(BaseEffectCard effectCard)
+        {
+            usedCard.EffectRevealEvent -= () => OnEffectCardRevealEnd(effectCard);
+
+            effectCard.ApplyEffect();
         }
 
         private void AccessPlayerTeleportationClientRpc()

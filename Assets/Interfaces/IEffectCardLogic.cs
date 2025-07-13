@@ -9,7 +9,8 @@ namespace Singleplayer
         void ApplyEffect(IEntity entityInit);
         void SetupEffectCardLogic(EffectCardInfo info);
 
-        public List<EffectCardMaterial> EffectCardMaterials { get; }
-        public EffectCardDmgType EffectCardDmgType { get; }
+        public EffectCardInfo EffectCardInfo { get; }
+       /* public List<EffectCardMaterial> EffectCardMaterials { get; }
+        public EffectCardDmgType EffectCardDmgType { get; }*/
     }
 }
