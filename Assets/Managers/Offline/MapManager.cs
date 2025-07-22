@@ -89,7 +89,7 @@ namespace Singleplayer
         {
             int steps = UnityEngine.Random.Range(0, 12); // змінна яка повинна використовуватися замість tempSteps
 
-            int tempSteps = 3;
+            int tempSteps = 1;
 
             GetLastPlayerStepsCount += tempSteps;
 
@@ -644,8 +644,6 @@ namespace Singleplayer
 
             return foundEntities;
         }
-
-
 
         #endregion
 

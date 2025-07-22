@@ -63,6 +63,7 @@ namespace Singleplayer
             #endregion
         }
 
+        #region Tests
         private IEnumerator TestAwaitAndReturnEntitiesAtDistanceFromEntity(IEntity startEntity, int distance)
         {
             yield return new WaitForSeconds(5);
@@ -115,6 +116,12 @@ namespace Singleplayer
             entitiesList[1] = player;
         }
 
+        private void TestPreselectCardForBlackjack()
+        {
+            var preselectedCard = SpriteLoadManager.Instance.GetBasicCardSprite("Club01");
+            BlackjackManager.Instance.PreselectCardForNextGame(preselectedCard);
+        }
+
         private void TestAddingEffectCards()
         {
             var enemy = entitiesList[0];
@@ -123,6 +130,7 @@ namespace Singleplayer
             EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.TestMagicShield);
             EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.Fireball);
         }
+        #endregion
 
         public static void AddComponentByName(GameObject obj, string typeName)
         {

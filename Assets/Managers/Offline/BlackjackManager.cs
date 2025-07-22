@@ -14,7 +14,7 @@ namespace Singleplayer
     {
         private const int DEALER_STAND_SCORE = 17;
         private const int MAX_PLAYER_HANDS = 4;
-        private const float TOP_CARD_OF_DECK_OFFSET = 27.2f;
+        private const float TOP_CARD_OF_DECK_OFFSET = 27.2f; // хардкожений здвиг для задання коректних кординат спавну карт
 
         [Header("Prefabs")]
         [SerializeField] private GameObject blackjackCardPref;
@@ -44,6 +44,7 @@ namespace Singleplayer
         private List<Sprite> activeDeck = new List<Sprite>();
         private List<Sprite> cardsList = new List<Sprite>();
         private Sprite preselectedCard = null;
+        private BlackjackCard preparedNextCard = null;
 
         private Vector3 topCardOfDeck = Vector3.zero;
 
@@ -339,6 +340,7 @@ namespace Singleplayer
 
             for (int i = 0; i < playerHandsContainer.transform.childCount;)
             {
+                preparedNextCard = PrepareNextCard(true);
                 var hand = playerHandsContainer.transform.GetChild(i);
                 var handController = hand.GetComponent<HandController>();
 
@@ -403,12 +405,16 @@ namespace Singleplayer
 
             var facedDownCard = dealerHand.GetHandFirstCard().GetAddCardsContainer.GetComponentInChildren<BlackjackCard>();
             facedDownCard.FlipCard();
-            yield return new WaitForSeconds(2f);
+            yield return new WaitForSeconds(1f);
+            dealerHand.GetHandScores();
+            yield return new WaitForSeconds(1f);
 
             bool isDealerBlackjack = dealerHand.CheckForBlackjack();
 
             while (dealerHand.GetHandScores() < DEALER_STAND_SCORE)
                 yield return SpawnNextBlackjackCard(-1, true, false);
+
+            yield return new WaitForSeconds(1f);
 
             int dealerHandScore = dealerHand.GetHandScores();
             var player = GameManager.Instance.GetEntityWithType(EntityType.Player) as BasePlayerController;
@@ -418,7 +424,11 @@ namespace Singleplayer
                 var handController = hand.GetComponent<HandController>();
                 int playerHandScore = handController.GetHandScores();
 
-                if (isDealerBlackjack && handController.isInsured)
+                if (playerHandScore > 21)
+                {
+                    Debug.Log("Hand is being busted!");
+                }
+                else if (isDealerBlackjack && handController.isInsured)
                 {
                     int totalWin = handController.handBet * 2;
                     player.GainMoney(totalWin, false);
@@ -503,12 +513,13 @@ namespace Singleplayer
 
             handController.DoubleDown();
 
-            yield return StartCoroutine(SpawnNextBlackjackCard(handNumber, false, false));
+            yield return StartCoroutine(GiveCardToHand(preparedNextCard, handController));
         }
 
         private IEnumerator HandleHitPlayerAct(int handNumber)
         {
-            yield return StartCoroutine(SpawnNextBlackjackCard(handNumber, false, false));
+            var handController = playerHandsContainer.transform.GetChild(handNumber).GetComponent<HandController>();
+            yield return StartCoroutine(GiveCardToHand(preparedNextCard, handController));
         }
 
         private void EnableAvailableActionsForHand(HandController hand)
@@ -611,12 +622,83 @@ namespace Singleplayer
             return firstCardScore == secondCardScore;
         }
 
+        private BlackjackCard SpawnCardObject(string cardName, bool facedDown)
+        {
+            var blackjackCard = Instantiate(blackjackCardPref, topCardOfDeck, Quaternion.identity, blackjackHUD.transform);
+
+            blackjackCard.transform.GetChild(0).GetComponent<Image>().sprite =
+                SpriteLoadManager.Instance.GetBasicCardSprite(cardName);
+
+            var card = blackjackCard.GetComponent<BlackjackCard>();
+
+            if (!facedDown)
+                card.FlipCard();
+
+            return card;
+        }
+
+        private IEnumerator GiveCardToHand(BlackjackCard card, HandController hand)
+        {
+            card.FlipCard();
+            yield return new WaitForSeconds(1f);
+            GameObject cardContainer;
+            Vector2 destinationCords;
+
+            if (hand.GetCardsCount() == 0)
+            {
+                cardContainer = hand.GetCardsContainer;
+                destinationCords = hand.transform.position;
+            }
+            else
+            {
+                var addCardsContainer = hand.GetHandFirstCard().GetAddCardsContainer;
+                cardContainer = addCardsContainer.gameObject;
+
+                destinationCords = addCardsContainer.transform.childCount == 0
+                    ? addCardsContainer.transform.position
+                    : addCardsContainer.transform.GetChild(addCardsContainer.transform.childCount - 1).position;
+            }
+
+            yield return StartCoroutine(MoveAndGiveCard(card, destinationCords, cardContainer));
+            hand.GetHandScores();
+        }
+
+        private BlackjackCard PrepareNextCard(bool facedDown = false)
+        {
+            if (activeDeck.Count == 0)
+                SetupDeck();
+
+            Sprite nextSprite;
+
+            if (preselectedCard == null)
+                nextSprite = activeDeck[0];
+            else
+            {
+                nextSprite = preselectedCard;
+                preselectedCard = null;
+            }
+
+            activeDeck.RemoveAt(0);
+
+            return SpawnCardObject(nextSprite.name, facedDown);
+        }
+
         private IEnumerator SpawnNextBlackjackCard(int handNumber = -1, bool isDealer = true, bool facedDown = false)
         {
             if (activeDeck.Count == 0)
                 SetupDeck();
 
-            yield return StartCoroutine(SpawnBlackjackCard(activeDeck[0].name, handNumber, isDealer, facedDown));
+            Sprite nextCard;
+
+            if (preselectedCard == null)
+                nextCard = activeDeck[0];
+            else
+            {
+                nextCard = preselectedCard;
+                preselectedCard = null;
+            }
+
+            yield return StartCoroutine(SpawnBlackjackCard(nextCard.name, handNumber, isDealer, facedDown));
             activeDeck.Remove(activeDeck[0]);
         }
 
@@ -716,6 +798,9 @@ namespace Singleplayer
             }
 
             yield return StartCoroutine(MoveAndGiveCard(card, destinationCords, cardContainer));
+
+            if (isDealer && facedDown)
+                yield break;
 
             manipulatedHandController.GetHandScores();
         }

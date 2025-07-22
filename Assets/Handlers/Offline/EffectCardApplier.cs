@@ -10,13 +10,16 @@ namespace Singleplayer
     public class EffectCardApplier : MonoBehaviour, IDropHandler
     {
         [SerializeField] private GameObject inputBlock;
+        [SerializeField] private Button CounterSkipBtn;
 
-        public Action<BaseEffectCardLogic> OnEffectCardUsed;
+        public Button GetCounterSkipBtn => CounterSkipBtn;
 
         private Image background;
 
         private IEntity chosenTarget;
         private Coroutine choosingRoutine;
+
+        public Action<BaseEffectCardLogic> OnEffectCardUsed;
 
         public static EffectCardApplier Instance { get; private set; }
 

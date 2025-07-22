@@ -162,13 +162,15 @@ namespace Singleplayer
             EffectCardsHandler.EnableAndOutlineCounterCards(counterCards);
 
             EffectCardApplier.Instance.gameObject.SetActive(true);
+            var counterSkipBtn = EffectCardApplier.Instance.GetCounterSkipBtn;
+            counterSkipBtn.onClick.AddListener(OnCounterCardSkip);
+            counterSkipBtn.gameObject.SetActive(true);
 
             MapManager.Instance.OnEffectCardPlayedEvent += HandleCardSelected;
         }
 
         private void HandleCardSelected(IEffectCardLogic selectedCard)
         {
-            MapManager.Instance.OnEffectCardPlayedEvent -= HandleCardSelected;
             DisableCounterPick();
             onCounterChoiceCallback?.Invoke(selectedCard);
         }
@@ -181,7 +183,11 @@ namespace Singleplayer
 
         private void DisableCounterPick()
         {
+            var counterSkipBtn = EffectCardApplier.Instance.GetCounterSkipBtn;
+            counterSkipBtn.onClick.RemoveAllListeners();
+            counterSkipBtn.gameObject.SetActive(false);
             EffectCardApplier.Instance.gameObject.SetActive(false);
+
             MapManager.Instance.OnEffectCardPlayedEvent -= HandleCardSelected;
             EffectCardsHandler.DisableAndRemoveOutlineOfCounterCards();
         }
