@@ -1,3 +1,4 @@
+using Singleplayer.PassiveEffects;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,7 +8,7 @@ namespace Singleplayer
     public class TurnManager : MonoBehaviour
     {
         private Queue<IEntity> turnQueue = new Queue<IEntity>();
-        private IEntity currentTurnEntity;
+        public IEntity CurrentTurnEntity { get; private set; }
 
         public static TurnManager Instance { get; private set; }
 
@@ -37,31 +38,27 @@ namespace Singleplayer
 
         private IEnumerator HandleTurns()
         {
+            yield return null;
+
             while (true)
             {
                 if (turnQueue.Count == 0) yield break;
 
-                currentTurnEntity = turnQueue.Dequeue();
-                Debug.Log($"Now it's {currentTurnEntity.GetEntityName}'s turn");
+                CurrentTurnEntity = turnQueue.Dequeue();
+                Debug.Log($"Now it's {CurrentTurnEntity.GetEntityName}'s turn");
 
                 isTurnActive = true;
 
-                switch (currentTurnEntity.GetEntityType)
+                switch (CurrentTurnEntity.GetEntityType)
                 {
                     case EntityType.Player:
-
-                        GameManager.Instance.StartPlayerTurn(currentTurnEntity as BasePlayerController);
-                        // ќч≥куЇмо, поки гравець завершить х≥д
+                        StartCoroutine(HandlePlayerTurn());
                         yield return new WaitUntil(() => isTurnActive == false);
-
                         break;
 
                     case EntityType.Enemy:
-
-                        var enemy = currentTurnEntity as BaseEnemy;
-                        enemy.PerformAction();
+                        StartCoroutine(HandleEnemyTurn());
                         yield return new WaitUntil(() => isTurnActive == false);
-
                         break;
 
                     case EntityType.Ally:
@@ -71,21 +68,51 @@ namespace Singleplayer
                         break;
                 }
 
-                turnQueue.Enqueue(currentTurnEntity);
+                turnQueue.Enqueue(CurrentTurnEntity);
             }
         }
 
-        private IEnumerator HandleEnemyTurn(IEntity enemy)
+        private IEnumerator HandleEnemyTurn()
         {
-            // “ут лог≥ка дл€ ходу бота
-            yield return new WaitForSeconds(1f);
-            Debug.Log($"{enemy.GetEntityName} finished turn");
-            isTurnActive = false;
+            var enemy = CurrentTurnEntity as BaseEnemy;
+            enemy.OnNewTurnStart();
+
+            while (ProjectileManager.Instance.avaitingProjectiles.Count > 0) yield return null;
+
+            if (IsFrozenDuringTimeStop(enemy))
+            {
+                EndTurnRequest(enemy);
+                yield break;
+            }
+
+            enemy.StartTurn();
+        }
+
+        private IEnumerator HandlePlayerTurn()
+        {
+            var player = CurrentTurnEntity as BasePlayerController;
+            player.OnNewTurnStart();
+
+            while (ProjectileManager.Instance.avaitingProjectiles.Count > 0) yield return null;
+
+            if (IsFrozenDuringTimeStop(player))
+            {
+                EndTurnRequest(player);
+                yield break;
+            }
+
+            player.StartTurn();
+        }
+
+        private bool IsFrozenDuringTimeStop(IEntity entity)
+        {
+            return GlobalEffectsManager.Instance.isTimeStopped &&
+                !entity.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.Chronomaster);
         }
 
         public void EndTurnRequest(IEntity requester)
         {
-            if (requester != currentTurnEntity)
+            if (requester != CurrentTurnEntity)
             {
                 Debug.LogWarning($"Entity {requester.GetEntityName} tried to end turn, but it's not their turn!");
                 return;
@@ -98,9 +125,9 @@ namespace Singleplayer
         private void EndTurn()
         {
             // якщо гравець Ч ховаЇмо HUD
-            if (currentTurnEntity.GetEntityType == EntityType.Player)
+            if (CurrentTurnEntity.GetEntityType == EntityType.Player)
             {
-                GameManager.Instance.ToggleInputBlock(true);
+                GameManager.Instance.TogglePlayerHudButtons(false);
             }
 
             isTurnActive = false; // сигнал корутин≥, що можна переходити до наступного

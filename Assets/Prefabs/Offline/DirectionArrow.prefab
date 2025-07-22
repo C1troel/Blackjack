@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1080872245831277901}
   - component: {fileID: 2506471458308651379}
   - component: {fileID: -809576829657193455}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: DirectionArrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}

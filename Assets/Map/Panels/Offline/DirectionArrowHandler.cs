@@ -3,10 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace Singleplayer
 {
-    public class DirectionArrowHandler : MonoBehaviour
+    public class DirectionArrowHandler : MonoBehaviour, IPointerClickHandler
     {
         private PanelScript holdedPanel; // зм≥нна, дл€ збереженн€ панел≥, на €ку переводе ц€ стр≥лка
         private PanelScript.Pos pos;
@@ -20,7 +21,7 @@ namespace Singleplayer
             this.pos = pos;
         }
 
-        private void OnMouseDown()
+        public void OnPointerClick(PointerEventData eventData)
         {
             ChooseDirection();
         }

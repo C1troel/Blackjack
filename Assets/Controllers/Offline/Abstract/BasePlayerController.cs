@@ -1,3 +1,5 @@
+using Singleplayer.PassiveEffects;
+using Singleplayer.ActiveEffects;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,19 +9,31 @@ using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
+
 namespace Singleplayer
 {
-    public abstract class BasePlayerController : MonoBehaviour,IEntity
+    public abstract class BasePlayerController : MonoBehaviour, IEntity
     {
+        private Action<IEffectCardLogic> onCounterChoiceCallback;
         public event Action<IEntity> moveEndEvent;
+        public event Action<IEntity> OnSelfClickHandled;
 
-        public event Action hpChangeEvent, statsChangeEvent, curencyChangeEvent;
+        public event Action HpChangeEvent, StatsChangeEvent, CurencyChangeEvent;
 
-        public Animator anim;
+        public Animator Animator { get; protected set; }
+
+        public IPassiveEffectHandler PassiveEffectHandler { get; protected set; }
+        public PlayerEffectCardsHandler EffectCardsHandler { get; protected set; }
+
+        public BaseActiveGlobalEffect SpecialAbility {  get; protected set; }
+
+        public CameraController PlayerCamera { get; protected set; }
 
         protected CharacterInfo characterInfo;
 
-        protected Camera playerCamera;
+        protected SpriteRenderer spriteRenderer;
+        protected Material defaultSpriteMaterial;
+        protected Material outlineSpriteMaterial;
 
         protected PanelScript currentPanel;
 
@@ -56,6 +70,10 @@ namespace Singleplayer
         {
             initialZ = transform.position.z; // Сохраняем начальную координату z
             SetupMoveCardsDeckPlayerSuit();
+            PassiveEffectHandler = new PassiveEffectHandler(this);
+            spriteRenderer = GetComponent<SpriteRenderer>();
+            defaultSpriteMaterial = spriteRenderer.material;
+            outlineSpriteMaterial = EffectCardDealer.Instance.GetEffectCardOutlineMaterial; // заглушка, щоб була хоч якась обводка
         }
 
         void Update()
@@ -122,52 +140,96 @@ namespace Singleplayer
             return nextCard;
         }
 
+        public void OnNewTurnStart()
+        {
+            PassiveEffectHandler.ProcessEffects();
+            SpecialAbility.OnNewTurnStart();
+        }
+
+        public void StartTurn()
+        {
+            ResetEffectCardsUsages();
+            GameManager.Instance.TogglePlayerHudButtons(true);
+            EffectCardsHandler.OnNewTurnStart();
+        }
+
         public abstract void ActivateAbility();
+
+        public void ShowCounterCardOptions(List<IEffectCardLogic> counterCards, Action<IEffectCardLogic> callback)
+        {
+            onCounterChoiceCallback = callback;
+
+            EffectCardsHandler.EnableAndOutlineCounterCards(counterCards);
+
+            EffectCardApplier.Instance.gameObject.SetActive(true);
+
+            MapManager.Instance.OnEffectCardPlayedEvent += HandleCardSelected;
+        }
+
+        private void HandleCardSelected(IEffectCardLogic selectedCard)
+        {
+            MapManager.Instance.OnEffectCardPlayedEvent -= HandleCardSelected;
+            DisableCounterPick();
+            onCounterChoiceCallback?.Invoke(selectedCard);
+        }
+
+        private void OnCounterCardSkip()
+        {
+            DisableCounterPick();
+            onCounterChoiceCallback?.Invoke(null);
+        }
+
+        private void DisableCounterPick()
+        {
+            EffectCardApplier.Instance.gameObject.SetActive(false);
+            MapManager.Instance.OnEffectCardPlayedEvent -= HandleCardSelected;
+            EffectCardsHandler.DisableAndRemoveOutlineOfCounterCards();
+        }
 
         #region PlayerActions
         public void Jump()
         {
-            anim.SetBool("Jump", true);
+            Animator.SetBool("Jump", true);
         }
 
         public void JumpOff()
         {
-            anim.SetBool("Jump", false);
+            Animator.SetBool("Jump", false);
         }
 
         public void Dead()
         {
-            anim.SetBool("Dead", true);
+            Animator.SetBool("Dead", true);
         }
 
         public void DeadOff()
         {
-            anim.SetBool("Dead", false);
+            Animator.SetBool("Dead", false);
         }
         public void Walk()
         {
-            anim.SetBool("Walk", true);
+            Animator.SetBool("Walk", true);
         }
 
         public void WalkOff()
         {
-            anim.SetBool("Walk", false);
+            Animator.SetBool("Walk", false);
         }
         public void Run()
         {
-            anim.SetBool("Run", true);
+            Animator.SetBool("Run", true);
         }
         public void RunOff()
         {
-            anim.SetBool("Run", false);
+            Animator.SetBool("Run", false);
         }
         public void Attack()
         {
-            anim.SetBool("Attack", true);
+            Animator.SetBool("Attack", true);
         }
         public void AttackOff()
         {
-            anim.SetBool("Attack", false);
+            Animator.SetBool("Attack", false);
         }
         #endregion
 
@@ -184,27 +246,26 @@ namespace Singleplayer
             defaultCardUsages = characterInfo.DefaultCardUsages;
             characterName = characterInfo.CharacterName;
 
-            anim = gameObject.GetComponent<Animator>();
+            SetupPlayerSpecialAbility();
+
+            Animator = gameObject.GetComponent<Animator>();
 
             direction = Direction.Right;
             //direction = ??? // код для визначення можливої траекторії руху після спавну гравця
 
-            foreach (Transform child in transform)
-            {
-                switch (child.tag)
-                {
-                    case "Camera":
-                        playerCamera = child.GetComponent<Camera>();
-                        break;
+            PlayerCamera = GetComponentInChildren<CameraController>();
+        }
 
-                    /*case "HUD":
-                        playerHUD = child.GetComponent<Canvas>();
-                        break;*/
+        public void SetupPlayerSpecialAbility(ActiveGlobalEffectInfo activeGlobalEffectInfo = null)
+        {
+            ActiveGlobalEffectInfo specialAbilityInfo = null;
 
-                    default:
-                        break;
-                }
-            }
+            if (activeGlobalEffectInfo == null)
+                specialAbilityInfo = this.characterInfo.SpecialAbility;
+            else
+                specialAbilityInfo = activeGlobalEffectInfo;
+
+            SpecialAbility = BaseActiveGlobalEffect.GetActiveGlobalEffectInstance(specialAbilityInfo, this);
         }
 
         public void Pay(int value, bool useChips)
@@ -255,6 +316,40 @@ namespace Singleplayer
 
             HpChange();
         }
+
+        public IEnumerator StopAnimationSmoothly(float duration)
+        {
+            float startSpeed = Animator.speed;
+            float t = 0;
+
+            while (t < duration)
+            {
+                Animator.speed = Mathf.Lerp(startSpeed, 0f, t / duration);
+                t += Time.deltaTime;
+                yield return null;
+            }
+
+            Animator.speed = 0f;
+        }
+
+        public IEnumerator ResumeAnimationSmoothly(float duration)
+        {
+            float startSpeed = Animator.speed;
+            float targetSpeed = 1f;
+            float t = 0f;
+
+            while (t < duration)
+            {
+                Animator.speed = Mathf.Lerp(startSpeed, targetSpeed, t / duration);
+                t += Time.deltaTime;
+                yield return null;
+            }
+
+            Animator.speed = targetSpeed;
+        }
+
+        public void SetOutline() => spriteRenderer.material = outlineSpriteMaterial;
+        public void RemoveOutline() => spriteRenderer.material = defaultSpriteMaterial;
 
         public virtual void GetSteps(int value)
         {
@@ -320,6 +415,10 @@ namespace Singleplayer
             transform.position = new Vector3(destination.x, destination.y, transform.position.z);
 
             Debug.LogWarning("Left Steps");
+
+            while (!canMove)
+                yield return null;
+
             leftSteps -= 1;
 
             if (leftSteps == 0)
@@ -337,9 +436,9 @@ namespace Singleplayer
         }
 
         public void MoveEnd() => moveEndEvent?.Invoke(this);
-        public void HpChange() => hpChangeEvent?.Invoke();
-        public void StatsChange() => statsChangeEvent?.Invoke();
-        public void CurencyChange() => curencyChangeEvent?.Invoke();
+        public void HpChange() => HpChangeEvent?.Invoke();
+        public void StatsChange() => StatsChangeEvent?.Invoke();
+        public void CurencyChange() => CurencyChangeEvent?.Invoke();
 
         public virtual void StartMove(Direction direction = Direction.Standart, PanelScript panel = null)
         {
@@ -371,53 +470,42 @@ namespace Singleplayer
             Debug.Log("Turning...");
         }
 
-        private void TryToStartBattle(IEntity Atk, IEntity Def)
+        private IEnumerator TryToStartBattle(IEntity Atk, IEntity Def)
         {
+            /// Код для валідації початку атаки
             Debug.Log("BattlStart");
 
+            var battleManager = BattleManager.Instance;
+            StopMoving();
             Debug.LogWarning($"ATK: {Atk.GetEntityName} DEF: {Def.GetEntityName}");
-            BattleManager.Instance.StartBattle(Atk, Def);
+            battleManager.TryToStartBattle(Atk, Def);
+            yield return new WaitUntil(() => !battleManager.isBattleActive);
+            StartMove();
         }
 
-        private void OnTriggerEnter2D(Collider2D collision) // метод при сутичці з іншою сутністю(у даному випадку ворогом або панеллю)
+        public virtual IEnumerator OnStepOntoPanel(PanelScript panel)
         {
-            if (collision.transform.name.StartsWith("Panel"))
+            currentPanel = panel;
+
+            IEntity self = this;
+            var otherEntities = panel.EntitiesOnPanel
+                .Where(e => e != self && e.GetEntityType != EntityType.Player)
+                .ToList();
+
+            foreach (var entity in otherEntities)
             {
-                currentPanel = collision.GetComponent<PanelScript>();
-            }
-            /*else
-            {
-                if (collision.transform.CompareTag("Player"))
+                switch (entity.GetEntityType)
                 {
-                    if (leftSteps == 0)
-                    {
-                        Debug.Log($"Returning of ID: {this.Id}");
-                        Debug.Log($"LeftSteps: {leftSteps} ID: {this.Id}");
-                        return;
-                    }
+                    case EntityType.Enemy:
+                        yield return StartCoroutine(TryToStartBattle(this, entity));
+                        break;
 
-                    Debug.Log($"LeftSteps: {leftSteps} ID: {this.Id}");
-                    StopMoving();
-                    RequestStartBattleServerRpc(this.Id, collision.GetComponent<PlayerController>().Id);
+                    default:
+                        break;
                 }
-            }*/
-
-            if (collision.transform.CompareTag("Entity"))
-            {
-                if (leftSteps == 0 && isEventAttack == false)
-                {
-                    Debug.Log($"Returning of ID: {this.characterName}");
-                    Debug.Log($"LeftSteps: {leftSteps}");
-                    return;
-                }
-
-                isEventAttack = false;
-                Debug.Log($"LeftSteps: {leftSteps}");
-                StopMoving();
-                TryToStartBattle(this, collision.GetComponent<IEntity>());
             }
         }
-
+        public void ManageEffectCardsHandler(PlayerEffectCardsHandler playerEffectCardsHandler) => EffectCardsHandler = playerEffectCardsHandler;
         public void EnableAttacking() => isEventAttack = true;
 
         public void ResetEffectCardsUsages() => leftCards = characterInfo.DefaultCardUsages;

@@ -3,11 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using Random = UnityEngine.Random;
 
 namespace Singleplayer
 {
-    public class PanelScript : MonoBehaviour
+    public class PanelScript : MonoBehaviour, IPointerClickHandler
     {
         private const string EFFECT_PANEL_SCRIPTS_MARKER = "PanelEffect";
         public enum Pos
@@ -24,6 +25,9 @@ namespace Singleplayer
         [SerializeField] private GameObject directionArrowPrefab;
         [SerializeField] private EffectPanelInfoSingleplayer _effectPanelInfo;
         [SerializeField] private IPanelEffect panelEffect;
+
+        private List<IEntity> entitiesOnPanel = new List<IEntity>();
+        public IReadOnlyList<IEntity> EntitiesOnPanel => entitiesOnPanel;
 
         private List<GameObject> arrowsList = new List<GameObject>();
 
@@ -424,14 +428,20 @@ namespace Singleplayer
                 Debug.LogWarning($"Client call: this: {this.gameObject.name}, other: {collision.transform.name}");*/
             #endregion
 
-            if (collision.gameObject.CompareTag("Entity"))
+            var a = this;
+
+            if (!collision.gameObject.TryGetComponent<IEntity>(out var entity)) return;
+
+            entity.moveEndEvent += OnEntityStay;
+
+            if (!entitiesOnPanel.Contains(entity))
             {
-                var entity = collision.gameObject.GetComponent<IEntity>();
-                entity.moveEndEvent += OnEntityStay;
+                entitiesOnPanel.Add(entity);
+                StartCoroutine(entity.OnStepOntoPanel(this));
             }
         }
 
-        private void OnMouseDown()
+        public void OnPointerClick(PointerEventData eventData)
         {
             if (isClickableForTeleportation)
             {
@@ -452,11 +462,14 @@ namespace Singleplayer
 
         private void OnTriggerExit2D(Collider2D collision)
         {
-            if (collision.gameObject.CompareTag("Entity"))
-            {
-                var entity = collision.gameObject.GetComponent<IEntity>();
-                entity.moveEndEvent -= OnEntityStay;
-            }
+            var a = this;
+
+            if (!collision.gameObject.TryGetComponent<IEntity>(out var entity)) return;
+
+            entity.moveEndEvent -= OnEntityStay;
+
+            if (entitiesOnPanel.Contains(entity))
+                entitiesOnPanel.Remove(entity);
         }
 
         private void OnEntityStay(IEntity entity)

@@ -1,5 +1,8 @@
+using Singleplayer.ActiveEffects;
+using Singleplayer.PassiveEffects;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Singleplayer
@@ -9,6 +12,8 @@ namespace Singleplayer
         [SerializeField] private string CharactersInfoPath;
         [SerializeField] private string EnemiesInfoPath;
         [SerializeField] private string EffectCardsInfoPath;
+        [SerializeField] private string PassiveGlobalEffectsInfoPath;
+        [SerializeField] private string ActiveGlobalEffectsInfoPath;
 
         public static InfosLoadManager Instance { get; private set; }
 
@@ -22,6 +27,24 @@ namespace Singleplayer
 
             Instance = this;
             DontDestroyOnLoad(gameObject);
+        }
+
+        public ActiveGlobalEffectInfo[] GetAllActiveGlobalEffects(bool isEvent)
+        {
+            return Resources
+                .LoadAll<ActiveGlobalEffectInfo>(ActiveGlobalEffectsInfoPath)
+                .Where(effect => effect.IsEvent == isEvent)
+                .ToArray();
+        }
+
+        public PassiveGlobalEffectInfo GetPassiveGlobalEffectInfo(PassiveEffectType passiveEffectType)
+        {
+            return Resources.Load<PassiveGlobalEffectInfo>(PassiveGlobalEffectsInfoPath + $"{passiveEffectType}");
+        }
+
+        public ActiveGlobalEffectInfo GetActiveGlobalEffectInfo(ActiveEffectType activeEffectType)
+        {
+            return Resources.Load<ActiveGlobalEffectInfo>(ActiveGlobalEffectsInfoPath + $"{activeEffectType}");
         }
 
         public EffectCardInfo[] GetAllEffectCardInfos()

@@ -9,12 +9,14 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
+using Singleplayer.PassiveEffects;
 
 namespace Singleplayer
 {
     public class BattleManager : MonoBehaviour
     {
         [SerializeField] private Canvas battleHUD;
+        [SerializeField] private GameObject battleConfirmUI;
 
         [SerializeField] private GameObject NextCardPref;
         [SerializeField] private GameObject NextCardAnchor;
@@ -51,8 +53,6 @@ namespace Singleplayer
         [SerializeField] private float turnTime;
         [SerializeField] private float cardSpawnDelay;
 
-        public static BattleManager Instance { get; private set; }
-
         private List<Sprite> cardsList = new List<Sprite>();
         private List<Sprite> activeDeck = new List<Sprite>();
 
@@ -71,8 +71,6 @@ namespace Singleplayer
         private Coroutine cardGiving;
         private Coroutine timerRunning;
 
-        private float timer;
-
         private ValueTuple<int, int> playerCardAdds = new ValueTuple<int, int>(0, 0);
 
         private int leftCardAdds = 3;
@@ -80,6 +78,11 @@ namespace Singleplayer
 
         private bool? atkPlayerSplitChoose = null;
         private bool? atkPlayerInsuranceChoose = null;
+
+        private bool? startBattle = null;
+
+        public bool isBattleActive { get; private set; } = false;
+        public static BattleManager Instance { get; private set; }
 
         private void Awake()
         {
@@ -103,17 +106,41 @@ namespace Singleplayer
             SetListenersToAddingButtons();
         }
 
-        public void StartBattle(IEntity atk, IEntity def)
+        public void TryToStartBattle(IEntity atk, IEntity def)
         {
             if ((!CanAttack(atk)) || (!CanAttack(def)))
                 return;
 
-            SetupHands(atk, def);
+            isBattleActive = true;
 
             GameManager.Instance.TogglePlayersHUD(false);
 
             CallBattleHUD();
 
+            SetupHands(atk, def);
+
+            if (atk.GetEntityType != EntityType.Player)
+            {
+                StartBattle(atk, def);
+                return;
+            }
+
+            battleConfirmUI.SetActive(true);
+        }
+
+        public void OnStartBattleClick()
+        {
+            battleConfirmUI.SetActive(false);
+            StartBattle(entitiesHands[0].Item1, entitiesHands[1].Item1);
+        }
+
+        public void OnSkipBattleClick()
+        {
+            EndBattle();
+        }
+
+        private void StartBattle(IEntity atk, IEntity def)
+        {
             SetupDeck();
 
             string atkName = ((MonoBehaviour)atk).GetComponent<Animator>().runtimeAnimatorController.name;
@@ -186,11 +213,11 @@ namespace Singleplayer
             switch (defendingEntity.GetEntityType)
             {
                 case EntityType.Player:
-                    AllowDefForPlayer();
+                    AllowDefForPlayer(defendingEntity);
                     break;
 
                 case EntityType.Enemy:
-                    DefForEnemy();
+                    DefForEnemy(defendingEntity);
                     break;
 
                 case EntityType.Ally:
@@ -202,12 +229,18 @@ namespace Singleplayer
             }
         }
 
-        private void AllowDefForPlayer()
+        private void AllowDefForPlayer(IEntity player)
         {
             #region TestAddingCards
             TESTAlreadyAddedCardsText.text = TESTalreadyCardsAdds.ToString();
             TESTleftCardsAddingText.text = leftCardAdds.ToString();
             #endregion
+
+            if (IsFrozenDuringTimeStop(player))
+            {
+                StartDefend();
+                return;
+            }
 
             _defendButton.gameObject.SetActive(true);
             _splitDefButton.gameObject.SetActive(true);
@@ -237,8 +270,14 @@ namespace Singleplayer
             StopTimer();
         }
 
-        private void DefForEnemy()
+        private void DefForEnemy(IEntity enemy)
         {
+            if (IsFrozenDuringTimeStop(enemy))
+            {
+                StartDefend();
+                return;
+            }
+
             // код перевірки того, чи є захисні карти у противника
             // також можливо додати шанс на вибір спліта / не шанс а перевірка на те, що він і так програє
             // також інші обробки, наприклад ефектів
@@ -257,17 +296,25 @@ namespace Singleplayer
 
         private IEnumerator FirstDealingCards(bool isDefSplitting = false)
         {
+            var defender = entitiesHands[1].Item1;
+
             SpawnNextCard(-1, true, false); // сначала 1 карту для атакуючого
             yield return new WaitForSeconds(cardSpawnDelay);
 
-            SpawnNextCard(-1, false, false); // 1 карту для захисника
-            yield return new WaitForSeconds(cardSpawnDelay);
+            if (!IsFrozenDuringTimeStop(defender))
+            {
+                SpawnNextCard(-1, false, false); // 1 карту для захисника
+                yield return new WaitForSeconds(cardSpawnDelay);
+            }
 
             SpawnNextCard(0, true, false); // 1 карту для атакуючого
             yield return new WaitForSeconds(cardSpawnDelay);
 
-            SpawnNextCard(0, false, true); // 1 карту перевернуту для захисника
-            yield return new WaitForSeconds(cardSpawnDelay);
+            if (!IsFrozenDuringTimeStop(defender))
+            {
+                SpawnNextCard(0, false, true); // 1 карту перевернуту для захисника
+                yield return new WaitForSeconds(cardSpawnDelay);
+            }
 
             while (cardGiving != null)
                 yield return null;
@@ -277,20 +324,26 @@ namespace Singleplayer
 
         private IEnumerator ContinueBattle(bool isDefSplitting = false)
         {
-            if (GetScoreFromString(entitiesHands[1].Item2[0].gameObject.transform
+            var defenderHand = entitiesHands[1].Item2;
+            if (defenderHand.Count != 0 && GetScoreFromString(entitiesHands[1].Item2[0].gameObject.transform
                 .Find("1Side").GetComponent<Image>().sprite.name) == 11)
-
             {
                 yield return StartCoroutine(AtkInsuranceHandler());
             }
 
-            RevealFacedDownCard();
+            if (defenderHand.Count != 0)
+                RevealFacedDownCard();
 
             yield return new WaitForSeconds(2);
 
             yield return StartCoroutine(SummarizeAndDealDamage(isDefSplitting));
 
-            DisableBattleHUD();
+            EndBattle();
+        }
+
+        private void EndBattle()
+        {
+            ResetBattleHUD();
 
             #region debugInfo
             foreach (var entity in GameManager.Instance.GetEntitiesList())
@@ -301,9 +354,11 @@ namespace Singleplayer
 
             GameManager.Instance.TogglePlayersHUD(true);
 
-            var entityInit = entitiesHands[0].Item1;
+            isBattleActive = false;
 
-            entityInit.StartMove();
+            /*var entityInit = entitiesHands[0].Item1;*/
+
+            /*entityInit.StartMove();*/
 
             DeleteAllRestBattleHUDObject();
         }
@@ -625,9 +680,10 @@ namespace Singleplayer
             battleHUD.gameObject.SetActive(true);
         }
 
-        private void DisableBattleHUD()
+        private void ResetBattleHUD()
         {
             battleHUD.gameObject.SetActive(false);
+            battleConfirmUI.SetActive(false);
         }
 
         private void DeleteAllRestBattleHUDObject()
@@ -678,6 +734,12 @@ namespace Singleplayer
                 addCard.handNumber = -1;
                 addCard.transform.SetParent(AtkHandContainer.transform);
             }
+        }
+
+        private bool IsFrozenDuringTimeStop(IEntity entity)
+        {
+            return GlobalEffectsManager.Instance.isTimeStopped &&
+                !entity.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.Chronomaster);
         }
 
         #region Корутины

@@ -41,12 +41,19 @@ namespace Singleplayer
         {
             var fullpath = basicCardsPath + cardName;
             var sprite = Resources.Load<Sprite>(fullpath);
-            Debug.LogWarning($"SpriteName: {sprite}");
+            /*Debug.LogWarning($"SpriteName: {sprite}");*/
 
             var texture2d = Resources.Load<Texture2D>(fullpath);
-            Debug.LogWarning($"Texture2DName: {texture2d}");
+            /*Debug.LogWarning($"Texture2DName: {texture2d}");*/
 
             return sprite;
+        }
+
+        public List<Sprite> GetAllBasicCardSprites()
+        {
+            var allBasicCardSprites = Resources.LoadAll<Sprite>(basicCardsPath);
+            var basicCardSpritesList = new List<Sprite>(allBasicCardSprites);
+            return basicCardSpritesList;
         }
 
         public List<Sprite> GetAllBasicCardSpritesOfSuit(string suitName)

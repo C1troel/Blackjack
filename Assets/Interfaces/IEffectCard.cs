@@ -6,7 +6,7 @@ namespace Singleplayer
 {
     public interface IEffectCard
     {
-        void UseCard();
+        void TryToUseCard();
         List<EffectCardMaterial> GetCardMaterials { get; }
 
         void SetupEffectCard(EffectCardInfo effectCardInfo);

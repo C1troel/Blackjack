@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Singleplayer.PassiveEffects;
 
 namespace Singleplayer
 {
@@ -13,11 +14,20 @@ namespace Singleplayer
         void GetDamage(int value);
         void Heal(int value);
         void GetSteps(int value);
+        void OnNewTurnStart();
+        void StartTurn();
         IEnumerator Move(IEntity entity, Direction direction = (Direction)(-1), PanelScript panel = null); // PanelScript та PlayerController також потрібен офлайновий
+        IEnumerator OnStepOntoPanel(PanelScript panel);
+        IEnumerator StopAnimationSmoothly(float duration);
+        IEnumerator ResumeAnimationSmoothly(float duration);
+        void SetOutline();
+        void RemoveOutline();
         void TurnEntity();
         void EnableAttacking();
+        void DecreaseEffectCardsUsages();
 
         event Action<IEntity> moveEndEvent;
+        event Action<IEntity> OnSelfClickHandled;
         string GetEntityName { get; }
         EntityType GetEntityType { get; }
         PanelScript GetCurrentPanel { get; }
@@ -29,7 +39,8 @@ namespace Singleplayer
         int GetEntityLeftCards { get; }
         bool GetEntityAttackAccess { get; }
         Direction GetEntityDirection { get; }
-
+        IPassiveEffectHandler PassiveEffectHandler { get; }
+        Animator Animator { get; }
     }
 
     public enum Direction

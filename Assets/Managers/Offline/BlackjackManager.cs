@@ -43,6 +43,7 @@ namespace Singleplayer
 
         private List<Sprite> activeDeck = new List<Sprite>();
         private List<Sprite> cardsList = new List<Sprite>();
+        private Sprite preselectedCard = null;
 
         private Vector3 topCardOfDeck = Vector3.zero;
 
@@ -447,6 +448,8 @@ namespace Singleplayer
 
             ExitGame();
         }
+
+        public void PreselectCardForNextGame(Sprite preselectCardSprite) => preselectedCard = preselectCardSprite;
 
         private void HandleInsurancePlayerAct(int handNumber)
         {

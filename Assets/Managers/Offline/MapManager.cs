@@ -13,17 +13,19 @@ namespace Singleplayer
         [SerializeField] private EffectRevealCard usedCard;
 
         private GameManager gameManager;
-        public static MapManager Instance { get; private set; }
 
         private List<PanelScript> highlightedPathEnders = new List<PanelScript>();
+        private Action currentEffectRevealHandler;
 
         public event Action<ulong> playerMoveEnd;
+        public event Action<IEffectCardLogic> OnEffectCardPlayedEvent;
 
         private Coroutine waitingForPlayer;
 
         public int GetLastPlayerStepsCount { get; private set; }
 
         public bool IsPossiblePlayerTeleportation { get; private set; } = false;
+        public static MapManager Instance { get; private set; }
 
         private void Awake()
         {
@@ -51,8 +53,6 @@ namespace Singleplayer
                 yield return null;
             }
         }
-
-        #region Звичайні функції
 
         public void StopWaiting()
         {
@@ -89,7 +89,7 @@ namespace Singleplayer
         {
             int steps = UnityEngine.Random.Range(0, 12); // змінна яка повинна використовуватися замість tempSteps
 
-            int tempSteps = 2;
+            int tempSteps = 3;
 
             GetLastPlayerStepsCount += tempSteps;
 
@@ -122,12 +122,12 @@ namespace Singleplayer
             {
                 case EntityType.Player:
 
-                    HandlePlayerMovement(entity as BasePlayerController);
+                    /*HandlePlayerMovement(entity as BasePlayerController);*/
 
-                    /*entity.GetSteps(tempSteps);
+                    entity.GetSteps(tempSteps);
                     PathBuilding(entity.GetCurrentPanel, tempSteps, entity);
-                    *//*HighlightReachablePanels(entity.GetCurrentPanel, tempSteps, entity);*//*
-                    entity.StartMove();*/
+                    //HighlightReachablePanels(entity.GetCurrentPanel, tempSteps, entity);
+                    entity.StartMove();
                     break;
 
                 case EntityType.Enemy:
@@ -168,7 +168,8 @@ namespace Singleplayer
 
         /*private void HandleEnemyMovement(BaseEnemy enemy)
         {
-            enemy.StartMoveToPlayer();
+            entity.GetSteps(tempSteps);
+            entity.StartMove();
         }*/
 
         private void AccessPlayerToTeleport(IEntity entity)
@@ -495,15 +496,11 @@ namespace Singleplayer
             if (start == null || target == null || entity == null)
                 return null;
 
-            // Удаляем прежнюю проверку "если панели равны", чтобы можно было найти обходной путь
-            // if (start == target) return new List<PanelScript> { start };
-
             Queue<(PanelScript panel, Direction direction)> queue = new Queue<(PanelScript, Direction)>();
             Dictionary<(PanelScript, Direction), (PanelScript, Direction)> cameFrom = new Dictionary<(PanelScript, Direction), (PanelScript, Direction)>();
             HashSet<(PanelScript, Direction)> visited = new HashSet<(PanelScript, Direction)>();
 
             Direction startDirection = entity.GetEntityDirection;
-
             queue.Enqueue((start, startDirection));
             visited.Add((start, startDirection));
             cameFrom[(start, startDirection)] = (null, Direction.Standart);
@@ -520,7 +517,7 @@ namespace Singleplayer
 
                     Direction newDirection = (Direction)i;
 
-                    // Запрещаем двигаться назад (в противоположную сторону)
+                    // Забороняємо рух у протилежний бік
                     if (newDirection == GetOppositeDirection(currentDirection))
                         continue;
 
@@ -532,7 +529,7 @@ namespace Singleplayer
                     cameFrom[state] = (currentPanel, currentDirection);
                     queue.Enqueue(state);
 
-                    // Условие выхода: мы пришли на ту же панель, где стоит цель, но с другой стороны
+                    // Якщо ми досягли панелі цілі, і це не стартова панель — успіх!
                     if (neighbor == target && neighbor != start)
                     {
                         List<PanelScript> path = new List<PanelScript>();
@@ -550,8 +547,32 @@ namespace Singleplayer
                 }
             }
 
+            // Особливий випадок: якщо ми стоїмо на цілі — і хочемо знайти шлях до неї з іншого боку
+            // Спробуємо повний обхід і пошук "іншого входу" на цю ж панель
+            foreach (var kvp in cameFrom.Keys)
+            {
+                if (kvp.Item1 == target && kvp.Item1 == start)
+                {
+                    List<PanelScript> fallbackPath = new List<PanelScript>();
+                    var current = kvp;
+
+                    while (current.Item1 != null)
+                    {
+                        fallbackPath.Add(current.Item1);
+                        current = cameFrom[current];
+                    }
+
+                    fallbackPath.Reverse();
+
+                    // Якщо є обхід (2+ кроки), повертаємо його
+                    if (fallbackPath.Count > 1)
+                        return fallbackPath;
+                }
+            }
+
             return null;
         }
+
 
 
         public static Direction GetDirectionFromTo(PanelScript from, PanelScript to)
@@ -580,7 +601,7 @@ namespace Singleplayer
 
         public static List<IEntity> FindEntitiesAtDistance(PanelScript start, int targetDistance)
         {
-            List<IEntity> foundEntities = new List<IEntity>();
+            List<IEntity> foundEntities = new();
 
             if (start == null || targetDistance < 0)
                 return foundEntities;
@@ -595,27 +616,28 @@ namespace Singleplayer
             {
                 var (currentPanel, distance) = queue.Dequeue();
 
-                if (distance == targetDistance)
-                {
-                    Collider2D[] colliders = Physics2D.OverlapCircleAll(currentPanel.transform.position, 0.1f);
-                    foreach (var collider in colliders)
-                    {
-                        if (collider.TryGetComponent<IEntity>(out var entity))
-                        {
-                            if (!foundEntities.Contains(entity))
-                                foundEntities.Add(entity);
-                        }
-                    }
-
+                if (distance > targetDistance)
                     continue;
+
+                Collider2D[] colliders = Physics2D.OverlapCircleAll(currentPanel.transform.position, 0.1f);
+                foreach (var collider in colliders)
+                {
+                    if (collider.TryGetComponent<IEntity>(out var entity))
+                    {
+                        if (!foundEntities.Contains(entity))
+                            foundEntities.Add(entity);
+                    }
                 }
 
-                foreach (var neighbor in currentPanel.GetAvailableNearPanelsOrNull(null))
+                if (distance < targetDistance)
                 {
-                    if (!visited.Contains(neighbor))
+                    foreach (var neighbor in currentPanel.GetAvailableNearPanelsOrNull(null))
                     {
-                        visited.Add(neighbor);
-                        queue.Enqueue((neighbor, distance + 1));
+                        if (!visited.Contains(neighbor))
+                        {
+                            visited.Add(neighbor);
+                            queue.Enqueue((neighbor, distance + 1));
+                        }
                     }
                 }
             }
@@ -624,43 +646,16 @@ namespace Singleplayer
         }
 
 
+
         #endregion
-
-        /*private void UseEffect(EffectCardHandler.Effect effect, IEntity entity)
-        {
-            switch (effect)
-            {
-                case EffectCardHandler.Effect.DecreaseHP:
-                    entity.GetDamage(20);
-                    *//*gameManager.UpdateAllPlayersScrollViewInfo();
-                    gameManager.UpdatePlayerHUD(entity);*//*
-                    break;
-
-                default:
-                    break;
-            }
-        }*/
-        #endregion
-
-        /*[ClientRpc]
-        private void HighlightPathEndersClientRpc(List<PanelScript> pathEnders)
-        {
-
-        }*/
-
-        /*public void UseCardServerRpc(EffectCardHandler.Effect cardEffect, IEntity entity)
-        {
-            if (entity.GetEntityLeftCards > 0)
-            {
-                RevealEffectCardClientRpc();
-                UseEffect(cardEffect, entity);
-            }
-        }*/
 
         public void OnEffectCardPlayed(BaseEffectCard effectCard)
         {
+            OnEffectCardPlayedEvent?.Invoke(effectCard.EffectCardLogic);
             usedCard.EffectRevealEvent += () => OnEffectCardRevealEnd(effectCard);
-            usedCard.RevealEffect(effectCard.GetEffectSprite());
+
+            if (effectCard != null)
+                usedCard.RevealEffect(effectCard.GetEffectSprite());
         }
 
         private void OnEffectCardRevealEnd(BaseEffectCard effectCard)
@@ -668,6 +663,24 @@ namespace Singleplayer
             usedCard.EffectRevealEvent -= () => OnEffectCardRevealEnd(effectCard);
 
             effectCard.ApplyEffect();
+        }
+
+        public void OnEffectCardPlayedByEntity(Action onCardRevealed, BaseEffectCardLogic effectCardLogic)
+        {
+            OnEffectCardPlayedEvent?.Invoke(effectCardLogic);
+            currentEffectRevealHandler = () => OnEntityEffectCardRevealEnd(onCardRevealed, effectCardLogic);
+            usedCard.EffectRevealEvent += currentEffectRevealHandler;
+
+            if (effectCardLogic != null)
+                usedCard.RevealEffect(effectCardLogic.EffectCardInfo.EffectCardSprite);
+        }
+
+        private void OnEntityEffectCardRevealEnd(Action onCardRevealed, BaseEffectCardLogic effectCardLogic)
+        {
+            usedCard.EffectRevealEvent -= currentEffectRevealHandler;
+            currentEffectRevealHandler = null;
+
+            onCardRevealed?.Invoke();
         }
 
         private void AccessPlayerTeleportationClientRpc()

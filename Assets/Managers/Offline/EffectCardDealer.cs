@@ -12,7 +12,8 @@ namespace Singleplayer
     public class EffectCardDealer : MonoBehaviour
     {
         [SerializeField] private GameObject effectCardPrefab;
-        [SerializeField] private GridLayoutGroup playerEffectCardsContainer;
+        [SerializeField] private PlayerEffectCardsHandler playerEffectCardsHandler;
+        [SerializeField] private Material effectCardOutlineMaterial;
 
         private List<EffectCardInfo> effectCardInfosList;
 
@@ -26,7 +27,6 @@ namespace Singleplayer
             }
 
             Instance = this;
-            DontDestroyOnLoad(gameObject);
         }
 
         private void Start()
@@ -42,7 +42,7 @@ namespace Singleplayer
 
         private IEffectCardLogic GetEffectCardLogicInstance(EffectCardInfo effectCardInfo)
         {
-            var logicType = Type.GetType($"{effectCardInfo.EffectCardType}");
+            var logicType = Type.GetType($"{this.GetType().Namespace}.{effectCardInfo.EffectCardType}");
 
             if (logicType == null)
             {
@@ -70,7 +70,7 @@ namespace Singleplayer
                     var dealtCard = dealtCardGO.GetComponent<BaseEffectCard>();
                     dealtCard.SetupEffectCard(dealtCardInfo);
 
-                    dealtCardGO.transform.SetParent(playerEffectCardsContainer.transform);
+                    playerEffectCardsHandler.AddEffectCard(dealtCard);
 
                     break;
 
@@ -80,7 +80,7 @@ namespace Singleplayer
 
                     var effectCardLogicInstance = GetEffectCardLogicInstance(dealtCardInfo);
 
-                    enemy.ReceiveEffectCard(effectCardLogicInstance);
+                    enemy.enemyEffectCardsHandler.AddEffectCard(effectCardLogicInstance);
 
                     break;
 
@@ -91,5 +91,43 @@ namespace Singleplayer
                     break;
             }
         }
+
+        public void DealEffectCardOfType(IEntity entity, EffectCardType effectCardType)
+        {
+            var dealtCardInfo = effectCardInfosList.Find(card => card.EffectCardType == effectCardType);
+
+            switch (entity.GetEntityType)
+            {
+                case EntityType.Player:
+
+                    var dealtCardGO = Instantiate(effectCardPrefab);
+                    AttachEffectCardScript(dealtCardGO, dealtCardInfo.EffectCardType);
+
+                    var dealtCard = dealtCardGO.GetComponent<BaseEffectCard>();
+                    dealtCard.SetupEffectCard(dealtCardInfo);
+
+                    playerEffectCardsHandler.AddEffectCard(dealtCard);
+
+                    break;
+
+                case EntityType.Enemy:
+
+                    var enemy = entity as BaseEnemy;
+
+                    var effectCardLogicInstance = GetEffectCardLogicInstance(dealtCardInfo);
+
+                    enemy.enemyEffectCardsHandler.AddEffectCard(effectCardLogicInstance);
+
+                    break;
+
+                case EntityType.Ally:
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        public Material GetEffectCardOutlineMaterial => effectCardOutlineMaterial;
     }
 }

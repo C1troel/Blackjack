@@ -1,6 +1,8 @@
+using Singleplayer.PassiveEffects;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Singleplayer
@@ -19,10 +21,26 @@ namespace Singleplayer
         protected PanelScript currentPanel;
         protected Coroutine moving;
         protected EnemyInfo enemyInfo;
-        protected List<IEffectCardLogic> effectCardsList;
+
+        protected SpriteRenderer spriteRenderer;
+        protected Material defaultSpriteMaterial;
+        protected Material outlineSpriteMaterial;
+
+        public EnemyEffectCardsHandler enemyEffectCardsHandler { get; private set; }
+        public IPassiveEffectHandler PassiveEffectHandler {  get; protected set; }
 
         public event Action<IEntity> moveEndEvent;
-        public Animator animator;
+        public event Action<IEntity> OnSelfClickHandled;
+        public Animator Animator { get; protected set; }
+
+        private void Start()
+        {
+            SubscribeToClickEvent();
+            PassiveEffectHandler = new PassiveEffectHandler(this);
+            spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
+            defaultSpriteMaterial = spriteRenderer.material;
+            outlineSpriteMaterial = EffectCardDealer.Instance.GetEffectCardOutlineMaterial; // заглушка, щоб була хоч якась обводка
+        }
 
         void Update()
         {
@@ -60,7 +78,8 @@ namespace Singleplayer
             def = enemyInfo.DefaultDef;
             defaultCardUsages = enemyInfo.DefaultCardUsages;
 
-            animator = gameObject.GetComponent<Animator>();
+            Animator = gameObject.GetComponent<Animator>();
+            enemyEffectCardsHandler = new EnemyEffectCardsHandler(this, enemyInfo.MaxEffectCards);
             
             direction = Direction.Right; // Left
             //direction = ??? // код для визначення можливої траекторії руху після спавну ворога
@@ -68,9 +87,32 @@ namespace Singleplayer
 
         #region ШІ противника
 
-        public virtual void PerformAction()
+        public virtual void OnNewTurnStart()
         {
-            
+            PassiveEffectHandler.ProcessEffects();
+            enemyEffectCardsHandler.OnNewTurnStart();
+        }
+
+        public virtual void StartTurn()
+        {
+            ResetEffectCardsUsages();
+            ProcessEnemyTurn();
+        }
+
+        public virtual void ProcessEnemyTurn()
+        {
+            if (enemyEffectCardsHandler.TryToUseNextPossibleEffectCard())
+            {
+                Debug.Log($"Enemy {enemyInfo.CharacterName} is trying to use card");
+                return;
+            }
+            else
+            {
+                Debug.Log($"Enemy {enemyInfo.CharacterName} isn`t using any card");
+            }
+
+            Debug.Log($"{this} start moving");
+            MapManager.Instance.MakeADraw(this);
         }
 
         #endregion
@@ -81,7 +123,10 @@ namespace Singleplayer
         public virtual void StartMove(Direction direction = Direction.Standart, PanelScript panel = null)
         {
             if (!isBoss)
+            {
                 StartMoveToPlayer();
+                return;
+            }
 
             if (panel == null)
             {
@@ -159,6 +204,10 @@ namespace Singleplayer
             transform.position = new Vector3(destination.x, destination.y, transform.position.z);
 
             Debug.LogWarning("Left Steps");
+
+            while (!canMove)
+                yield return null;
+
             leftSteps -= 1;
 
             if (leftSteps == 0)
@@ -186,6 +235,9 @@ namespace Singleplayer
             }
 
             #endregion
+
+            if (moving != null)
+                StopCoroutine(moving);
 
             moving = StartCoroutine(MoveToPlayer(foundPathToPlayer));
             canMove = true;
@@ -218,6 +270,10 @@ namespace Singleplayer
                 Debug.Log($"Direction after stand on panel {panel.name} is {this.direction}");
 
                 leftSteps -= 1;
+
+                while (!canMove)
+                    yield break;
+
                 Debug.LogWarning($"Left Steps: {leftSteps}");
 
                 if (leftSteps == 0)
@@ -271,40 +327,92 @@ namespace Singleplayer
         }
 
         public void EnableAttacking() => isEventAttack = true;
+
+        public IEnumerator StopAnimationSmoothly(float duration)
+        {
+            float startSpeed = Animator.speed;
+            float t = 0;
+
+            while (t < duration)
+            {
+                Animator.speed = Mathf.Lerp(startSpeed, 0f, t / duration);
+                t += Time.deltaTime;
+                yield return null;
+            }
+
+            Animator.speed = 0f;
+        }
+
+        public IEnumerator ResumeAnimationSmoothly(float duration)
+        {
+            float startSpeed = Animator.speed;
+            float targetSpeed = 1f;
+            float t = 0f;
+
+            while (t < duration)
+            {
+                Animator.speed = Mathf.Lerp(startSpeed, targetSpeed, t / duration);
+                t += Time.deltaTime;
+                yield return null;
+            }
+
+            Animator.speed = targetSpeed;
+        }
         #endregion
 
         #region Маніпуляції з ефектними картами
         public void ResetEffectCardsUsages() => leftCards = enemyInfo.DefaultCardUsages;
         public void DecreaseEffectCardsUsages() => --leftCards;
 
-        public void ReceiveEffectCard(IEffectCardLogic card)
-        {
-            if (effectCardsList.Count == enemyInfo.MaxEffectCards)
-            {
-                Debug.Log($"Cannot add more cards for entity with name: {enemyInfo.CharacterName}" +
-                    $", cuz maxEffectCards are {enemyInfo.MaxEffectCards} and now he has {effectCardsList.Count}");
-
-                return;
-            }
-
-            effectCardsList.Add(card);
-        }
+        public void SetOutline() => spriteRenderer.material = outlineSpriteMaterial;
+        public void RemoveOutline() => spriteRenderer.material = defaultSpriteMaterial;
         #endregion
 
         #region Сутичка з іншою сутністю
-        private void TryToStartBattle(IEntity Atk, IEntity Def) // PlayerController Def - це заглушка, поки коду для ворогів немає
+        private IEnumerator TryToStartBattle(IEntity Atk, IEntity Def) // PlayerController Def - це заглушка, поки коду для ворогів немає
         {
             /// Код для валідації початку атаки
             Debug.Log("BattlStart");
 
+            var battleManager = BattleManager.Instance;
+            StopMoving();
             Debug.LogWarning($"ATK: {Atk.GetEntityName} DEF: {Def.GetEntityName}");
-            BattleManager.Instance.StartBattle(Atk, Def);
+            battleManager.TryToStartBattle(Atk, Def);
+            yield return new WaitUntil(() => !battleManager.isBattleActive);
+            StartMove();
+        }
+
+        public virtual IEnumerator OnStepOntoPanel(PanelScript panel)
+        {
+            currentPanel = panel;
+
+            IEntity self = this;
+            var otherEntities = panel.EntitiesOnPanel
+                .Where(e => e != self && e.GetEntityType != EntityType.Enemy)
+                .ToList();
+
+            foreach (var entity in otherEntities)
+            {
+                switch (entity.GetEntityType)
+                {
+                    case EntityType.Player:
+                        yield return StartCoroutine(TryToStartBattle(this, entity));
+                        break;
+
+                    case EntityType.Ally:
+                        // код для бою між противником та помічником
+                        break;
+
+                    default:
+                        break;
+                }
+            }
         }
 
         #endregion
 
         #region Тригери
-        private void OnTriggerEnter2D(Collider2D collision) // метод при сутичці з іншою сутністю(у даному випадку ворогом або панеллю)
+        /*private void OnTriggerEnter2D(Collider2D collision) // метод при сутичці з іншою сутністю(у даному випадку ворогом або панеллю)
         {
             if (collision.transform.name.StartsWith("Panel"))
             {
@@ -326,13 +434,25 @@ namespace Singleplayer
                 // Далі повинен бути код початку бою з ворогом:
                 TryToStartBattle(this, collision.GetComponent<BasePlayerController>());
             }
+        }*/
+
+        private void SubscribeToClickEvent()
+        {
+            var clickHandler = GetComponentInChildren<ClickHandler>();
+            clickHandler.OnEntityClickEvent += OnEntityClickEvent;
         }
 
-        private void OnMouseDown()
+        private void OnEntityClickEvent()
+        {
+            Debug.Log($"Entity {enemyInfo.CharacterName} being clicked");
+            OnSelfClickHandled?.Invoke(this);
+        }
+
+        /*private void OnMouseDown()
         {
             Debug.Log($"Entity with name: {this.GetEntityName} was clicked");
             PanelEffectsManager.Instance.TryToChooseEntity(this);
-        }
+        }*/
         #endregion
 
         #region Гетери
@@ -354,47 +474,47 @@ namespace Singleplayer
         #region TempEnemyActions
         public void Jump()
         {
-            animator.SetBool("Jump", true);
+            Animator.SetBool("Jump", true);
         }
 
         public void JumpOff()
         {
-            animator.SetBool("Jump", false);
+            Animator.SetBool("Jump", false);
         }
 
         public void Dead()
         {
-            animator.SetBool("Dead", true);
+            Animator.SetBool("Dead", true);
         }
 
         public void DeadOff()
         {
-            animator.SetBool("Dead", false);
+            Animator.SetBool("Dead", false);
         }
         public void Walk()
         {
-            animator.SetBool("Walk", true);
+            Animator.SetBool("Walk", true);
         }
 
         public void WalkOff()
         {
-            animator.SetBool("Walk", false);
+            Animator.SetBool("Walk", false);
         }
         public void Run()
         {
-            animator.SetBool("Run", true);
+            Animator.SetBool("Run", true);
         }
         public void RunOff()
         {
-            animator.SetBool("Run", false);
+            Animator.SetBool("Run", false);
         }
         public void Attack()
         {
-            animator.SetBool("Attack", true);
+            Animator.SetBool("Attack", true);
         }
         public void AttackOff()
         {
-            animator.SetBool("Attack", false);
+            Animator.SetBool("Attack", false);
         }
         #endregion
     }

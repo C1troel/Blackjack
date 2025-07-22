@@ -244,33 +244,37 @@ namespace Singleplayer
             }
         }
 
-        public void StartChoosingTarget(Action<IEntity> callback)
+        /*public void StartChoosingTarget(Action<IEntity> callback)
         {
             StartCoroutine(ActivateChoosing(callback));
-        }
+        }*/
 
-        private IEnumerator ActivateChoosing(Action<IEntity> callback)
+        /*public void StartChoosingTarget(Action<IEntity> callback)
         {
-            Debug.Log("Choosing a target...");
-            IEntity chosen = null;
+            IEntity chosenTarget = null;
 
-            choosingRoutine = StartCoroutine(WaitForEntitySelection(entity =>
+            var possibleTargetEntities = GameManager.Instance.GetEntitiesList().
+                Where(entity => entity.GetEntityType != EntityType.Player);
+
+            foreach (var entity in possibleTargetEntities)
             {
-                chosen = entity;
-            }));
+                entity.OnSelfClickHandled += OnEntityChosen;
+                entity.SetOutline();
+            }
 
-            yield return new WaitUntil(() => chosen != null);
-            callback?.Invoke(chosen);
-        }
+            void OnEntityChosen(IEntity entity)
+            {
+                chosenTarget = entity;
 
-        private IEnumerator WaitForEntitySelection(Action<IEntity> callback)
-        {
-            choosedEntity = null;
-            while (choosedEntity == null)
-                yield return null;
-            callback(choosedEntity);
-            choosingRoutine = null;
-        }
+                foreach (var ent in possibleTargetEntities)
+                {
+                    ent.OnSelfClickHandled -= OnEntityChosen;
+                    entity.RemoveOutline();
+                }
+
+                callback?.Invoke(entity);
+            }
+        }*/
 
         public void StartDecisionPick(Action<int> callback)
         {
@@ -307,7 +311,7 @@ namespace Singleplayer
             fortuneWheel.StartSpin();
         }
 
-        private IEnumerator ActivateChoosing(ulong[] exceptionsId = null) // треба розробити нормальний вивід противників
+        private IEnumerator ActivateChoosing() // треба розробити нормальний вивід противників
         {
             Debug.Log("Choosing activated");
 

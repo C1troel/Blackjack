@@ -19,14 +19,16 @@ namespace Singleplayer
         [SerializeField] GameObject inputBlock;
 
         [SerializeField] Canvas playerHUD;
-        [SerializeField] PlayerHUDController playerHUDController;
+        [SerializeField] PlayerHUDManager playerHUDManager;
 
-        [SerializeField] MapManager mapManager; // потрібен інший менеджер мапи(офлайновий)
+        [SerializeField] MapManager mapManager;
         [SerializeField] float playersZCordOffset;
 
         private float currentZCordForPlayers = 0.5f;
 
-        private BasePlayerController playerData;
+        public BasePlayerController PlayerData { get; private set; }
+        public bool IsChoosing { get; private set; }
+
         private EntitySpawnManager enemySpawnManager;
 
         private List<IEntity> entitiesList = new List<IEntity>();
@@ -49,13 +51,15 @@ namespace Singleplayer
             enemySpawnManager = EntitySpawnManager.Instance;
             OnPlayerLoad();
             SpawnStartingEnemies();
+
+            TestChangeTurnsOrder();
             TurnManager.Instance.InitializeTurnOrder(entitiesList);
 
             #region Tests
             /*StartCoroutine(TestAwaitAndReturnEntitiesAtDistanceFromEntity(entitiesList[0], 6));*/
             /*StartCoroutine(TestAwaitAndGetShortestAvailablePathBetweenPanels(entitiesList[1], entitiesList[0]));*/
             /*StartCoroutine(TestAwaitAndReturnDistanceBetweenEntities(entitiesList[0], entitiesList[1]));*/
-            /*TestAddingEffectCards(GetEntityWithType(EntityType.Player));*/
+            TestAddingEffectCards();
             #endregion
         }
 
@@ -102,10 +106,23 @@ namespace Singleplayer
             }
         }
 
-        /*private void TestAddingEffectCards(IEntity entity)
+        private void TestChangeTurnsOrder()
         {
-            EffectCardDealer.Instance.DealRandomEffectCard(entity);
-        }*/
+            var player = entitiesList[0];
+            var entity = entitiesList[1];
+
+            entitiesList[0] = entity;
+            entitiesList[1] = player;
+        }
+
+        private void TestAddingEffectCards()
+        {
+            var enemy = entitiesList[0];
+            var player = entitiesList[1];
+
+            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.TestMagicShield);
+            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.Fireball);
+        }
 
         public static void AddComponentByName(GameObject obj, string typeName)
         {
@@ -153,8 +170,8 @@ namespace Singleplayer
         private void OnPlayerLoad()
         {
             var player = SpawnPlayerAndAddToList(testPlayerSpawnPanel.transform.position, CharacterType.TimeStopper);
-            playerData = ((MonoBehaviour)player).GetComponent<BasePlayerController>();
-            playerHUDController.ManagePlayerHud(player);
+            PlayerData = ((MonoBehaviour)player).GetComponent<BasePlayerController>();
+            playerHUDManager.ManagePlayerHud(player);
             MapManagerSubscription(player);
         }
 
@@ -164,6 +181,39 @@ namespace Singleplayer
             entitiesList.Add(spawnedEnemy);
             spawnedEnemy.gameObject.SetActive(true);
             MapManagerSubscription(spawnedEnemy);
+        }
+
+        public void StartChoosingTarget(Action<IEntity> callback, List<IEntity> allowedTargets = null)
+        {
+            IsChoosing = true;
+            IEntity chosenTarget = null;
+            List<IEntity> possibleTargetEntities = new List<IEntity>();
+
+            if (allowedTargets == null)
+                possibleTargetEntities = entitiesList.Where(entity => entity.GetEntityType != EntityType.Player).ToList();
+            else
+                possibleTargetEntities = allowedTargets;
+
+            foreach (var entity in possibleTargetEntities)
+            {
+                entity.OnSelfClickHandled += OnEntityChosen;
+                entity.SetOutline();
+            }
+
+            void OnEntityChosen(IEntity entity)
+            {
+                chosenTarget = entity;
+
+                foreach (var ent in possibleTargetEntities)
+                {
+                    ent.OnSelfClickHandled -= OnEntityChosen;
+                    ent.RemoveOutline();
+                }
+
+                IsChoosing = false;
+
+                callback?.Invoke(entity);
+            }
         }
 
         #region Старий код оновлення списку стану гравців
@@ -204,31 +254,6 @@ namespace Singleplayer
         }*/
         #endregion
 
-        /*private void ToggleAllHUDButtons(bool enable = false)
-        {
-            foreach (Transform ui in playerHUD.transform)
-            {
-                if (ui.CompareTag("Button"))
-                {
-                    ui.GetComponent<Button>().interactable = enable;
-                }
-            }
-        }*/
-
-        /*private void UpdatePlayerHud(IEntity player)
-        {
-            var playerSceneView = playerHUD.transform.Find("CharacterModel");
-
-            for (int i = 0; i < playerSceneView.childCount; i++)
-            {
-                if (i == 0)
-                {
-                    var playerHpTextBox = playerSceneView.GetChild(i).GetComponent<TextMeshProUGUI>();
-                    playerHpTextBox.text = $"{player.GetEntityHp}/{player.GetEntityMaxHp}";
-                }
-            }
-        }*/
-
         public void TogglePlayersHUD(bool enable)
         {
             Debug.Log($"PlayerHUD activeness before: {playerHUD.gameObject.activeSelf}");
@@ -236,9 +261,14 @@ namespace Singleplayer
             Debug.Log($"PlayerHUD activeness after: {playerHUD.gameObject.activeSelf}");
         }
 
-        public void ToggleInputBlock(bool isActive)
+        /*public void ToggleInputBlock(bool isActive)
         {
             inputBlock.SetActive(isActive);
+        }*/
+
+        public void TogglePlayerHudButtons(bool isActive)
+        {
+            playerHUDManager.TogglePlayerHudButtons(isActive);
         }
 
         private void DrawRequest()
@@ -246,16 +276,19 @@ namespace Singleplayer
             if (CanPerformAction())
             { }
 
-            ToggleInputBlock(true); // оновлення кнопок худа
+            TogglePlayerHudButtons(false); // оновлення кнопок худа
 
-            mapManager.MakeADraw(playerData);
+            mapManager.MakeADraw(PlayerData);
+        }
+
+        public void SpecialAbilityRequest()
+        {
+            PlayerData.SpecialAbility.TryToActivate();
         }
 
         public void StartPlayerTurn(BasePlayerController player)
         {
-            DealDamage(player, 80, false);
-            player.ResetEffectCardsUsages();
-            ToggleInputBlock(false);
+            player.StartTurn();
         }
 
         public void TeleportEntity(Vector2 cords, IEntity entity, PanelScript panelTrigger = null)
@@ -290,11 +323,17 @@ namespace Singleplayer
 
         public void DealDamage(IEntity entity, int damage, bool isBlockable = false)
         {
-            if (entity.GetCurrentPanel != null && entity.GetCurrentPanel.GetEffectPanelInfo.effect == PanelEffect.VIPClub)
+            if (entity == null)
+            {
+                Debug.LogWarning("Try to deal damage but entity is null");
+                return;
+            }
+
+            /*if (entity.GetCurrentPanel != null && entity.GetCurrentPanel.GetEffectPanelInfo.effect == PanelEffect.VIPClub)
             {
                 Debug.Log($"Cant damage entity nameData: {((MonoBehaviour)entity).name}");
                 return;
-            }
+            }*/
 
             entity.GetDamage(isBlockable ? (damage - entity.GetEntityDef) : damage);
 

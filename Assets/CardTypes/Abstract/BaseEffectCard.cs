@@ -7,52 +7,79 @@ using UnityEngine.UI;
 
 namespace Singleplayer
 {
-    public abstract class BaseEffectCard : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler, IEffectCard    
+    public abstract class BaseEffectCard : MonoBehaviour, IEffectCard, IBeginDragHandler, IEndDragHandler, IDragHandler, IPointerEnterHandler, IPointerExitHandler
     {
         [HideInInspector] public Transform parentAfterDrag;
 
+        public event Action<BaseEffectCard> OnEffectCardUsed;
+        public IEffectCardLogic EffectCardLogic { get; private set; }
+
         protected Image _image;
+        protected Material deafaultCardMaterial;
+        protected Material outlineMaterial;
 
         protected Animator _animator;
 
         protected EffectCardInfo effectCardInfo;
-        protected IEffectCardLogic effectCardLogic;
 
-        protected bool canUse = true;
+        protected BasePlayerController player;
 
         private void Start()
         {
-            _image = GetComponent<UnityEngine.UI.Image>();
+            _image = GetComponent<Image>();
             _animator = GetComponent<Animator>();
+            deafaultCardMaterial = _image.material;
+            outlineMaterial = EffectCardDealer.Instance.GetEffectCardOutlineMaterial;
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            if (!EffectCardLogic.CanUse || EffectCardLogic.TargetEnemiesList == null || GameManager.Instance.IsChoosing)
+                return;
+
+            foreach (var entity in EffectCardLogic.TargetEnemiesList)
+                entity.SetOutline();
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            if (!EffectCardLogic.CanUse || EffectCardLogic.TargetEnemiesList == null || GameManager.Instance.IsChoosing)
+                return;
+
+            foreach (var entity in EffectCardLogic.TargetEnemiesList)
+                entity.RemoveOutline();
         }
 
         public void OnBeginDrag(PointerEventData eventData)
         {
-            if (canUse)
-            {
-                Debug.Log("BeginDrag");
-                parentAfterDrag = transform.parent;
-                var parentOfParent = transform.parent.transform.parent;
-                transform.SetParent(parentOfParent);
-                _image.raycastTarget = false;
-            }
+            EffectCardApplier.Instance.OnCardBeginDrag();
+
+            Debug.Log("BeginDrag");
+            parentAfterDrag = transform.parent;
+            var parentOfParent = transform.parent.transform.parent;
+            transform.SetParent(parentOfParent);
+            _image.raycastTarget = false;
         }
 
         public void OnDrag(PointerEventData eventData)
         {
-            if (canUse)
-            {
-                Debug.Log("Dragging");
-                transform.position = Input.mousePosition;
-            }
+            Debug.Log("Dragging");
+            transform.position = Input.mousePosition;
         }
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            if (!canUse)
-                return;
-
             Debug.Log("EndDrag");
+
+            if (!EffectCardLogic.CanCounter && (player.GetEntityLeftCards == 0 || !EffectCardLogic.CanUse))
+            {
+                transform.SetParent(parentAfterDrag);
+                transform.localPosition = Vector3.zero;
+
+                _image.raycastTarget = true;
+                EffectCardApplier.Instance.OnCardEndDrag();
+                return;
+            }
 
             if (eventData.pointerEnter == null || eventData.pointerEnter.GetComponent<IDropHandler>() == null)
             {
@@ -61,23 +88,49 @@ namespace Singleplayer
             }
 
             _image.raycastTarget = true;
+            EffectCardApplier.Instance.OnCardEndDrag();
         }
 
-        public virtual void UseCard()
+
+        public virtual void TryToUseCard()
         {
+            if (!EffectCardLogic.CanCounter && (player.GetEntityLeftCards == 0 || !EffectCardLogic.CanUse))
+                return;
+
+            GameManager.Instance.TogglePlayerHudButtons(false);
+            RemoveCardOutline();
             _animator.SetTrigger("CardUsage");
         }
 
         private void OnAnimationEnd()
         {
+            _animator.enabled = false;
+            _image.enabled = false;
             MapManager.Instance.OnEffectCardPlayed(this);
-            Destroy(gameObject);
         }
 
         public void ApplyEffect(IEntity entityInit = null)
         {
-            effectCardLogic.ApplyEffect(entityInit);
+            StartCoroutine(EffectCardLogic.ApplyEffect(() =>
+            OnEffectCardApplyEnd(),
+            entityInit));
         }
+
+        private void OnEffectCardApplyEnd()
+        {
+            OnEffectCardUsed?.Invoke(this);
+            GameManager.Instance.TogglePlayerHudButtons(true);
+        }
+
+        public void CheckIfCanBeUsed(IEntity entityOwner)
+        {
+            if (EffectCardLogic.CheckIfCanBeUsed(entityOwner))
+                OutlineCard();
+        }
+
+        public void OutlineCard() => _image.material = outlineMaterial;
+
+        public void RemoveCardOutline() => _image.material = deafaultCardMaterial;
 
         public void SetupEffectCard(EffectCardInfo effectCardInfo)
         {
@@ -92,18 +145,14 @@ namespace Singleplayer
                 return;
             }
 
-            effectCardLogic = Activator.CreateInstance(logicType) as IEffectCardLogic;
-            effectCardLogic.SetupEffectCardLogic(effectCardInfo);
+            EffectCardLogic = Activator.CreateInstance(logicType) as IEffectCardLogic;
+            EffectCardLogic.SetupEffectCardLogic(effectCardInfo);
+            player = GameManager.Instance.GetEntityWithType(EntityType.Player) as BasePlayerController;
         }
 
         public List<EffectCardMaterial> GetCardMaterials => effectCardInfo.EffectCardMaterials;
         public EffectCardDmgType GetCardDmgType => effectCardInfo.EffectCardDmgType;
 
         public Sprite GetEffectSprite() => effectCardInfo.EffectCardSprite;
-    }
-
-    public enum EffectCardType
-    {
-        SmallMedicine
     }
 }

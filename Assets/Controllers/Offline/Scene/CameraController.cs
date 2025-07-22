@@ -2,35 +2,78 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CameraController : MonoBehaviour
+namespace Singleplayer
 {
-    private Camera _camera;
-    private Transform _transform;
-    void Start()
+    [RequireComponent(typeof(Camera))]
+    public class CameraController : MonoBehaviour
     {
-        _camera = GetComponent<Camera>();
-        _transform = GetComponent<Transform>();
-    }
+        private Camera _camera;
+        private Transform _transform;
+        [SerializeField] private Material grayscaleMaterial;
+        [Range(0f, 1f)] private float intensity = 0;
 
-    // Update is called once per frame
-    void Update()
-    {
+        void Start()
+        {
+            _camera = GetComponent<Camera>();
+            _transform = GetComponent<Transform>();
+        }
 
-        if (Input.GetKey(KeyCode.A))
+        // Update is called once per frame
+        void Update()
         {
-            _transform.position = new Vector3(_transform.position.x - 10, _transform.position.y, _transform.position.z);
+
+            if (Input.GetKey(KeyCode.A))
+            {
+                _transform.position = new Vector3(_transform.position.x - 10, _transform.position.y, _transform.position.z);
+            }
+            else if (Input.GetKey(KeyCode.S))
+            {
+                _transform.position = new Vector3(_transform.position.x, _transform.position.y - 10, _transform.position.z);
+            }
+            else if (Input.GetKey(KeyCode.D))
+            {
+                _transform.position = new Vector3(_transform.position.x + 10, _transform.position.y, _transform.position.z);
+            }
+            else if (Input.GetKey(KeyCode.W))
+            {
+                _transform.position = new Vector3(_transform.position.x, _transform.position.y + 10, _transform.position.z);
+            }
         }
-        else if (Input.GetKey(KeyCode.S))
+
+        private void OnRenderImage(RenderTexture source, RenderTexture destination)
         {
-            _transform.position = new Vector3(_transform.position.x, _transform.position.y - 10, _transform.position.z);
+            if (grayscaleMaterial != null)
+            {
+                grayscaleMaterial.SetFloat("_Intensity", intensity);
+                Graphics.Blit(source, destination, grayscaleMaterial);
+            }
+            else
+            {
+                Graphics.Blit(source, destination);
+            }
         }
-        else if (Input.GetKey(KeyCode.D))
+
+        public void FadeInGrayscale(float duration)
         {
-            _transform.position = new Vector3(_transform.position.x + 10, _transform.position.y, _transform.position.z);
+            StartCoroutine(FadeEffect(duration, 1f));
         }
-        else if (Input.GetKey(KeyCode.W))
+
+        public void FadeOutGrayscale(float duration)
         {
-            _transform.position = new Vector3(_transform.position.x, _transform.position.y + 10, _transform.position.z);
+            StartCoroutine(FadeEffect(duration, 0f));
+        }
+
+        private IEnumerator FadeEffect(float duration, float target)
+        {
+            float start = intensity;
+            float t = 0f;
+            while (t < duration)
+            {
+                t += Time.deltaTime;
+                intensity = Mathf.Lerp(start, target, t / duration);
+                yield return null;
+            }
+            intensity = target;
         }
     }
 }

@@ -6,10 +6,11 @@ namespace Singleplayer
 {
     public class Bodyguard : BaseEnemy
     {
-        public override void PerformAction()
+        /*public override void ProcessEnemyTurn()
         {
-            Debug.Log("PerformingAction...");
+            base.ProcessEnemyTurn();
+            Debug.Log($"{this} start his turn");
             MapManager.Instance.MakeADraw(this);
-        }
+        }*/   
     }
 }

@@ -16,7 +16,7 @@ namespace Singleplayer
             switch (entity.GetEntityType)
             {
                 case EntityType.Player:
-                    PanelEffectsManager.Instance.StartChoosingTarget(choosed =>
+                    GameManager.Instance.StartChoosingTarget(choosed =>
                     {
                         target = choosed;
                     });

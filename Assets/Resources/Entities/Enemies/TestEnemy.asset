@@ -16,7 +16,8 @@ MonoBehaviour:
   _defaultAtk: 20
   _defaultMoney: 0
   _defaultDef: 10
-  _defaultCardUsages: 0
+  _defaultCardUsages: 1
+  _maxEffectCards: 1
   _isBoss: 0
   _canTriggerPanels: 0
   _enemyName: TestEnemy

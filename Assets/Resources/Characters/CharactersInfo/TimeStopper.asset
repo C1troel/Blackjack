@@ -18,6 +18,7 @@ MonoBehaviour:
   _defaultAtk: 10
   _defaultDef: 10
   _defaultCardUsages: 1
+  _activeGlobalEffect: {fileID: 11400000, guid: 9b360d4cbfc29af4aac08b421a65096e, type: 2}
   _characterName: TimeStopper
   _entityType: 0
   _characterType: 0

@@ -136,7 +136,7 @@ namespace Singleplayer
             gameObject.SetActive(false);
             DeactivateMoveCardUI();
             transform.GetChild(1).gameObject.SetActive(true);
-            revealedCardSide = null;
+            revealedCardSide.sprite = null;
             revealedMoveCard = null;
 
             RevealEffect();
