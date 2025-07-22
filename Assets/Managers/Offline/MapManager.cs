@@ -651,8 +651,8 @@ namespace Singleplayer
 
         public void OnEffectCardPlayed(BaseEffectCard effectCard)
         {
-            OnEffectCardPlayedEvent?.Invoke(effectCard.EffectCardLogic);
-            usedCard.EffectRevealEvent += () => OnEffectCardRevealEnd(effectCard);
+            currentEffectRevealHandler = () => OnEffectCardRevealEnd(effectCard);
+            usedCard.EffectRevealEvent += currentEffectRevealHandler;
 
             if (effectCard != null)
                 usedCard.RevealEffect(effectCard.GetEffectSprite());
@@ -660,14 +660,16 @@ namespace Singleplayer
 
         private void OnEffectCardRevealEnd(BaseEffectCard effectCard)
         {
-            usedCard.EffectRevealEvent -= () => OnEffectCardRevealEnd(effectCard);
+            if (currentEffectRevealHandler != null)
+                usedCard.EffectRevealEvent -= currentEffectRevealHandler;
 
+            OnEffectCardPlayedEvent?.Invoke(effectCard.EffectCardLogic);
+            currentEffectRevealHandler = null;
             effectCard.ApplyEffect();
         }
 
         public void OnEffectCardPlayedByEntity(Action onCardRevealed, BaseEffectCardLogic effectCardLogic)
         {
-            OnEffectCardPlayedEvent?.Invoke(effectCardLogic);
             currentEffectRevealHandler = () => OnEntityEffectCardRevealEnd(onCardRevealed, effectCardLogic);
             usedCard.EffectRevealEvent += currentEffectRevealHandler;
 
@@ -679,6 +681,7 @@ namespace Singleplayer
         {
             usedCard.EffectRevealEvent -= currentEffectRevealHandler;
             currentEffectRevealHandler = null;
+            OnEffectCardPlayedEvent?.Invoke(effectCardLogic);
 
             onCardRevealed?.Invoke();
         }

@@ -34,8 +34,6 @@ namespace Singleplayer {
                 this);
         }
 
-
-
         private void SmallHeal(IEntity entityInit)
         {
             Debug.Log($"Health before small heal: {entityInit.GetEntityHp} of entity with name: {entityInit.GetEntityName}");

@@ -26,7 +26,7 @@ namespace Singleplayer
         protected Material defaultSpriteMaterial;
         protected Material outlineSpriteMaterial;
 
-        public EnemyEffectCardsHandler enemyEffectCardsHandler { get; private set; }
+        public EnemyEffectCardsHandler EnemyEffectCardsHandler { get; private set; }
         public IPassiveEffectHandler PassiveEffectHandler {  get; protected set; }
 
         public event Action<IEntity> moveEndEvent;
@@ -79,7 +79,7 @@ namespace Singleplayer
             defaultCardUsages = enemyInfo.DefaultCardUsages;
 
             Animator = gameObject.GetComponent<Animator>();
-            enemyEffectCardsHandler = new EnemyEffectCardsHandler(this, enemyInfo.MaxEffectCards);
+            EnemyEffectCardsHandler = new EnemyEffectCardsHandler(this, enemyInfo.MaxEffectCards);
             
             direction = Direction.Right; // Left
             //direction = ??? // код для визначення можливої траекторії руху після спавну ворога
@@ -90,7 +90,7 @@ namespace Singleplayer
         public virtual void OnNewTurnStart()
         {
             PassiveEffectHandler.ProcessEffects();
-            enemyEffectCardsHandler.OnNewTurnStart();
+            EnemyEffectCardsHandler.OnNewTurnStart();
         }
 
         public virtual void StartTurn()
@@ -101,7 +101,7 @@ namespace Singleplayer
 
         public virtual void ProcessEnemyTurn()
         {
-            if (enemyEffectCardsHandler.TryToUseNextPossibleEffectCard())
+            if (EnemyEffectCardsHandler.TryToUseNextPossibleEffectCard())
             {
                 Debug.Log($"Enemy {enemyInfo.CharacterName} is trying to use card");
                 return;

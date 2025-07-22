@@ -35,9 +35,9 @@ namespace Singleplayer
             yield return new WaitUntil(() => target != null);
 
             Debug.Log($"Fireball target: {target.GetEntityName}");
-            ThrowFireballToEntity(target);
+            ThrowFireballToEntity(target, onComplete);
 
-            onComplete?.Invoke();
+            /*onComplete?.Invoke();*/
         }
 
         public override void TryToUseCard(Action<bool> onComplete, IEntity entityInit)
@@ -51,7 +51,7 @@ namespace Singleplayer
                 this);
         }
 
-        private void ThrowFireballToEntity(IEntity target)
+        private void ThrowFireballToEntity(IEntity target, Action onComplete)
         {
             var projectilEffectCardInfo = EffectCardInfo as ProjectilelEffectCardInfo;
 
@@ -63,7 +63,7 @@ namespace Singleplayer
             GameObject fireballGO = GameManager.Instantiate(fireballPrefab, spawnPos, Quaternion.identity);
 
             FireballProjectile fireballProjectile = fireballGO.GetComponent<FireballProjectile>();
-            fireballProjectile.Initialize(target, targetsPanel, DAMAGE, EffectCardInfo);
+            fireballProjectile.Initialize(onComplete, target, targetsPanel, DAMAGE, EffectCardInfo);
         }
     }
 }

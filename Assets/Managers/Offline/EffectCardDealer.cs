@@ -80,7 +80,7 @@ namespace Singleplayer
 
                     var effectCardLogicInstance = GetEffectCardLogicInstance(dealtCardInfo);
 
-                    enemy.enemyEffectCardsHandler.AddEffectCard(effectCardLogicInstance);
+                    enemy.EnemyEffectCardsHandler.AddEffectCard(effectCardLogicInstance);
 
                     break;
 
@@ -116,7 +116,7 @@ namespace Singleplayer
 
                     var effectCardLogicInstance = GetEffectCardLogicInstance(dealtCardInfo);
 
-                    enemy.enemyEffectCardsHandler.AddEffectCard(effectCardLogicInstance);
+                    enemy.EnemyEffectCardsHandler.AddEffectCard(effectCardLogicInstance);
 
                     break;
 

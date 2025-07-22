@@ -44,7 +44,7 @@ namespace Singleplayer
         {
             EffectCardApplier.Instance.gameObject.SetActive(isActive);
             cardDrawBtn.interactable = isActive;
-            specialAbilityBtn.interactable = isActive;
+            OnPlayerSpecialAbilityStateChange();
         }
 
         private void OnPlayerSpecialAbilityStateChange()

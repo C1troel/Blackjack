@@ -52,7 +52,7 @@ namespace Singleplayer
             OnPlayerLoad();
             SpawnStartingEnemies();
 
-            TestChangeTurnsOrder();
+            /*TestChangeTurnsOrder();*/
             TurnManager.Instance.InitializeTurnOrder(entitiesList);
 
             #region Tests

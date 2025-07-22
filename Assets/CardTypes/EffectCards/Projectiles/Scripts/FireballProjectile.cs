@@ -9,10 +9,14 @@ namespace Singleplayer
     public class FireballProjectile : MonoBehaviour, IProjectile
     {
         private const string EXPLOSION_TRIGGER = "Explode";
+        private const string FLY_ANIMATION_NAME = "FireballFly";
+
+
         [SerializeField] private Animator animator;
         [SerializeField] private SpriteRenderer spriteRenderer;
 
-        private Action<IProjectile> OnProjectileActivityEnd;
+        private Action<IProjectile> projectileActivityEndCallback;
+        private Action entityOnCompleteCallback;
 
         private IEntity targetEntity;
         private PanelScript landingPanel;
@@ -25,7 +29,7 @@ namespace Singleplayer
         void Update()
         {}
 
-        public void Initialize(IEntity targetEntity, PanelScript landingPanel, int damage , EffectCardInfo effectCardInfo)
+        public void Initialize(Action onComplete, IEntity targetEntity, PanelScript landingPanel, int damage , EffectCardInfo effectCardInfo)
         {
             this.targetEntity = targetEntity;
             this.effectCardInfo = effectCardInfo;
@@ -33,10 +37,13 @@ namespace Singleplayer
             this.landingPanel = landingPanel;
             animator.speed = 0;
             animator.enabled = true;
+            entityOnCompleteCallback = onComplete;
 
             if (GlobalEffectsManager.Instance.isTimeStopped)
             {
                 ProjectileManager.Instance.AddAvaitingProjectile(this);
+                entityOnCompleteCallback?.Invoke();
+                entityOnCompleteCallback = null;
                 return;
             }
 
@@ -45,24 +52,31 @@ namespace Singleplayer
 
         public void StartProjectileActivity(Action<IProjectile> callback)
         {
+            projectileActivityEndCallback = callback;
             FlowToTarget();
         }
 
         private void FlowToTarget()
         {
             animator.enabled = true;
-            var targetPositon = landingPanel.transform.position;
-            AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-            float animationLength = stateInfo.length; // ƒлительность текущей анимации в секундах
-            float normalizedTime = stateInfo.normalizedTime % 1f; // ѕрогресс от 0 до 1 (если looping, берем модуль)
 
-            float timeLeft = animationLength * (1f - normalizedTime); // —колько времени осталось анимации
+            AnimationClip targetClip = animator.runtimeAnimatorController.animationClips
+                .FirstOrDefault(clip => clip.name == FLY_ANIMATION_NAME);
 
-            float distanceLeft = Vector3.Distance(transform.position, targetPositon);
+            if (targetClip == null)
+            {
+                Debug.LogError($"Animation clip '{FLY_ANIMATION_NAME}' not found!");
+                return;
+            }
 
-            float speed = distanceLeft / timeLeft;
+            float animationLength = targetClip.length;
 
-            StartCoroutine(MoveToTarget(speed, timeLeft));
+            var targetPosition = landingPanel.transform.position;
+            float distanceLeft = Vector3.Distance(transform.position, targetPosition);
+
+            float speed = distanceLeft / animationLength;
+
+            StartCoroutine(MoveToTarget(speed, animationLength));
         }
 
         IEnumerator MoveToTarget(float speed, float timeLeft)
@@ -103,7 +117,8 @@ namespace Singleplayer
         private void DeleteProjectile()
         {
             Debug.Log("Delete projectile call");
-            OnProjectileActivityEnd?.Invoke(this);
+            entityOnCompleteCallback?.Invoke();
+            projectileActivityEndCallback?.Invoke(this);
             Destroy(gameObject);
         }
 
@@ -126,7 +141,8 @@ namespace Singleplayer
                     break;
 
                 case EntityType.Enemy:
-                    Debug.Log($"Checking for possible counter cards in enemy {targetEntity.GetEntityName}");
+                    var enemy = targetEntity as BaseEnemy;
+                    possibleCounterCards = enemy.EnemyEffectCardsHandler.GetCounterCards(effectCardInfo.EffectCardDmgType);
                     break;
 
                 case EntityType.Ally:
@@ -148,6 +164,7 @@ namespace Singleplayer
                         break;
 
                     case EntityType.Enemy:
+                        HandleEnemyCounterCardUsage(targetEntity, possibleCounterCards[0]);
                         break;
 
                     case EntityType.Ally:
@@ -157,6 +174,17 @@ namespace Singleplayer
                         break;
                 }
             }
+        }
+
+        private void HandleEnemyCounterCardUsage(IEntity entity, IEffectCardLogic effectCard)
+        {
+            var enemy = entity as BaseEnemy;
+
+            effectCard.TryToUseCard(isUsed =>
+            {
+                enemy.EnemyEffectCardsHandler.RemoveEffectCard(effectCard);
+                OnCounterCardUsed(effectCard);
+            }, enemy);
         }
 
         private void OnCounterCardUsed(IEffectCardLogic usedEddectCard)

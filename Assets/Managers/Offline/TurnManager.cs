@@ -77,7 +77,8 @@ namespace Singleplayer
             var enemy = CurrentTurnEntity as BaseEnemy;
             enemy.OnNewTurnStart();
 
-            while (ProjectileManager.Instance.avaitingProjectiles.Count > 0) yield return null;
+            while (ProjectileManager.Instance.avaitingProjectiles.Count > 0 
+                && !GlobalEffectsManager.Instance.isTimeStopped) yield return null;
 
             if (IsFrozenDuringTimeStop(enemy))
             {
@@ -93,7 +94,8 @@ namespace Singleplayer
             var player = CurrentTurnEntity as BasePlayerController;
             player.OnNewTurnStart();
 
-            while (ProjectileManager.Instance.avaitingProjectiles.Count > 0) yield return null;
+            while (ProjectileManager.Instance.avaitingProjectiles.Count > 0
+                && !GlobalEffectsManager.Instance.isTimeStopped) yield return null;
 
             if (IsFrozenDuringTimeStop(player))
             {
