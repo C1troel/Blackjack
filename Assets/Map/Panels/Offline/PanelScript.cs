@@ -23,8 +23,11 @@ namespace Singleplayer
         // Нижнє поле повинно бути приватним! (без сериалайза)?
         [SerializeField] private List<GameObject> _posOfPanels = new List<GameObject>(Enumerable.Repeat<GameObject>(null, 4));
         [SerializeField] private GameObject directionArrowPrefab;
-        [SerializeField] private EffectPanelInfoSingleplayer _effectPanelInfo;
+        /*[SerializeField] private EffectPanelInfoSingleplayer _effectPanelInfo;*/
         [SerializeField] private IPanelEffect panelEffect;
+
+        private EffectPanelInfoSingleplayer effectPanelInfo;
+        private SpriteRenderer panelSprite;
 
         private List<IEntity> entitiesOnPanel = new List<IEntity>();
         public IReadOnlyList<IEntity> EntitiesOnPanel => entitiesOnPanel;
@@ -40,8 +43,7 @@ namespace Singleplayer
 
         private void Start()
         {
-            if (this._effectPanelInfo != null)
-                TestAttachPanelEffect();
+            panelSprite = GetComponent<SpriteRenderer>();
         }
 
         private void Update()
@@ -54,19 +56,23 @@ namespace Singleplayer
             yield return StartCoroutine(panelEffect.Execute(entityInit, onComplete));
         }
 
-        private void TestAttachPanelEffect()
+        public void AttachPanelEffect(EffectPanelInfoSingleplayer effectPanelInfo)
         {
-            panelEffect = GetPanelEffectInstance(_effectPanelInfo);
+            panelEffect = GetPanelEffectInstance(effectPanelInfo);
+            this.effectPanelInfo = effectPanelInfo;
+
+            if (effectPanelInfo.Sprite != null)
+                panelSprite.sprite = effectPanelInfo.Sprite;
         }
 
-        private IPanelEffect GetPanelEffectInstance(EffectPanelInfoSingleplayer effectPanelnfo)
+        private IPanelEffect GetPanelEffectInstance(EffectPanelInfoSingleplayer effectPanelInfo)
         {
-            string typeName = $"{this.GetType().Namespace}.{_effectPanelInfo.effect}{EFFECT_PANEL_SCRIPTS_MARKER}";
+            string typeName = $"{this.GetType().Namespace}.{effectPanelInfo.Effect}{EFFECT_PANEL_SCRIPTS_MARKER}";
             var effectType = Type.GetType(typeName);
 
             if (effectType == null)
             {
-                Debug.LogError($"Unknown panel effect type: {effectPanelnfo.effect}");
+                Debug.LogError($"Unknown panel effect type: {effectPanelInfo.Effect}");
                 return null;
             }
 
@@ -91,7 +97,7 @@ namespace Singleplayer
             GetComponent<SpriteRenderer>().sprite = SpriteLoadManager.Instance.GetPathEnderSprite();
         }
 
-        public EffectPanelInfoSingleplayer GetEffectPanelInfo => _effectPanelInfo;
+        public EffectPanelInfoSingleplayer GetEffectPanelInfo => effectPanelInfo;
         public int GetNeighboursCount => _posOfPanels.Count(obj => obj != null);
 
         public List<PanelScript> GetAvailableNearPanelsOrNull(IEntity entity, List<PanelScript> exceptionsPanels = null, PanelScript exceptionPanel = null, bool isDirectionMatter = false)
@@ -267,21 +273,33 @@ namespace Singleplayer
 
         public void AssignSideOfPanel(GameObject panel, Pos side)
         {
-            var oppositePosOfPanels = panel.GetComponent<PanelScript>()._posOfPanels;
-
-            if (oppositePosOfPanels[((int)(GetOppositePosOrNone(side))) - 1] == null)
-            {
-                oppositePosOfPanels[((int)(GetOppositePosOrNone(side))) - 1] = gameObject;
-            }
-
-            if (side == Pos.None)
+            if (side == Pos.None || panel == null)
                 return;
 
-            if (panel != null && _posOfPanels[((int)side) - 1] == null)
+            var oppositePos = GetOppositePosOrNone(side);
+            if (oppositePos == Pos.None)
+                return;
+
+            var otherPanelScript = panel.GetComponent<PanelScript>();
+            var oppositePosOfPanels = otherPanelScript._posOfPanels;
+
+            if ((int)oppositePos >= 0 && (int)oppositePos < oppositePosOfPanels.Count)
             {
-                _posOfPanels[((int)side) - 1] = panel;
+                if (oppositePosOfPanels[(int)oppositePos] == null)
+                {
+                    oppositePosOfPanels[(int)oppositePos] = gameObject;
+                }
+            }
+
+            if ((int)side >= 0 && (int)side < _posOfPanels.Count)
+            {
+                if (_posOfPanels[(int)side] == null)
+                {
+                    _posOfPanels[(int)side] = panel;
+                }
             }
         }
+
 
         private void SpawnDirectionArrows(int pos, BasePlayerController player)
         {
@@ -426,13 +444,12 @@ namespace Singleplayer
             }
             else
                 Debug.LogWarning($"Client call: this: {this.gameObject.name}, other: {collision.transform.name}");*/
-            #endregion
-
-            var a = this;
+            #endregion 
 
             if (!collision.gameObject.TryGetComponent<IEntity>(out var entity)) return;
 
-            entity.moveEndEvent += OnEntityStay;
+            if (!entity.SuppressPanelEffectTrigger)
+                entity.moveEndEvent += OnEntityStay;
 
             if (!entitiesOnPanel.Contains(entity))
             {
@@ -474,7 +491,7 @@ namespace Singleplayer
 
         private void OnEntityStay(IEntity entity)
         {
-            if (_effectPanelInfo == null)
+            if (effectPanelInfo == null)
             {
                 Debug.Log("effectPanelInfo is null");
                 return;

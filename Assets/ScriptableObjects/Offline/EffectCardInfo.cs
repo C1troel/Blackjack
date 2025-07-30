@@ -12,9 +12,10 @@ namespace Singleplayer
         [SerializeField] Sprite _effectCardSprite;
 
         [Header("Settings")]
-        [SerializeField] bool _isDefensive;
         [SerializeField] int _effectiveDistanceInPanels;
+        [SerializeField] int _effectsDuration;
         [SerializeField] List<EffectCardMaterial> _effectCardMaterials;
+        [SerializeField] List<EffectCardPurpose> _effectCardPurposes;
         [SerializeField] EffectCardDmgType _effectCardDmgType;
         [SerializeField] EffectCardType _effectCardType;
 
@@ -23,10 +24,11 @@ namespace Singleplayer
 
         public List<VulnerabilityDescriptor> Vulnerabilities => _vulnerabilities;
         public List<EffectCardMaterial> EffectCardMaterials => _effectCardMaterials;
+        public List<EffectCardPurpose> EffectCardPurposes => _effectCardPurposes;
         public EffectCardDmgType EffectCardDmgType => _effectCardDmgType;
         public EffectCardType EffectCardType => _effectCardType;
         public Sprite EffectCardSprite => _effectCardSprite;
         public int EffectiveDistanceInPanels => _effectiveDistanceInPanels;
-        public bool IsDefensive => _isDefensive;
+        public int EffectsDuration => _effectsDuration;
     }
 }

@@ -8,7 +8,7 @@ namespace Singleplayer
 {
     public class PayoffPanelEffect : IPanelEffect
     {
-        private List<int> rewards = new List<int>()
+        private readonly List<int> rewards = new List<int>()
         {
             2, 4, 6, 8, 10
         };

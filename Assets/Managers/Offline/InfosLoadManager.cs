@@ -14,6 +14,7 @@ namespace Singleplayer
         [SerializeField] private string EffectCardsInfoPath;
         [SerializeField] private string PassiveGlobalEffectsInfoPath;
         [SerializeField] private string ActiveGlobalEffectsInfoPath;
+        [SerializeField] private string EffectPanelsInfoPath;
 
         public static InfosLoadManager Instance { get; private set; }
 
@@ -27,6 +28,11 @@ namespace Singleplayer
 
             Instance = this;
             DontDestroyOnLoad(gameObject);
+        }
+
+        public EffectPanelInfoSingleplayer[] GetAllEffectPanlesInfo()
+        {
+            return Resources.LoadAll<EffectPanelInfoSingleplayer>(EffectPanelsInfoPath);
         }
 
         public ActiveGlobalEffectInfo[] GetAllActiveGlobalEffects(bool isEvent)

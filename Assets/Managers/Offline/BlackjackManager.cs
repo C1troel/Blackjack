@@ -42,7 +42,6 @@ namespace Singleplayer
         private GameObject controlBtnsParent;
 
         private List<Sprite> activeDeck = new List<Sprite>();
-        private List<Sprite> cardsList = new List<Sprite>();
         private Sprite preselectedCard = null;
         private BlackjackCard preparedNextCard = null;
 
@@ -68,9 +67,6 @@ namespace Singleplayer
 
         private void Start()
         {
-            var sprites = Resources.LoadAll<Sprite>(playingCardsPath);
-            cardsList.AddRange(sprites);
-
             controlBtnsParent = hitBtn.transform.parent.gameObject;
         }
 
@@ -118,7 +114,7 @@ namespace Singleplayer
         private void SetupDeck()
         {
             activeDeck.Clear();
-            activeDeck.AddRange(cardsList);
+            activeDeck.AddRange(GameManager.Instance.BasicCardsList);
 
             System.Random random = new System.Random();
             activeDeck = activeDeck.OrderBy(x => random.Next()).ToList();

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Singleplayer
@@ -9,7 +10,18 @@ namespace Singleplayer
     {
         SmallMedicine,
         Fireball,
-        TestMagicShield
+        TestMagicShield,
+        Hourglass,
+        BigAttackPack,
+        BigDefensePack
+    }
+
+    public enum EffectCardPurpose
+    {
+        Action,
+        Defensive,
+        BattleAttack,
+        BattleDefense
     }
 
     public abstract class BaseEffectCardLogic : IEffectCardLogic
@@ -31,12 +43,13 @@ namespace Singleplayer
 
         public virtual bool CheckIfCanBeUsed(IEntity entityOwner)
         {
-            if (EffectCardInfo.EffectiveDistanceInPanels == 0 && !EffectCardInfo.IsDefensive)
+            if (EffectCardInfo.EffectiveDistanceInPanels == 0 &&
+                EffectCardInfo.EffectCardPurposes.Any(purpose => purpose == EffectCardPurpose.Action))
             {
                 CanUse = true;
                 return true;
             }
-            else if (EffectCardInfo.EffectiveDistanceInPanels == 0 && EffectCardInfo.IsDefensive)
+            else if (EffectCardInfo.EffectiveDistanceInPanels == 0)
             {
                 CanUse = false;
                 return false;

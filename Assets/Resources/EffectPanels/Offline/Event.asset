@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _effect: 3
   _sprite: {fileID: 0}
-  _panelPrefab: {fileID: 2399929201648208755, guid: 85e6aad2b3fbfdb4da5fa15b8c9ec49d, type: 3}
   _isSpawn: 0
+  _allowDuplicates: 1
+  _isForceStop: 0
   _amount: 2
   _luckTier: 2
-  _isForceStop: 0

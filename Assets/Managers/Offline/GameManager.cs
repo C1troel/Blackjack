@@ -1,9 +1,12 @@
+using Singleplayer.PassiveEffects;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Reflection;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,6 +20,7 @@ namespace Singleplayer
         [SerializeField] GameObject testPlayerSpawnPanel;
         [SerializeField] GameObject testEnemySpawnPanel;
         [SerializeField] GameObject inputBlock;
+        [SerializeField] GameObject droppedMoneyPrefab;
 
         [SerializeField] Canvas playerHUD;
         [SerializeField] PlayerHUDManager playerHUDManager;
@@ -27,6 +31,8 @@ namespace Singleplayer
         private float currentZCordForPlayers = 0.5f;
 
         public BasePlayerController PlayerData { get; private set; }
+        public List<Sprite> BasicCardsList { get; private set; }
+        public GameObject GetDroppedMoneyPrefab { get; }
         public bool IsChoosing { get; private set; }
 
         private EntitySpawnManager enemySpawnManager;
@@ -48,19 +54,10 @@ namespace Singleplayer
 
         private void Start()
         {
+            BasicCardsList = SpriteLoadManager.Instance.GetAllBasicCardSprites();
             enemySpawnManager = EntitySpawnManager.Instance;
-            OnPlayerLoad();
-            SpawnStartingEnemies();
 
-            /*TestChangeTurnsOrder();*/
-            TurnManager.Instance.InitializeTurnOrder(entitiesList);
-
-            #region Tests
-            /*StartCoroutine(TestAwaitAndReturnEntitiesAtDistanceFromEntity(entitiesList[0], 6));*/
-            /*StartCoroutine(TestAwaitAndGetShortestAvailablePathBetweenPanels(entitiesList[1], entitiesList[0]));*/
-            /*StartCoroutine(TestAwaitAndReturnDistanceBetweenEntities(entitiesList[0], entitiesList[1]));*/
-            TestAddingEffectCards();
-            #endregion
+            MapManager.Instance.RandomlyAssignEffectPanels();
         }
 
         #region Tests
@@ -124,11 +121,11 @@ namespace Singleplayer
 
         private void TestAddingEffectCards()
         {
-            var enemy = entitiesList[0];
-            var player = entitiesList[1];
+            var player = entitiesList[0];
+            var enemy = entitiesList[1];
 
-            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.TestMagicShield);
-            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.Fireball);
+            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.Hourglass);
+            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.Hourglass);
         }
         #endregion
 
@@ -173,6 +170,22 @@ namespace Singleplayer
         private void OnApplicationPause(bool pause) // збереження даних при виході під час гри
         {
             
+        }
+
+        public void StartGame()
+        {
+            OnPlayerLoad();
+            SpawnStartingEnemies();
+
+            /*TestChangeTurnsOrder();*/
+            TurnManager.Instance.InitializeTurnOrder(entitiesList);
+
+            #region Tests
+            /*StartCoroutine(TestAwaitAndReturnEntitiesAtDistanceFromEntity(entitiesList[0], 6));
+            StartCoroutine(TestAwaitAndGetShortestAvailablePathBetweenPanels(entitiesList[1], entitiesList[0]));
+            StartCoroutine(TestAwaitAndReturnDistanceBetweenEntities(entitiesList[0], entitiesList[1]));*/
+            TestAddingEffectCards();
+            #endregion
         }
 
         private void OnPlayerLoad()
@@ -329,19 +342,33 @@ namespace Singleplayer
 
         public List<IEntity> GetEntitiesList() => entitiesList;
 
+        public SavingMoneyController GetSavingMoneyController => playerHUDManager.GetSavingMoneyController;
+        public ShoppingController GetShoppingController => playerHUDManager.GetShoppingController;
+
         public void DealDamage(IEntity entity, int damage, bool isBlockable = false)
         {
-            if (entity == null)
+            if (entity == null || entity.GetEntityHp == 0)
             {
-                Debug.LogWarning("Try to deal damage but entity is null");
+                Debug.LogWarning("Try to deal damage but entity is null or knocked out");
                 return;
             }
 
-            /*if (entity.GetCurrentPanel != null && entity.GetCurrentPanel.GetEffectPanelInfo.effect == PanelEffect.VIPClub)
+            if (entity.GetCurrentPanel != null && entity.GetCurrentPanel.GetEffectPanelInfo.Effect == PanelEffect.VIPClub)
             {
                 Debug.Log($"Cant damage entity nameData: {((MonoBehaviour)entity).name}");
                 return;
-            }*/
+            }
+
+            if (entity.PassiveEffectHandler.GetEffect(PassiveEffectType.Wound) is Wound woundEffect)
+            {
+                woundEffect.IncreaseDamage(ref damage);
+                entity.PassiveEffectHandler.ApplyAsConditionalEffect(PassiveEffectType.Wound);
+            }
+            if (entity.PassiveEffectHandler.GetEffect(PassiveEffectType.Patch) is Patch patchEffect)
+            {
+                patchEffect.NulifyDamage(ref damage);
+                entity.PassiveEffectHandler.ApplyAsConditionalEffect(PassiveEffectType.Patch);
+            }
 
             entity.GetDamage(isBlockable ? (damage - entity.GetEntityDef) : damage);
 

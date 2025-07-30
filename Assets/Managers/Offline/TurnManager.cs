@@ -1,4 +1,5 @@
 using Singleplayer.PassiveEffects;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,6 +12,8 @@ namespace Singleplayer
         public IEntity CurrentTurnEntity { get; private set; }
 
         public static TurnManager Instance { get; private set; }
+
+        public event Action OnNewRoundStarted;
 
         private bool isTurnActive = false;
 
@@ -52,6 +55,9 @@ namespace Singleplayer
                 switch (CurrentTurnEntity.GetEntityType)
                 {
                     case EntityType.Player:
+                        Debug.Log("=== New Round Started ===");
+                        OnNewRoundStarted?.Invoke();
+
                         StartCoroutine(HandlePlayerTurn());
                         yield return new WaitUntil(() => isTurnActive == false);
                         break;
@@ -82,7 +88,7 @@ namespace Singleplayer
 
             if (IsFrozenDuringTimeStop(enemy))
             {
-                EndTurnRequest(enemy);
+                HandleTimeStopCounters(enemy);
                 yield break;
             }
 
@@ -99,11 +105,81 @@ namespace Singleplayer
 
             if (IsFrozenDuringTimeStop(player))
             {
-                EndTurnRequest(player);
+                HandleTimeStopCounters(player);
                 yield break;
             }
 
             player.StartTurn();
+        }
+
+        private void HandleTimeStopCounters(IEntity entity)
+        {
+            List<IEffectCardLogic> possibleCounterCards = null;
+
+            switch (entity.GetEntityType)
+            {
+                case EntityType.Player:
+                    var player = entity as BasePlayerController;
+                    possibleCounterCards = player.EffectCardsHandler.GetCounterCards(PassiveEffectType.TimeStop);
+                    break;
+
+                case EntityType.Enemy:
+                    var enemy = entity as BaseEnemy;
+                    possibleCounterCards = enemy.EnemyEffectCardsHandler.GetCounterCards(PassiveEffectType.TimeStop);
+                    break;
+
+                case EntityType.Ally:
+                    break;
+
+                default:
+                    break;
+            }
+
+            if (possibleCounterCards == null || possibleCounterCards.Count == 0)
+                EndTurnRequest(entity);
+            else
+            {
+                switch (entity.GetEntityType)
+                {
+                    case EntityType.Player:
+                        var player = entity as BasePlayerController;
+                        player.ShowCounterCardOptions(possibleCounterCards, OnCounterCardUsed);
+                        break;
+
+                    case EntityType.Enemy:
+                        HandleEnemyCounterCardUsage(entity, possibleCounterCards[0]);
+                        break;
+
+                    case EntityType.Ally:
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        }
+
+        private void HandleEnemyCounterCardUsage(IEntity entity, IEffectCardLogic effectCard)
+        {
+            var enemy = entity as BaseEnemy;
+
+            effectCard.TryToUseCard(isUsed =>
+            {
+                enemy.EnemyEffectCardsHandler.RemoveEffectCard(effectCard);
+                OnCounterCardUsed(effectCard);
+            }, enemy);
+        }
+
+        private void OnCounterCardUsed(IEffectCardLogic usedEddectCard)
+        {
+            if (usedEddectCard == null)
+            {
+                Debug.Log("Player is skipped countering incoming projectile");
+                EndTurnRequest(CurrentTurnEntity);
+                return;
+            }
+
+            CurrentTurnEntity.StartTurn();
         }
 
         private bool IsFrozenDuringTimeStop(IEntity entity)

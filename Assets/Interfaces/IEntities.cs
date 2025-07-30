@@ -28,6 +28,7 @@ namespace Singleplayer
 
         event Action<IEntity> moveEndEvent;
         event Action<IEntity> OnSelfClickHandled;
+        bool SuppressPanelEffectTrigger { get; set; }
         string GetEntityName { get; }
         EntityType GetEntityType { get; }
         PanelScript GetCurrentPanel { get; }

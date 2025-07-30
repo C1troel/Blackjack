@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Unity.VisualScripting;
-using Panel;
 using System;
 using System.Diagnostics;
 using Debug = UnityEngine.Debug;
@@ -26,7 +25,7 @@ namespace Singleplayer
 
         [SerializeField] private Transform playerInfosContainer;
         [SerializeField] private FortuneSpinWheel fortuneWheel;
-        public static PanelEffectsManager Instance { get; private set; }
+        [SerializeField] private GameObject effectPanelStayDecisionUI;
 
         private GameManager gameManager;
 
@@ -43,6 +42,10 @@ namespace Singleplayer
         private Coroutine waitForPlayer;
 
         private Coroutine choosingRoutine;
+
+        private Action<bool?> OnPanelStayCallback;
+
+        public static PanelEffectsManager Instance { get; private set; }
 
         private void Awake()
         {
@@ -68,15 +71,14 @@ namespace Singleplayer
             if (!CanTriggerEffect(entityInit))
             {
                 Debug.Log($"Entity {entityInit.GetEntityName} can't trigger panels.");
-                EndPanelEffect(entityInit);
+                TryToEndPanelEffect(entityInit, panel);
                 yield break;
             }
 
-            bool isComplete = false;
-            yield return StartCoroutine(panel.TriggerPanelEffect(entityInit, () => isComplete = true));
-            yield return new WaitUntil(() => isComplete);
-
-            EndPanelEffect(entityInit);
+            yield return StartCoroutine(panel.TriggerPanelEffect(entityInit, () =>
+            {
+                TryToEndPanelEffect(entityInit, panel);
+            }));
             /*if ((entityInit.GetEntityType == EntityType.Enemy && (entityInit as BaseEnemy).CanTriggerPanels) 
                 || (entityInit.GetEntityType == EntityType.Player))
             {
@@ -218,8 +220,29 @@ namespace Singleplayer
 
         }
 
-        private void EndPanelEffect(IEntity entity)
+        public void SuggestForceStop(Action<bool?> OnStayDecisionCallback)
         {
+            OnPanelStayCallback = OnStayDecisionCallback;
+            effectPanelStayDecisionUI.SetActive(true);
+        }
+
+        public void OnStayBtnClick()
+        {
+            effectPanelStayDecisionUI.SetActive(false);
+            OnPanelStayCallback?.Invoke(true);
+        }
+
+        public void OnStaySkipBtnClick()
+        {
+            effectPanelStayDecisionUI.SetActive(false);
+            OnPanelStayCallback?.Invoke(false);
+        }
+
+        private void TryToEndPanelEffect(IEntity entity, PanelScript triggeredPanel)
+        {
+            if (triggeredPanel.GetEffectPanelInfo.Effect == PanelEffect.Recharge)
+                return;
+
             MapManager.Instance.TempResetMapValuesInfo();
             TurnManager.Instance.EndTurnRequest(entity);
         }

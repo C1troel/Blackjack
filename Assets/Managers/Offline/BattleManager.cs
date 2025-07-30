@@ -53,7 +53,6 @@ namespace Singleplayer
         [SerializeField] private float turnTime;
         [SerializeField] private float cardSpawnDelay;
 
-        private List<Sprite> cardsList = new List<Sprite>();
         private List<Sprite> activeDeck = new List<Sprite>();
 
         private List<GameObject> battleAvatars = new List<GameObject>();
@@ -98,9 +97,6 @@ namespace Singleplayer
 
         private void Start()
         {
-            var sprites = Resources.LoadAll<Sprite>("Cards/PlayingCards");
-            cardsList.AddRange(sprites);
-
             SetupBattleButtons();
 
             SetListenersToAddingButtons();
@@ -1180,7 +1176,7 @@ namespace Singleplayer
 
         private void SetupDeck()
         {
-            activeDeck.AddRange(cardsList);
+            activeDeck.AddRange(GameManager.Instance.BasicCardsList);
 
             System.Random random = new System.Random();
             activeDeck = activeDeck.OrderBy(x => random.Next()).ToList();

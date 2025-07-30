@@ -24,9 +24,27 @@ namespace Singleplayer
 
             public abstract void TryToActivate();
 
+            public virtual bool IsUsable()
+            {
+                return CooldownRounds <= 0;
+            }
+
             public virtual void OnNewTurnStart()
             {
-                Debug.Log("Default behaviour of active effect...");
+                if (CooldownRounds <= 0)
+                {
+                    Debug.Log($"Ability {this} is already ready for activation");
+                    return;
+                }
+
+                CooldownRounds--;
+                Debug.Log($"{this} ability cooldown reset in {CooldownRounds} turns");
+
+                if (CooldownRounds == 0)
+                {
+                    Debug.Log($"Ability {this} is now ready!");
+                    OnGlobalEffectStateChange();
+                }
             }
 
             protected void OnGlobalEffectStateChange() => GlobalEffectStateEvent?.Invoke();
@@ -57,7 +75,17 @@ namespace Singleplayer
 
         public enum ActiveEffectType
         {
-            TimeStop
+            TimeStop,
+            Tornado,
+            Plague,
+            BadTrip,
+            Penalty,
+            LuckyDraw,
+            VIPLockdown,
+            ToxicVapors,
+            HuntingSeason,
+            ArmUp,
+            GuardUp
         }
     }
 }

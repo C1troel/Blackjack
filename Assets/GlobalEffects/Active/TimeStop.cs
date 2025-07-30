@@ -31,11 +31,11 @@ namespace Singleplayer
                 CooldownRounds = this.ActiveGlobalEffectInfo.CooldownRounds;
 
                 int passiveEffectsDuration = this.ActiveGlobalEffectInfo.TurnDuration;
-                var timeStopPassiveEffect = new PassiveEffects.TimeStop(passiveEffectsDuration, PassiveEffectType.TimeStop);
-                var chronoMasterPassiveEffect = new PassiveEffects.Chronomaster(passiveEffectsDuration, PassiveEffectType.Chronomaster);
+                var timeStopPassiveEffect = new PassiveEffects.TimeStop(passiveEffectsDuration);
+                var chronoMasterPassiveEffect = new PassiveEffects.Chronomaster(passiveEffectsDuration);
 
-                entityOwner.PassiveEffectHandler.AddEffect(timeStopPassiveEffect);
-                entityOwner.PassiveEffectHandler.AddEffect(chronoMasterPassiveEffect);
+                entityOwner.PassiveEffectHandler.TryToAddEffect(timeStopPassiveEffect);
+                entityOwner.PassiveEffectHandler.TryToAddEffect(chronoMasterPassiveEffect);
 
                 var entityMono = entityOwner as MonoBehaviour;
                 entityMono.gameObject.layer = LayerMask.NameToLayer(TIME_STOP_BYPASS_LAYER);
@@ -45,6 +45,28 @@ namespace Singleplayer
 
                 GlobalEffectsManager.Instance.StopTime(entityOwner);
                 OnGlobalEffectStateChange();
+
+                switch (entityOwner.GetEntityType)
+                {
+                    case EntityType.Player:
+                        break;
+
+                    case EntityType.Enemy:
+                        var enemy = entityOwner as BaseEnemy;
+                        enemy.ProcessEnemyTurn();
+                        break;
+
+                    case EntityType.Ally:
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+
+            public override bool IsUsable()
+            {
+                return CooldownRounds <= 0;
             }
 
             public override void OnNewTurnStart()

@@ -1,4 +1,5 @@
 using Singleplayer;
+using Singleplayer.ActiveEffects;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,7 +10,7 @@ namespace Singleplayer
     public class EnemyInfo : ScriptableObject
     {
 
-        [Header("Base Stats")]
+        [Header("Settings")]
         [SerializeField] private int _defaultHp;
         [SerializeField] private int _defaultAtk;
         [SerializeField] private int _defaultMoney;
@@ -18,6 +19,7 @@ namespace Singleplayer
         [SerializeField] private int _maxEffectCards;
         [SerializeField] private bool _isBoss;
         [SerializeField] private bool _canTriggerPanels;
+        [SerializeField] private ActiveGlobalEffectInfo _specialAbility;
 
         [Header("Meta Info")]
         [SerializeField] private string _enemyName;
@@ -31,6 +33,8 @@ namespace Singleplayer
         public int MaxEffectCards => _defaultCardUsages;
         public bool CanTriggerPanels => _canTriggerPanels;
         public bool IsBoss => _isBoss;
+        public ActiveGlobalEffectInfo SpecialAbility => _specialAbility;
+
         public string CharacterName => _enemyName;
         public EntityType EntityType => _entityType;
         public EnemyType EnemyType => _enemyType;

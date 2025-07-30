@@ -10,18 +10,18 @@ namespace Singleplayer
     {
         [SerializeField] private PanelEffect _effect;
         [SerializeField] private Sprite _sprite;
-        [SerializeField] private GameObject _panelPrefab;
         [SerializeField] private bool _isSpawn;
+        [SerializeField] private bool _allowDuplicates;
+        [SerializeField] private bool _isForceStop;
         [SerializeField] private int _amount;
         [SerializeField] private int _luckTier;
-        [SerializeField] private bool _isForceStop;
 
-        public Sprite sprite => _sprite;
-        public GameObject panelPrefab => _panelPrefab;
-        public bool isSpawn => _isSpawn;
-        public PanelEffect effect => _effect;
-        public int amount => _amount;
-        public int luckTier => _luckTier;
-        public bool isForceStop => _isForceStop;
+        public Sprite Sprite => _sprite;
+        public bool IsSpawn => _isSpawn;
+        public PanelEffect Effect => _effect;
+        public int Amount => _amount;
+        public int LuckTier => _luckTier;
+        public bool IsForceStop => _isForceStop;
+        public bool AllowDuplicates => _allowDuplicates;
     }
 }

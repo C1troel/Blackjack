@@ -6,7 +6,6 @@ using TMPro;
 using System;
 using System.Linq;
 using System.Collections;
-using Panel;
 using Multiplayer.Panel;
 
 namespace Multiplayer

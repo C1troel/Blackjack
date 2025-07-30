@@ -56,6 +56,8 @@ namespace Singleplayer
             return effectCardLogic;
         }
 
+        public EffectCardInfo GetRandomEffectCardInfo() => effectCardInfosList[Random.Range(0, effectCardInfosList.Count)];
+
         public void DealRandomEffectCard(IEntity entity)
         {
             var dealtCardInfo = effectCardInfosList[Random.Range(0, effectCardInfosList.Count)];

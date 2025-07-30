@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: BadBeat
   m_EditorClassIdentifier: 
   _effect: 10
-  _sprite: {fileID: 0}
-  _panelPrefab: {fileID: 2399929201648208755, guid: 85e6aad2b3fbfdb4da5fa15b8c9ec49d, type: 3}
+  _sprite: {fileID: 21300000, guid: 5d20a84baf426e84cbfb91d4d11deff4, type: 3}
   _isSpawn: 0
+  _allowDuplicates: 1
+  _isForceStop: 0
   _amount: 2
   _luckTier: 1
-  _isForceStop: 0

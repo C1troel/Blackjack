@@ -61,7 +61,7 @@ namespace Singleplayer
 
         private void OnRevealEnd()
         {
-            if (revealedMoveCard == null)
+            if (revealedMoveCard == null || TurnManager.Instance.CurrentTurnEntity.GetEntityType != EntityType.Player)
             {
                 EndReveal();
                 return;

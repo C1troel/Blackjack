@@ -77,7 +77,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 9e6831fb1dd892a4a9b8b8f418694bbd, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 422a919e09f43214a9557f96c0160bf9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -120,18 +120,18 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: -0.0017280579, y: -0.003033638}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 4.8, y: 4.93}
+    oldSize: {x: 5.12, y: 5.12}
     newSize: {x: 5, y: 5}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 4.8, y: 4.93}
+  m_Size: {x: 5.136777, y: 5.118347}
   m_EdgeRadius: 0
 --- !u!50 &5426718641344655219
 Rigidbody2D:
@@ -178,7 +178,6 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
-  _effectPanelInfo: {fileID: 0}
 --- !u!1 &7772004601874784830
 GameObject:
   m_ObjectHideFlags: 0

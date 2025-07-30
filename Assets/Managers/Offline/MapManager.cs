@@ -2,13 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Singleplayer
 {
     public class MapManager : MonoBehaviour
     {
-        [SerializeField] private List<GameObject> panels;
         [SerializeField] private GameObject parentOfAllPanels; // на даний момент використовується для помічення кожної панелі при телепортації
         [SerializeField] private EffectRevealCard usedCard;
 
@@ -17,13 +18,14 @@ namespace Singleplayer
         private List<PanelScript> highlightedPathEnders = new List<PanelScript>();
         private Action currentEffectRevealHandler;
 
+        private Coroutine waitingForPlayer;
+
+        private List<int> stepsDrawnThisTurn = new();
+
         public event Action<ulong> playerMoveEnd;
         public event Action<IEffectCardLogic> OnEffectCardPlayedEvent;
 
-        private Coroutine waitingForPlayer;
-
-        public int GetLastPlayerStepsCount { get; private set; }
-
+        public List<GameObject> panels { get; private set; }
         public bool IsPossiblePlayerTeleportation { get; private set; } = false;
         public static MapManager Instance { get; private set; }
 
@@ -44,33 +46,69 @@ namespace Singleplayer
             gameManager = GameManager.Instance;
         }
 
-        private IEnumerator WaitingForPlayerAction()
+        public void RandomlyAssignEffectPanels()
         {
-            // стандартний вихід з циклу повинен бути реалізований по таймеру!
-            while (true)
+            var allPanels = parentOfAllPanels.GetComponentsInChildren<PanelScript>(includeInactive: true).ToList();
+            var totalPanelCount = allPanels.Count;
+
+            var allEffectInfos = InfosLoadManager.Instance.GetAllEffectPanlesInfo().ToList();
+
+            List<EffectPanelInfoSingleplayer> chosenEffects = new();
+
+            foreach (var info in allEffectInfos)
             {
-                Debug.Log("MapManager is waiting for player action end...");
-                yield return null;
+                for (int i = 0; i < info.Amount; i++)
+                {
+                    chosenEffects.Add(info);
+                }
             }
+
+            if (chosenEffects.Count > totalPanelCount)
+            {
+                Debug.LogError("Not enough panels on the map to satisfy all minimum Amount requirements.");
+                return;
+            }
+
+            int remaining = totalPanelCount - chosenEffects.Count;
+            var allowedDuplicates = allEffectInfos.Where(e => e.AllowDuplicates).ToList();
+
+            for (int i = 0; i < remaining; i++)
+            {
+                if (allowedDuplicates.Count == 0)
+                {
+                    Debug.LogWarning("No effects allow duplicates, leaving remaining panels empty.");
+                    break;
+                }
+
+                var randomEffect = allowedDuplicates[Random.Range(0, allowedDuplicates.Count)];
+                chosenEffects.Add(randomEffect);
+            }
+
+            Shuffle(chosenEffects);
+
+            for (int i = 0; i < allPanels.Count; i++)
+            {
+                allPanels[i].AttachPanelEffect(chosenEffects[i]);
+            }
+
+            Debug.Log("Panels successfully randomized and initialized.");
+            GameManager.Instance.StartGame();
         }
 
-        public void StopWaiting()
+        private void Shuffle<T>(List<T> list)
         {
-            Debug.Log("Stop waiting");
-
-            if (waitingForPlayer == null)
-                return;
-
-            StopCoroutine(waitingForPlayer);
-
-            waitingForPlayer = null;
+            for (int i = list.Count - 1; i > 0; i--)
+            {
+                int j = Random.Range(0, i + 1);
+                (list[i], list[j]) = (list[j], list[i]);
+            }
         }
 
         public List<PanelScript> GetAllPanelsOfType(PanelEffect panelEffect)
         {
             List<PanelScript> resultPanels = new List<PanelScript>();
 
-            var appropriatePanels = panels.FindAll(panel => panel.GetComponent<PanelScript>().GetEffectPanelInfo.effect == panelEffect);
+            var appropriatePanels = panels.FindAll(panel => panel.GetComponent<PanelScript>().GetEffectPanelInfo.Effect == panelEffect);
 
             foreach (var panel in appropriatePanels)
             {
@@ -82,41 +120,12 @@ namespace Singleplayer
 
         public void TempResetMapValuesInfo() // дана функція повинна взагалі спрацьовувати, коли передається хід іншому гравцеві ігровим менеджером
         {
-            GetLastPlayerStepsCount = 0;
+            stepsDrawnThisTurn.Clear();
         }
 
         public void MakeADraw(IEntity entity)
         {
-            int steps = UnityEngine.Random.Range(0, 12); // змінна яка повинна використовуватися замість tempSteps
-
-            int tempSteps = 1;
-
-            GetLastPlayerStepsCount += tempSteps;
-
-            Debug.Log($"GetLastPlayerStepsCount is {GetLastPlayerStepsCount}");
-
-            if (GetLastPlayerStepsCount == 21)
-            {
-                switch (entity.GetEntityType)
-                {
-                    case EntityType.Player:
-                        AccessPlayerToTeleport(entity);
-                        break;
-
-                    case EntityType.Enemy:
-                        var player = gameManager.GetEntityWithType(EntityType.Player);
-                        gameManager.TeleportEntity(((MonoBehaviour)player).transform.position, entity, player.GetCurrentPanel);
-                        break;
-
-                    case EntityType.Ally:
-                        break;
-
-                    default:
-                        break;
-                }
-
-                return;
-            }
+            int tempSteps = 4;
 
             switch (entity.GetEntityType)
             {
@@ -152,13 +161,21 @@ namespace Singleplayer
 
             void AwaitPlayerMoveCardChoosing(int choosedSteps)
             {
+                usedCard.MoveCardValueSelectedEvent -= AwaitPlayerMoveCardChoosing;
                 choosedPlayerSteps = choosedSteps;
                 Debug.Log($"Player choosed: {choosedSteps}");
+
+                stepsDrawnThisTurn.Add(choosedPlayerSteps);
+
+                if (stepsDrawnThisTurn.Count == 2 && stepsDrawnThisTurn.Sum() == 21)
+                {
+                    AccessPlayerToTeleport(player);
+                    return;
+                }
+
                 player.GetSteps(choosedPlayerSteps);
                 PathBuilding(player.GetCurrentPanel, choosedPlayerSteps, player);
                 player.StartMove();
-
-                usedCard.MoveCardValueSelectedEvent -= AwaitPlayerMoveCardChoosing;
             }
 
             usedCard.MoveCardValueSelectedEvent += AwaitPlayerMoveCardChoosing;
@@ -166,18 +183,32 @@ namespace Singleplayer
             usedCard.RevealMoveCard(moveCard);
         }
 
-        /*private void HandleEnemyMovement(BaseEnemy enemy)
+        private void HandleEnemyMovement(BaseEnemy enemy)
         {
-            entity.GetSteps(tempSteps);
-            entity.StartMove();
-        }*/
+            List<Sprite> tempBasicCardsList = new List<Sprite>(GameManager.Instance.BasicCardsList);
+
+            Regex regex = new Regex(@"(11|12|13)$");
+            tempBasicCardsList.RemoveAll(card => regex.IsMatch(card.name));
+
+            var randomDrawedCard = tempBasicCardsList[Random.Range(0, tempBasicCardsList.Count)];
+            MoveCard enemyMoveCard = new MoveCard(randomDrawedCard);
+
+            void AwaitEnemyMoveCardRevealEnd(int steps)
+            {
+                usedCard.MoveCardValueSelectedEvent -= AwaitEnemyMoveCardRevealEnd;
+                enemy.GetSteps(steps);
+                enemy.StartMove();
+            }
+
+            usedCard.MoveCardValueSelectedEvent += AwaitEnemyMoveCardRevealEnd;
+            usedCard.RevealMoveCard(enemyMoveCard);
+        }
 
         private void AccessPlayerToTeleport(IEntity entity)
         {
             IsPossiblePlayerTeleportation = true;
-            waitingForPlayer = StartCoroutine(WaitingForPlayerAction());
 
-            AccessPlayerTeleportationClientRpc();
+            AccessPlayerTeleportation();
         }
 
         public void SubscribeToEntityMoveEndEvent(IEntity entity)
@@ -185,18 +216,13 @@ namespace Singleplayer
             entity.moveEndEvent += OnPlayerMoveEnd;
         }
 
-        /*public void UnsubscribeToPlayerMoveEndEvent(PlayerController player)
+        public void UnsubscribeToPlayerMoveEndEvent(IEntity entity)
         {
-            player.moveEndEvent -= OnPlayerMoveEnd;
-        }*/
+            entity.moveEndEvent -= OnPlayerMoveEnd;
+        }
 
         private void OnPlayerMoveEnd(IEntity entity)
         {
-            /*if (playerMoveEnd != null)
-            {
-                playerMoveEnd(Id);
-            }*/
-
             if (highlightedPathEnders.Count != 0 && entity.GetEntityType == EntityType.Player)
             {
                 foreach (var panel in highlightedPathEnders)
@@ -684,7 +710,7 @@ namespace Singleplayer
             onCardRevealed?.Invoke();
         }
 
-        private void AccessPlayerTeleportationClientRpc()
+        private void AccessPlayerTeleportation()
         {
             foreach (Transform panel in parentOfAllPanels.transform)
             {
@@ -692,11 +718,6 @@ namespace Singleplayer
                 effectPanel.HighlightAsPathEnder();
                 effectPanel.EnableTeleportation();
             }
-        }
-
-        public void ShowUpEventCardClientRpc(string eventName)
-        {
-            // налаштувати SpriteLoadManager під загрузку спрайту з ім'ям eventName
         }
     }
 }

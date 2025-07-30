@@ -14,7 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _effectCardSprite: {fileID: 21300000, guid: 21ca70266aebc054ba04bee60d93082f, type: 3}
   _effectiveDistanceInPanels: 6
+  _effectsDuration: 0
   _effectCardMaterials: 04000000
+  _effectCardPurposes: 00000000
   _effectCardDmgType: 2
   _effectCardType: 1
   _vulnerabilities: []

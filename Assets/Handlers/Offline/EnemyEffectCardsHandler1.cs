@@ -1,5 +1,7 @@
+using Singleplayer.PassiveEffects;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Singleplayer
@@ -61,6 +63,41 @@ namespace Singleplayer
             }
 
             return counterCards;
+        }
+
+        public List<IEffectCardLogic> GetCounterCards(PassiveEffectType passiveEffectType)
+        {
+            List<IEffectCardLogic> counterCards = new List<IEffectCardLogic>();
+
+            foreach (var card in effectCardsList)
+            {
+                var vulnerabilities = card.EffectCardInfo.Vulnerabilities;
+
+                var strength = CombatInteractionEvaluator.Evaluate(vulnerabilities, passiveEffectType);
+
+                if (strength == CombatInteractionEvaluator.InteractionStrength.Strong)
+                {
+                    counterCards.Add(card);
+                }
+            }
+
+            return counterCards;
+        }
+
+        public void RemoveRandomEffectCards(int amount)
+        {
+            if (effectCardsList.Count == 0 || amount <= 0)
+                return;
+
+            int removeCount = Mathf.Min(amount, effectCardsList.Count);
+
+            var randomCardsToRemove = effectCardsList
+                .OrderBy(_ => UnityEngine.Random.value)
+                .Take(removeCount)
+                .ToList();
+
+            foreach (var card in randomCardsToRemove)
+                RemoveEffectCard(card);
         }
 
         public void RemoveEffectCard(IEffectCardLogic effectCard) => effectCardsList.Remove(effectCard);

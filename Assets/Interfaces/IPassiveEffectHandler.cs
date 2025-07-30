@@ -8,10 +8,13 @@ namespace Singleplayer
     {
         public interface IPassiveEffectHandler
         {
-            void AddEffect(BasePassiveGlobalEffect effect);
+            void TryToAddEffect(BasePassiveGlobalEffect effect);
             void ProcessEffects();
+            void ApplyAsConditionalEffect(PassiveEffectType effectType);
             void RemoveEffect(BasePassiveGlobalEffect effect);
+            void RemoveAllEffects();
             bool CheckForActiveEffectType(PassiveEffectType effectType);
+            BasePassiveGlobalEffect GetEffect(PassiveEffectType effectType);
         }
     }
 }

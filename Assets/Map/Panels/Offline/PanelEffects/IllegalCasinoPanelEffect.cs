@@ -9,6 +9,12 @@ namespace Singleplayer
     {
         public IEnumerator Execute(IEntity entityInit, Action onComplete)
         {
+            if (entityInit.GetEntityType != EntityType.Player)
+            {
+                onComplete?.Invoke();
+                yield break;
+            }
+
             var blackjackManager = BlackjackManager.Instance;
             Debug.Log("Panel starting blackjack game");
             blackjackManager.StartBlackjack();

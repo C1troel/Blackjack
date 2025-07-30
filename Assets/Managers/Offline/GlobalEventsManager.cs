@@ -115,8 +115,6 @@ namespace Singleplayer
             }
         }
 
-        private void ShowUpTriggeredEventForPlayers(string eventName) => MapManager.Instance.ShowUpEventCardClientRpc(eventName);
-
         public void TriggerGlobalEvent(IEntity entityInit, string eventName = null)
         {
             string triggeredEventName = eventName;

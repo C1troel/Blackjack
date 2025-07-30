@@ -13,10 +13,10 @@ namespace Singleplayer
             public Chronomaster(PassiveGlobalEffectInfo passiveGlobalEffectInfo) : base(passiveGlobalEffectInfo)
             {}
 
-            public Chronomaster(int turns, PassiveEffectType passiveEffectType) : base(turns, passiveEffectType)
+            public Chronomaster(int turns) : base(turns)
             {}
 
-            public override void HandlePassiveEffect()
+            public override void HandlePassiveEffect(IEntity entityOwner)
             {
                 TurnsRemaining--;
                 Debug.Log($"Allow moving in stopped time lasts for {TurnsRemaining} turns");

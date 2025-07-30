@@ -11,10 +11,10 @@ namespace Singleplayer
             public TimeStop(PassiveGlobalEffectInfo passiveGlobalEffectInfo) : base(passiveGlobalEffectInfo)
             {}
 
-            public TimeStop(int turns, PassiveEffectType passiveEffectType) : base(turns, passiveEffectType)
+            public TimeStop(int turns) : base(turns)
             {}
 
-            public override void HandlePassiveEffect()
+            public override void HandlePassiveEffect(IEntity entityOwner)
             {
                 TurnsRemaining--;
                 Debug.Log($"Keep stopped time remaining {TurnsRemaining} turns");

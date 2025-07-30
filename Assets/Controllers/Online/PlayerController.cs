@@ -2,7 +2,6 @@ using UnityEngine;
 using System.Collections;
 using Unity.Netcode;
 using TMPro;
-using Panel;
 using System;
 using Multiplayer.Panel;
 

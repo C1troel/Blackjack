@@ -1,3 +1,4 @@
+using Singleplayer.ActiveEffects;
 using Singleplayer.PassiveEffects;
 using System;
 using System.Collections;
@@ -28,10 +29,13 @@ namespace Singleplayer
 
         public EnemyEffectCardsHandler EnemyEffectCardsHandler { get; private set; }
         public IPassiveEffectHandler PassiveEffectHandler {  get; protected set; }
+        public BaseActiveGlobalEffect SpecialAbility { get; protected set; }
 
         public event Action<IEntity> moveEndEvent;
         public event Action<IEntity> OnSelfClickHandled;
         public Animator Animator { get; protected set; }
+
+        public bool SuppressPanelEffectTrigger { get; set; } = true;
 
         private void Start()
         {
@@ -80,6 +84,7 @@ namespace Singleplayer
 
             Animator = gameObject.GetComponent<Animator>();
             EnemyEffectCardsHandler = new EnemyEffectCardsHandler(this, enemyInfo.MaxEffectCards);
+            SetupSpecialAbility();
             
             direction = Direction.Right; // Left
             //direction = ??? // код для визначення можливої траекторії руху після спавну ворога
@@ -91,6 +96,7 @@ namespace Singleplayer
         {
             PassiveEffectHandler.ProcessEffects();
             EnemyEffectCardsHandler.OnNewTurnStart();
+            SpecialAbility?.OnNewTurnStart();
         }
 
         public virtual void StartTurn()
@@ -107,8 +113,12 @@ namespace Singleplayer
                 return;
             }
             else
-            {
                 Debug.Log($"Enemy {enemyInfo.CharacterName} isn`t using any card");
+
+            if (SpecialAbility != null && SpecialAbility.IsUsable())
+            {
+                SpecialAbility.TryToActivate();
+                return;
             }
 
             Debug.Log($"{this} start moving");
@@ -303,13 +313,8 @@ namespace Singleplayer
         #region Вплив на сутність
         public virtual void GetDamage(int value)
         {
-            if (value <= 0)
-            {
-                hp -= 1;
-                return;
-            }
-
             hp -= value;
+            hp = Mathf.Max(hp, 0);
         }
 
         public virtual void Heal(int value)
@@ -358,14 +363,16 @@ namespace Singleplayer
 
             Animator.speed = targetSpeed;
         }
+
+        public void PickUpMoney(int amount) => money += amount;
+
+        public void SetOutline() => spriteRenderer.material = outlineSpriteMaterial;
+        public void RemoveOutline() => spriteRenderer.material = defaultSpriteMaterial;
         #endregion
 
         #region Маніпуляції з ефектними картами
         public void ResetEffectCardsUsages() => leftCards = enemyInfo.DefaultCardUsages;
         public void DecreaseEffectCardsUsages() => --leftCards;
-
-        public void SetOutline() => spriteRenderer.material = outlineSpriteMaterial;
-        public void RemoveOutline() => spriteRenderer.material = defaultSpriteMaterial;
         #endregion
 
         #region Сутичка з іншою сутністю
@@ -385,6 +392,12 @@ namespace Singleplayer
         public virtual IEnumerator OnStepOntoPanel(PanelScript panel)
         {
             currentPanel = panel;
+
+            if (SuppressPanelEffectTrigger)
+            {
+                SuppressPanelEffectTrigger = false;
+                yield break;
+            }
 
             IEntity self = this;
             var otherEntities = panel.EntitiesOnPanel
@@ -469,6 +482,23 @@ namespace Singleplayer
         public bool CanTriggerPanels => canTriggerPanels;
         public string GetEntitySuit => ""; // optional
         public Direction GetEntityDirection => direction;
+        #endregion
+
+        #region Службові методи
+        public void SetupSpecialAbility(ActiveGlobalEffectInfo activeGlobalEffectInfo = null)
+        {
+            if (activeGlobalEffectInfo == null && this.enemyInfo.SpecialAbility == null)
+                return;
+
+            ActiveGlobalEffectInfo specialAbilityInfo = null;
+
+            if (activeGlobalEffectInfo == null)
+                specialAbilityInfo = this.enemyInfo.SpecialAbility;
+            else
+                specialAbilityInfo = activeGlobalEffectInfo;
+
+            SpecialAbility = BaseActiveGlobalEffect.GetActiveGlobalEffectInstance(specialAbilityInfo, this);
+        }
         #endregion
 
         #region TempEnemyActions

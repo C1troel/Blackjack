@@ -17,8 +17,20 @@ namespace Singleplayer
                 this.entity = entity;
             }
 
-            public void AddEffect(BasePassiveGlobalEffect effect)
+            public void TryToAddEffect(BasePassiveGlobalEffect effect)
             {
+                if (entity.GetEntityHp == 0)
+                {
+                    Debug.Log("Trying to apply passive effect to dead entity");
+                    return;
+                }
+
+                var existingEffect = GetEffect(effect.PassiveGlobalEffectInfo.EffectType);
+                if (existingEffect != null)
+                {
+                    activeEffects.Remove(existingEffect);
+                }
+
                 activeEffects.Add(effect);
             }
 
@@ -43,6 +55,16 @@ namespace Singleplayer
                     effect.PassiveGlobalEffectInfo.EffectType == effectType);
             }
 
+            public void ApplyAsConditionalEffect(PassiveEffectType effectType)
+            {
+                if (!activeEffects.Any(effect => effect.PassiveGlobalEffectInfo.EffectType == effectType))
+                    return;
+
+                var conditionalPassiveEffect = activeEffects.Find(effect => effect.PassiveGlobalEffectInfo.EffectType == effectType);
+                conditionalPassiveEffect.ApplyAsConditionalEffect();
+                RemoveEffect(conditionalPassiveEffect);
+            }
+
             public void ProcessEffects()
             {
                 if (activeEffects.Count == 0)
@@ -50,7 +72,7 @@ namespace Singleplayer
 
                 for (int i = activeEffects.Count - 1; i >= 0; i--)
                 {
-                    activeEffects[i].HandlePassiveEffect();
+                    activeEffects[i].HandlePassiveEffect(entity);
 
                     if (activeEffects[i].TurnsRemaining == 0)
                     {
@@ -58,6 +80,11 @@ namespace Singleplayer
                         activeEffects.RemoveAt(i);
                     }
                 }
+            }
+
+            public BasePassiveGlobalEffect GetEffect(PassiveEffectType effectType)
+            {
+                return activeEffects.Find(effect => effect.PassiveGlobalEffectInfo.EffectType == effectType);
             }
         }
     }

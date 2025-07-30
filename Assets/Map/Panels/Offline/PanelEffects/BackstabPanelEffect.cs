@@ -23,17 +23,31 @@ namespace Singleplayer
                     break;
 
                 case EntityType.Enemy:
-                    target = GameManager.Instance.GetEntityWithType(EntityType.Player);
+                    target = HandleEnemyTargeting(entity);
                     break;
             }
 
             yield return new WaitUntil(() => target != null);
 
             Debug.Log($"Backstab target: {target.GetEntityName}");
-            GameManager.Instance.DealDamage(target, DAMAGE);
 
-            yield return new WaitForSeconds(0.5f);
+            if (target == entity)
+                Debug.Log("Cannot target anyone for backstab...");
+            else
+                GameManager.Instance.DealDamage(target, DAMAGE);
+
+            yield return null;
             onComplete?.Invoke();
+        }
+
+        private IEntity HandleEnemyTargeting(IEntity entityInit)
+        {
+            var player = GameManager.Instance.GetEntityWithType(EntityType.Player);
+
+            if (player.GetEntityHp == 0)
+                return entityInit;
+
+            return player;
         }
     }
 }

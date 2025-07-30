@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,8 +13,6 @@ namespace Singleplayer
         [SerializeField] private GridLayoutGroup cardSelectionContainer;
         [SerializeField] private GameObject preselectCardPrefab;
         [SerializeField] private GameObject background;
-
-        private List<Sprite> basicCardsList = new List<Sprite>();
 
         private int preselectCardsAmount = 3;
         public bool isPlayerPreselect { get; private set; } = false;
@@ -33,7 +32,6 @@ namespace Singleplayer
 
         private void Start()
         {
-            basicCardsList = SpriteLoadManager.Instance.GetAllBasicCardSprites();
         }
 
         public void StartDealerInteraction()
@@ -47,6 +45,9 @@ namespace Singleplayer
 
         private void SetupPreselectCards()
         {
+            List<Sprite> basicCardsList = new List<Sprite>();
+            basicCardsList.AddRange(GameManager.Instance.BasicCardsList);
+
             System.Random random = new System.Random();
             basicCardsList = basicCardsList.OrderBy(x => random.Next()).ToList();
 
@@ -70,6 +71,7 @@ namespace Singleplayer
         private void EndDealerInteraction()
         {
             background.SetActive(false);
+            isPlayerPreselect = true;
             /*GameManager.Instance.TogglePlayersHUD(true);*/
 
             foreach (Transform card in cardSelectionContainer.transform)
@@ -80,7 +82,6 @@ namespace Singleplayer
         private void OnPreselectCardClick(PreselectCard clickedCard)
         {
             Debug.Log($"Player preselect card: {clickedCard.GetPreselectCardSprite().name}");
-            isPlayerPreselect = true;
             BlackjackManager.Instance.PreselectCardForNextGame(clickedCard.GetPreselectCardSprite());
             EndDealerInteraction();
         }
@@ -88,7 +89,6 @@ namespace Singleplayer
         public void OnPreselectSkipBtnClick()
         {
             Debug.Log("Player skip card preselection!");
-            isPlayerPreselect = true;
             EndDealerInteraction();
         }
 

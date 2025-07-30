@@ -8,6 +8,8 @@ namespace Singleplayer
 {
     public class GlobalEffectsManager : MonoBehaviour
     {
+        [SerializeField] private GameObject toxicGasPrefab;
+        [SerializeField] private GameObject donorFineNoticePrefab;
         private const string TIME_STOP_BYPASS_LAYER = "ColorObject";
         private List<BasePassiveGlobalEffect> activeEffectsList = new List<BasePassiveGlobalEffect>();
         private CameraController mainPlayerCamera;
@@ -108,10 +110,23 @@ namespace Singleplayer
 
         private void HandlePassiveEffects()
         {
-            activeEffectsList.RemoveAll(effect => effect.TurnsRemaining == 0);
+            foreach (var passiveEffect in activeEffectsList)
+            {
+                if (passiveEffect.TurnsRemaining == 0)
+                    RemovePassiveEffect(passiveEffect);
+            }
 
             foreach (var effect in activeEffectsList)
-                effect.HandlePassiveEffect();
+                effect.HandlePassiveEffect(null);
         }
+
+        private void RemovePassiveEffect(BasePassiveGlobalEffect endedEffect)
+        {
+            endedEffect.EndPassiveEffect(null);
+            activeEffectsList.Remove(endedEffect);
+        }
+
+        public GameObject GetToxicGasPrefab => toxicGasPrefab;
+        public GameObject GetDonorFineNoticePrefab => donorFineNoticePrefab;
     }
 }

@@ -17,6 +17,8 @@ namespace Singleplayer
         [SerializeField] private Button cardDrawBtn;
 
         [SerializeField] private PlayerEffectCardsHandler playerEffectCardsHandler;
+        [SerializeField] private SavingMoneyController savingMoneyController;
+        [SerializeField] private ShoppingController shoppingController;
 
         private BasePlayerController managedPlayer;
 
@@ -44,7 +46,7 @@ namespace Singleplayer
         {
             EffectCardApplier.Instance.gameObject.SetActive(isActive);
             cardDrawBtn.interactable = isActive;
-            OnPlayerSpecialAbilityStateChange();
+            specialAbilityBtn.interactable = isActive;
         }
 
         private void OnPlayerSpecialAbilityStateChange()
@@ -70,5 +72,8 @@ namespace Singleplayer
             playerMoneyText.text = $"{managedPlayer.GetEntityMoney}";
             playerChipsText.text = $"{managedPlayer.GetEntityChips}";
         }
+
+        public SavingMoneyController GetSavingMoneyController => savingMoneyController;
+        public ShoppingController GetShoppingController => shoppingController;
     }
 }

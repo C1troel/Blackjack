@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,17 +20,27 @@ namespace Singleplayer
                 TurnsRemaining = passiveGlobalEffectInfo.TurnDuration;
             }
 
-            public BasePassiveGlobalEffect(int turns, PassiveEffectType passiveEffectType)
+            public BasePassiveGlobalEffect(int turns)
             {
                 TurnsRemaining = turns;
-                PassiveGlobalEffectInfo = InfosLoadManager.Instance.GetPassiveGlobalEffectInfo(passiveEffectType);
+
+                string className = GetType().Name;
+
+                if (Enum.TryParse(className, out PassiveEffectType effectType))
+                {
+                    PassiveGlobalEffectInfo = InfosLoadManager.Instance.GetPassiveGlobalEffectInfo(effectType);
+                }
+                else
+                {
+                    Debug.LogError($"Failed to parse PassiveEffectType from class name '{className}'");
+                }
             }
 
-            public abstract void HandlePassiveEffect();
+            public abstract void HandlePassiveEffect(IEntity entityOwner);
 
             public virtual void ApplyAsConditionalEffect()
             {
-                Debug.Log("Conditional effect applying...");
+                Debug.Log($"Conditional effect {this.PassiveGlobalEffectInfo.EffectType} applying...");
             }
 
             public virtual void EndPassiveEffect(IEntity entityInit)
@@ -41,7 +52,11 @@ namespace Singleplayer
         public enum PassiveEffectType
         {
             TimeStop,
-            Chronomaster
+            Chronomaster,
+            Wound,
+            Patch,
+            Plague,
+            ShoppingMania
         }
     }
 }

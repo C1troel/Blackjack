@@ -28,6 +28,9 @@ namespace Singleplayer
         public BaseActiveGlobalEffect SpecialAbility {  get; protected set; }
 
         public CameraController PlayerCamera { get; protected set; }
+        /*public bool IsTemporarilyImmortal { get; protected set; }*/ // можливо для іншого режиму складності(наприклад для легкого)
+
+        public bool SuppressPanelEffectTrigger { get; set; } = true;
 
         protected CharacterInfo characterInfo;
 
@@ -148,6 +151,13 @@ namespace Singleplayer
 
         public void StartTurn()
         {
+            if (hp == 0)
+            {
+                Revive();
+                TurnManager.Instance.EndTurnRequest(this);
+                return;
+            }
+
             ResetEffectCardsUsages();
             GameManager.Instance.TogglePlayerHudButtons(true);
             EffectCardsHandler.OnNewTurnStart();
@@ -277,9 +287,9 @@ namespace Singleplayer
         public void Pay(int value, bool useChips)
         {
             if (useChips)
-                chips -= value;
+                chips = Mathf.Max(0, chips - value);
             else
-                money -= value;
+                money = Mathf.Max(0, money - value);
 
             CurencyChange();
         }
@@ -296,15 +306,40 @@ namespace Singleplayer
 
         public virtual void GetDamage(int value)
         {
-            if (value <= 0)
-            {
-                hp -= 1;
-                return;
-            }
-
             hp -= value;
+            hp = Mathf.Max(hp, 0);
 
             HpChange();
+
+            if (hp == 0)
+                Knockout();
+        }
+
+        private void Knockout()
+        {
+            Dead();
+            /*IsTemporarilyImmortal = true;*/
+            PassiveEffectHandler.RemoveAllEffects();
+
+            if (money > 1)
+            {
+                int lostMoney = money / 2;
+                Pay(lostMoney, false);
+
+                var droppedMoneyPrefab = GameManager.Instance.GetDroppedMoneyPrefab;
+                var droppedMoneyGO = Instantiate(droppedMoneyPrefab, currentPanel.transform.position, Quaternion.identity);
+                var droppedMoneyHandler = droppedMoneyGO.GetComponent<DroppedMoneyHandler>();
+                droppedMoneyHandler.ManageDroppedMoney(this, lostMoney);
+                droppedMoneyGO.SetActive(true);
+            }
+
+            TurnManager.Instance.EndTurnRequest(this);
+        }
+
+        private void Revive()
+        {
+            DeadOff();
+            hp = characterInfo.DefaultHp;
         }
 
         public virtual void Heal(int value)
@@ -492,6 +527,26 @@ namespace Singleplayer
         public virtual IEnumerator OnStepOntoPanel(PanelScript panel)
         {
             currentPanel = panel;
+
+            if (SuppressPanelEffectTrigger)
+            {
+                SuppressPanelEffectTrigger = false;
+                yield break;
+            }
+
+            if (panel.GetEffectPanelInfo.IsForceStop)
+            {
+                StopMoving();
+                bool? stayDecision = null;
+                PanelEffectsManager.Instance.SuggestForceStop(decision => stayDecision = decision);
+
+                yield return new WaitUntil(() => stayDecision.HasValue);
+
+                if (stayDecision.Value)
+                    leftSteps = 1;
+
+                StartMove();
+            }
 
             IEntity self = this;
             var otherEntities = panel.EntitiesOnPanel

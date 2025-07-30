@@ -1,8 +1,7 @@
-using System.Collections;
+/*using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using Panel;
 
 public class SpawningManager : MonoBehaviour
 {
@@ -34,4 +33,4 @@ public class SpawningManager : MonoBehaviour
     {
         _spawns = spawns;
     }
-}
+}*/
