@@ -953,7 +953,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 89081958}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1914379935}
+        m_TargetAssemblyTypeName: Singleplayer.SavingMoneyController, Assembly-CSharp
+        m_MethodName: OnSaveCancelBtnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &89081958
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1010,6 +1022,7 @@ MonoBehaviour:
   - {fileID: 9150493611987832038}
   - {fileID: 9150493612000378886}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &95073211
 GameObject:
   m_ObjectHideFlags: 0
@@ -1710,7 +1723,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &112383302
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1718,14 +1731,14 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 112383301}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1174763935}
   - {fileID: 1199756535}
-  m_Father: {fileID: 7565890428034535544}
+  m_Father: {fileID: 501390717}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -2236,6 +2249,7 @@ MonoBehaviour:
   - {fileID: 9150493610989325582}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 11400000, guid: 4afafb9483ab198419e8b291dba337f8, type: 2}
 --- !u!1 &164871529
 GameObject:
   m_ObjectHideFlags: 0
@@ -2306,6 +2320,7 @@ MonoBehaviour:
   - {fileID: 9150493612190375230}
   - {fileID: 9150493612229046028}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &187395187
 GameObject:
   m_ObjectHideFlags: 0
@@ -2759,6 +2774,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493610275368862}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 11400000, guid: cd42011e569541845a52c80c64c7581b, type: 2}
 --- !u!1 &232228854
 GameObject:
   m_ObjectHideFlags: 0
@@ -2996,7 +3012,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 238076652}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1914379935}
+        m_TargetAssemblyTypeName: Singleplayer.SavingMoneyController, Assembly-CSharp
+        m_MethodName: OnSaveAllBtnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &238076652
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3053,6 +3081,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611379250921}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &256012552
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3071,6 +3100,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611843754267}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &260440462
 GameObject:
   m_ObjectHideFlags: 0
@@ -3529,6 +3559,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611536117524}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &276423685
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3547,6 +3578,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493610932949988}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &280859477
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3565,6 +3597,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493610494938481}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &293486069
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3583,6 +3616,7 @@ MonoBehaviour:
   - {fileID: 9150493612202730426}
   - {fileID: 9150493611758600829}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &295284361
 GameObject:
   m_ObjectHideFlags: 0
@@ -3878,6 +3912,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611984087703}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &322032481
 GameObject:
   m_ObjectHideFlags: 0
@@ -3943,6 +3978,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &326257044
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3961,6 +3997,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611548277724}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &335261207
 GameObject:
   m_ObjectHideFlags: 0
@@ -4113,6 +4150,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611422067751}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &354126833
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4131,6 +4169,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611379639278}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &366036518
 GameObject:
   m_ObjectHideFlags: 0
@@ -4304,6 +4343,7 @@ MonoBehaviour:
   - {fileID: 9150493612155495196}
   - {fileID: 9150493610763635877}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &376247512
 GameObject:
   m_ObjectHideFlags: 0
@@ -4684,6 +4724,7 @@ MonoBehaviour:
   - {fileID: 9150493611928408297}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &432755348
 GameObject:
   m_ObjectHideFlags: 0
@@ -5357,6 +5398,7 @@ MonoBehaviour:
   - {fileID: 9150493611422067751}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &473594758
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5375,6 +5417,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611695418245}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &476962704
 GameObject:
   m_ObjectHideFlags: 0
@@ -5787,6 +5830,46 @@ MonoBehaviour:
   cardGiveSpeed: 3
   turnTime: 10
   cardSpawnDelay: 2
+--- !u!1 &501390716
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 501390717}
+  m_Layer: 5
+  m_Name: Unused
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &501390717
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 501390716}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 984694411153247029}
+  - {fileID: 1677642537}
+  - {fileID: 112383302}
+  - {fileID: 614281444}
+  - {fileID: 5846733473525214917}
+  m_Father: {fileID: 7565890428034535544}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &516054606
 GameObject:
   m_ObjectHideFlags: 0
@@ -5974,6 +6057,7 @@ MonoBehaviour:
   - {fileID: 9150493612284605218}
   - {fileID: 9150493611204654668}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &547953493
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5992,6 +6076,7 @@ MonoBehaviour:
   - {fileID: 9150493610767903305}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &551369613
 GameObject:
   m_ObjectHideFlags: 0
@@ -6279,6 +6364,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493612037650015}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &560685529
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6297,6 +6383,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493610333589969}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &566231002
 GameObject:
   m_ObjectHideFlags: 0
@@ -7171,7 +7258,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &614281444
 RectTransform:
   m_ObjectHideFlags: 0
@@ -7179,14 +7266,14 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 614281443}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 964389666}
   - {fileID: 807037620}
-  m_Father: {fileID: 7565890428034535544}
+  m_Father: {fileID: 501390717}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -8126,6 +8213,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493610715931759}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &771767707
 GameObject:
   m_ObjectHideFlags: 0
@@ -9362,6 +9450,7 @@ MonoBehaviour:
   - {fileID: 9150493611135074376}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &952505817
 GameObject:
   m_ObjectHideFlags: 0
@@ -9910,9 +9999,9 @@ MonoBehaviour:
   testPredefindCharacterName: TimeStopper
   playerPref: {fileID: 1091366665892431321, guid: a2c9085a93bcc0547972b02c76068e22, type: 3}
   testPlayerSpawnPanel: {fileID: 9150493611487188671}
-  testEnemySpawnPanel: {fileID: 9150493611691867432}
+  testEnemySpawnPanel: {fileID: 9150493611106445761}
   inputBlock: {fileID: 7498455835032814808}
-  droppedMoneyPrefab: {fileID: 0}
+  droppedMoneyPrefab: {fileID: 1901776789308406174, guid: 72a61977caed5134db346b79cc67c8b7, type: 3}
   playerHUD: {fileID: 2527588422887053864}
   playerHUDManager: {fileID: 7565890428034535545}
   mapManager: {fileID: 315252791}
@@ -9935,6 +10024,7 @@ MonoBehaviour:
   - {fileID: 9150493610715931759}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 11400000, guid: cd42011e569541845a52c80c64c7581b, type: 2}
 --- !u!114 &1061581020
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9953,6 +10043,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493612014760061}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &1066059617
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9971,6 +10062,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493610695203747}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &1070944483
 GameObject:
   m_ObjectHideFlags: 0
@@ -10123,6 +10215,7 @@ MonoBehaviour:
   - {fileID: 9150493611106445761}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &1086418776
 GameObject:
   m_ObjectHideFlags: 0
@@ -10970,6 +11063,7 @@ MonoBehaviour:
   - {fileID: 9150493611544138252}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &1150139819
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10988,6 +11082,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611554489843}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &1171312096
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11006,6 +11101,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611122839600}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &1174763934
 GameObject:
   m_ObjectHideFlags: 0
@@ -11369,6 +11465,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611544138252}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &1205562761
 GameObject:
   m_ObjectHideFlags: 0
@@ -11521,6 +11618,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611118812760}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &1219430895
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11539,6 +11637,7 @@ MonoBehaviour:
   - {fileID: 9150493611792408477}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &1221612644
 GameObject:
   m_ObjectHideFlags: 0
@@ -11930,6 +12029,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493610507303676}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &1269020429
 GameObject:
   m_ObjectHideFlags: 0
@@ -12290,6 +12390,7 @@ MonoBehaviour:
   - {fileID: 9150493610975134722}
   - {fileID: 9150493610968583553}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 11400000, guid: da872a9f815acd043abd6191bab137a0, type: 2}
 --- !u!1 &1296585159
 GameObject:
   m_ObjectHideFlags: 0
@@ -12576,6 +12677,7 @@ MonoBehaviour:
   - {fileID: 9150493612263563118}
   - {fileID: 9150493611187674220}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1001 &1314451714
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12867,6 +12969,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493610767903305}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &1339369084
 GameObject:
   m_ObjectHideFlags: 0
@@ -13019,6 +13122,7 @@ MonoBehaviour:
   - {fileID: 9150493611122839600}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &1352474151
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13037,6 +13141,7 @@ MonoBehaviour:
   - {fileID: 9150493611131121384}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &1374817347
 GameObject:
   m_ObjectHideFlags: 0
@@ -13217,6 +13322,7 @@ MonoBehaviour:
   - {fileID: 9150493611493150910}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &1381756080
 GameObject:
   m_ObjectHideFlags: 0
@@ -13273,6 +13379,7 @@ MonoBehaviour:
   - {fileID: 9150493611488857894}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &1442467471
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13291,6 +13398,7 @@ MonoBehaviour:
   - {fileID: 9150493611209191717}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &1445630641
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13309,6 +13417,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611792408477}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &1474477961
 GameObject:
   m_ObjectHideFlags: 0
@@ -13461,6 +13570,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611864906248}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &1529003821
 GameObject:
   m_ObjectHideFlags: 0
@@ -13994,6 +14104,7 @@ MonoBehaviour:
   - {fileID: 9150493610324993768}
   - {fileID: 9150493610329070708}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &1633007002
 GameObject:
   m_ObjectHideFlags: 0
@@ -15338,6 +15449,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611396442414}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &1676929876
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15356,6 +15468,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611826786619}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &1677642536
 GameObject:
   m_ObjectHideFlags: 0
@@ -15374,7 +15487,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1677642537
 RectTransform:
   m_ObjectHideFlags: 0
@@ -15382,13 +15495,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1677642536}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 164871530}
-  m_Father: {fileID: 7565890428034535544}
+  m_Father: {fileID: 501390717}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -15549,6 +15662,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493610806407631}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &1735328857
 GameObject:
   m_ObjectHideFlags: 0
@@ -15632,9 +15746,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: Singleplayer.DealerUIContoller, Assembly-CSharp
-        m_MethodName: OnPreselectSkipBtnClick
+      - m_Target: {fileID: 1140135525}
+        m_TargetAssemblyTypeName: Singleplayer.ShoppingController, Assembly-CSharp
+        m_MethodName: OnShopExitBtnClick
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -17671,6 +17785,7 @@ MonoBehaviour:
   - {fileID: 9150493611558130060}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &1993872936
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17689,6 +17804,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611487188671}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &1998729430
 GameObject:
   m_ObjectHideFlags: 0
@@ -17905,7 +18021,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2004416207}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1914379935}
+        m_TargetAssemblyTypeName: Singleplayer.SavingMoneyController, Assembly-CSharp
+        m_MethodName: OnSaveHalfBtnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2004416207
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18133,6 +18261,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611093957393}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &2038956454
 GameObject:
   m_ObjectHideFlags: 0
@@ -18272,6 +18401,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611106445761}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &2041377050
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18290,6 +18420,7 @@ MonoBehaviour:
   - {fileID: 9150493611691867432}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &2044719025
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18308,6 +18439,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611102336041}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &2045457650
 GameObject:
   m_ObjectHideFlags: 0
@@ -18447,6 +18579,7 @@ MonoBehaviour:
   - {fileID: 9150493611800998978}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &2047648959
 GameObject:
   m_ObjectHideFlags: 0
@@ -18509,6 +18642,7 @@ MonoBehaviour:
   - {fileID: 9150493610460165998}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &2071880826
 GameObject:
   m_ObjectHideFlags: 0
@@ -18906,6 +19040,7 @@ MonoBehaviour:
   - {fileID: 9150493610504602515}
   - {fileID: 0}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!114 &2120349790
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18924,6 +19059,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 9150493611558130060}
   directionArrowPrefab: {fileID: 8450717663884731075, guid: a5f8b6ff387695c4a933b760a0477ee5, type: 3}
+  _effectPanelInfo: {fileID: 0}
 --- !u!1 &2134885193
 GameObject:
   m_ObjectHideFlags: 0
@@ -19682,7 +19818,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &984694411153247029
 RectTransform:
   m_ObjectHideFlags: 0
@@ -19690,13 +19826,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 982890350387925655}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2819675399459217576}
-  m_Father: {fileID: 7565890428034535544}
+  m_Father: {fileID: 501390717}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -26310,7 +26446,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 3e5f991107124b247b0f1630b36c5af6, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 422a919e09f43214a9557f96c0160bf9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -28797,7 +28933,7 @@ PrefabInstance:
     - target: {fileID: 6059622106214796368, guid: 85e6aad2b3fbfdb4da5fa15b8c9ec49d, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: 3e5f991107124b247b0f1630b36c5af6, type: 3}
+      objectReference: {fileID: 21300000, guid: 422a919e09f43214a9557f96c0160bf9, type: 3}
     m_RemovedComponents:
     - {fileID: 0}
     m_RemovedGameObjects: []
@@ -28982,17 +29118,17 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7345222403301108125}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7496732608930723710}
-  m_Father: {fileID: 7565890428034535544}
+  m_Father: {fileID: 501390717}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 166.31555, y: -166.81555}
+  m_AnchoredPosition: {x: -724.4392, y: 323.18445}
   m_SizeDelta: {x: 334.6311, y: 334.6311}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &5915528021081920111
@@ -29902,7 +30038,7 @@ GameObject:
   - component: {fileID: 6256250462279794159}
   - component: {fileID: 970862425576580917}
   m_Layer: 5
-  m_Name: Scroll View
+  m_Name: PlayersView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -29922,10 +30058,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 7565890428034535544}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 892.9302, y: -540}
-  m_SizeDelta: {x: 1785.9, y: 1080}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7434079100541293676
 CanvasRenderer:
@@ -30063,25 +30199,21 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2259625612083919261}
-  - {fileID: 7496888075788754368}
   - {fileID: 1386288420225262509}
   - {fileID: 483119068}
   - {fileID: 6342232332179100848}
+  - {fileID: 7496888075788754368}
   - {fileID: 7368971567850871040}
-  - {fileID: 614281444}
-  - {fileID: 112383302}
-  - {fileID: 5846733473525214917}
   - {fileID: 7169784982549505293}
   - {fileID: 6717587598801065211}
   - {fileID: 1301681053091179858}
   - {fileID: 1503348238829371693}
   - {fileID: 7758302915795547273}
-  - {fileID: 1677642537}
-  - {fileID: 984694411153247029}
   - {fileID: 1940619421}
   - {fileID: 566231004}
   - {fileID: 1140135524}
   - {fileID: 1914379934}
+  - {fileID: 501390717}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -30105,11 +30237,14 @@ MonoBehaviour:
   playerHpText: {fileID: 3467654064355791489}
   playerMoneyText: {fileID: 1653350351}
   playerChipsText: {fileID: 551369615}
+  roundCountText: {fileID: 7856766270312582350}
+  leftCardsText: {fileID: 8884775263574549970}
+  stepsLeftText: {fileID: 6667413790141384259}
   specialAbilityBtn: {fileID: 3783171082626551114}
   cardDrawBtn: {fileID: 7949772969466988026}
   playerEffectCardsHandler: {fileID: 7567381988339087346}
-  savingMoneyController: {fileID: 0}
-  shoppingController: {fileID: 0}
+  savingMoneyController: {fileID: 1914379935}
+  shoppingController: {fileID: 1140135525}
 --- !u!222 &7566585533829232282
 CanvasRenderer:
   m_ObjectHideFlags: 0

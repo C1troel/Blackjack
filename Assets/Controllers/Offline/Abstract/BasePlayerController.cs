@@ -18,7 +18,7 @@ namespace Singleplayer
         public event Action<IEntity> moveEndEvent;
         public event Action<IEntity> OnSelfClickHandled;
 
-        public event Action HpChangeEvent, StatsChangeEvent, CurencyChangeEvent;
+        public event Action HpChangeEvent, StatsChangeEvent, CurencyChangeEvent, LeftEffectCardsChangeEvent, LeftStepsChangeEvent;
 
         public Animator Animator { get; protected set; }
 
@@ -395,6 +395,7 @@ namespace Singleplayer
         public virtual void GetSteps(int value)
         {
             leftSteps = value;
+            LeftStepsChangeEvent?.Invoke();
         }
 
         public virtual IEnumerator Move(IEntity player, Direction direction = Direction.Standart, PanelScript panel = null)
@@ -461,6 +462,7 @@ namespace Singleplayer
                 yield return null;
 
             leftSteps -= 1;
+            LeftStepsChangeEvent?.Invoke();
 
             if (leftSteps == 0)
             {
@@ -497,7 +499,6 @@ namespace Singleplayer
             Debug.Log($"Coroutine Started, StepsLeft {leftSteps}");
             moving = StartCoroutine(Move(this, direction, panel));
             canMove = true;
-            Walk();
         }
 
         public virtual void StopMoving()
@@ -534,7 +535,7 @@ namespace Singleplayer
                 yield break;
             }
 
-            if (panel.GetEffectPanelInfo.IsForceStop)
+            if (panel.GetEffectPanelInfo.IsForceStop && leftSteps > 1)
             {
                 StopMoving();
                 bool? stayDecision = null;
@@ -543,7 +544,10 @@ namespace Singleplayer
                 yield return new WaitUntil(() => stayDecision.HasValue);
 
                 if (stayDecision.Value)
+                {
                     leftSteps = 1;
+                    LeftStepsChangeEvent?.Invoke();
+                }
 
                 StartMove();
             }
@@ -569,9 +573,17 @@ namespace Singleplayer
         public void ManageEffectCardsHandler(PlayerEffectCardsHandler playerEffectCardsHandler) => EffectCardsHandler = playerEffectCardsHandler;
         public void EnableAttacking() => isEventAttack = true;
 
-        public void ResetEffectCardsUsages() => leftCards = characterInfo.DefaultCardUsages;
+        public void ResetEffectCardsUsages()
+        {
+            leftCards = characterInfo.DefaultCardUsages;
+            LeftEffectCardsChangeEvent?.Invoke();
+        }
 
-        public void DecreaseEffectCardsUsages() => --leftCards;
+        public void DecreaseEffectCardsUsages()
+        {
+            --leftCards;
+            LeftEffectCardsChangeEvent?.Invoke();
+        }
 
         public string GetEntityName => characterName;
         public EntityType GetEntityType => characterInfo.EntityType;
@@ -583,6 +595,8 @@ namespace Singleplayer
         public int GetEntityChips => chips;
         public int GetEntityAtk => atk;
         public int GetEntityLeftCards => leftCards;
+        public int GetEntityDefaultCardUsages => leftCards;
+        public int GetEntityLeftSteps => leftSteps;
         public bool GetEntityAttackAccess => isEventAttack;
         public string GetEntitySuit => cardSuit;
         public Direction GetEntityDirection => direction;

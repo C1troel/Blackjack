@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 namespace Singleplayer
 {
@@ -74,6 +75,13 @@ namespace Singleplayer
                 yield return null;
             }
             intensity = target;
+        }
+
+        public void ForceSnapToPlayer()
+        {
+            var player = GameManager.Instance.GetEntityWithType(EntityType.Player);
+            var playerMono = player as MonoBehaviour;
+            transform.position = new Vector3(playerMono.transform.position.x, playerMono.transform.position.y, transform.position.z);
         }
     }
 }

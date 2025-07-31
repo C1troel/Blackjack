@@ -86,7 +86,7 @@ namespace Singleplayer
             EnemyEffectCardsHandler = new EnemyEffectCardsHandler(this, enemyInfo.MaxEffectCards);
             SetupSpecialAbility();
             
-            direction = Direction.Right; // Left
+            direction = Direction.Left; // Left
             //direction = ??? // код для визначення можливої траекторії руху після спавну ворога
         }
 
@@ -215,10 +215,10 @@ namespace Singleplayer
 
             Debug.LogWarning("Left Steps");
 
+            leftSteps -= 1;
+
             while (!canMove)
                 yield return null;
-
-            leftSteps -= 1;
 
             if (leftSteps == 0)
             {
@@ -251,7 +251,6 @@ namespace Singleplayer
 
             moving = StartCoroutine(MoveToPlayer(foundPathToPlayer));
             canMove = true;
-            Walk();
         }
 
         public virtual IEnumerator MoveToPlayer(List<PanelScript> pathToPlayer)
@@ -260,6 +259,9 @@ namespace Singleplayer
 
             foreach (var panel in pathToPlayer)
             {
+                if (leftSteps <= 0)
+                    break;
+
                 var currentStayedPanel = currentPanel;
                 var currentPos = transform.position;
                 var destination = panel.transform.position;
@@ -274,20 +276,15 @@ namespace Singleplayer
 
                 transform.position = new Vector3(destination.x, destination.y, transform.position.z);
 
-                Debug.Log($"Direction before stand on panel {panel.name} is {this.direction}");
                 this.direction = MapManager.GetDirectionFromTo(currentStayedPanel, panel);
                 this.currentPanel = panel;
-                Debug.Log($"Direction after stand on panel {panel.name} is {this.direction}");
 
                 leftSteps -= 1;
 
-                while (!canMove)
-                    yield break;
-
                 Debug.LogWarning($"Left Steps: {leftSteps}");
 
-                if (leftSteps == 0)
-                    break;
+                if (!canMove)
+                    yield break;
             }
 
             WalkOff();

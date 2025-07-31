@@ -32,7 +32,6 @@ namespace Singleplayer
 
         public BasePlayerController PlayerData { get; private set; }
         public List<Sprite> BasicCardsList { get; private set; }
-        public GameObject GetDroppedMoneyPrefab { get; }
         public bool IsChoosing { get; private set; }
 
         private EntitySpawnManager enemySpawnManager;
@@ -58,6 +57,7 @@ namespace Singleplayer
             enemySpawnManager = EntitySpawnManager.Instance;
 
             MapManager.Instance.RandomlyAssignEffectPanels();
+            /*StartGame();*/
         }
 
         #region Tests
@@ -206,6 +206,7 @@ namespace Singleplayer
 
         public void StartChoosingTarget(Action<IEntity> callback, List<IEntity> allowedTargets = null)
         {
+            Debug.Log("Choosing is started");
             IsChoosing = true;
             IEntity chosenTarget = null;
             List<IEntity> possibleTargetEntities = new List<IEntity>();
@@ -324,6 +325,9 @@ namespace Singleplayer
             ((MonoBehaviour)entity).transform.position = targetTeleportPosition;
             Debug.Log($"Player with name {entity.GetEntityName} got teleported!");
 
+            if (entity.GetEntityType == EntityType.Player)
+                ((MonoBehaviour)entity).GetComponentInChildren<CameraController>().ForceSnapToPlayer();
+
             if (panelTrigger != null)
             {
                 while (entity.GetCurrentPanel != panelTrigger)
@@ -342,6 +346,7 @@ namespace Singleplayer
 
         public List<IEntity> GetEntitiesList() => entitiesList;
 
+        public GameObject GetDroppedMoneyPrefab => droppedMoneyPrefab;
         public SavingMoneyController GetSavingMoneyController => playerHUDManager.GetSavingMoneyController;
         public ShoppingController GetShoppingController => playerHUDManager.GetShoppingController;
 

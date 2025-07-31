@@ -33,8 +33,9 @@ namespace Singleplayer
                 Debug.Log("Cannot target anyone for pursuit...");
             else
             {
-                entity.EnableAttacking();
-                ((MonoBehaviour)entity).gameObject.transform.position = ((MonoBehaviour)target).transform.position;
+                entity.SuppressPanelEffectTrigger = true;
+                /*((MonoBehaviour)entity).gameObject.transform.position = ((MonoBehaviour)target).transform.position;*/
+                GameManager.Instance.TeleportEntity(((MonoBehaviour)target).transform.position, entity, null);
                 yield return null;
 
                 var battleManager = BattleManager.Instance;

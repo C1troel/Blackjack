@@ -9,13 +9,13 @@ namespace Singleplayer
     public class TurnManager : MonoBehaviour
     {
         private Queue<IEntity> turnQueue = new Queue<IEntity>();
+        private bool isTurnActive = false;
         public IEntity CurrentTurnEntity { get; private set; }
 
-        public static TurnManager Instance { get; private set; }
-
         public event Action OnNewRoundStarted;
+        public int CurrentRound {  get; private set; }
 
-        private bool isTurnActive = false;
+        public static TurnManager Instance { get; private set; }
 
         private void Awake()
         {
@@ -56,7 +56,7 @@ namespace Singleplayer
                 {
                     case EntityType.Player:
                         Debug.Log("=== New Round Started ===");
-                        OnNewRoundStarted?.Invoke();
+                        OnNewRoundStart();
 
                         StartCoroutine(HandlePlayerTurn());
                         yield return new WaitUntil(() => isTurnActive == false);
@@ -76,6 +76,12 @@ namespace Singleplayer
 
                 turnQueue.Enqueue(CurrentTurnEntity);
             }
+        }
+
+        private void OnNewRoundStart()
+        {
+            CurrentRound++;
+            OnNewRoundStarted?.Invoke();
         }
 
         private IEnumerator HandleEnemyTurn()

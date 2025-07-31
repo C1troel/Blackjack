@@ -22,7 +22,7 @@ namespace Singleplayer
 
                 CooldownRounds = this.ActiveGlobalEffectInfo.CooldownRounds;
 
-                List<GameObject> randomPanels = MapManager.Instance.panels
+                List<PanelScript> randomPanels = MapManager.Instance.panels
                     .OrderBy(x => Random.value)
                     .Take(6)
                     .ToList();

@@ -63,20 +63,20 @@ namespace Singleplayer
 
         public void OnSaveAllBtnClick()
         {
-            EndSavingInteraction();
             onMoneySaveCallback?.Invoke(player.GetEntityMoney);
+            EndSavingInteraction();
         }
 
         public void OnSaveHalfBtnClick()
         {
-            EndSavingInteraction();
             onMoneySaveCallback?.Invoke(player.GetEntityMoney / 2);
+            EndSavingInteraction();
         }
 
         public void OnSaveCancelBtnClick()
         {
-            EndSavingInteraction();
             onMoneySaveCallback?.Invoke(0);
+            EndSavingInteraction();
         }
     }
 }

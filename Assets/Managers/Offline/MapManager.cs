@@ -25,7 +25,7 @@ namespace Singleplayer
         public event Action<ulong> playerMoveEnd;
         public event Action<IEffectCardLogic> OnEffectCardPlayedEvent;
 
-        public List<GameObject> panels { get; private set; }
+        public List<PanelScript> panels { get; private set; }
         public bool IsPossiblePlayerTeleportation { get; private set; } = false;
         public static MapManager Instance { get; private set; }
 
@@ -91,6 +91,8 @@ namespace Singleplayer
                 allPanels[i].AttachPanelEffect(chosenEffects[i]);
             }
 
+            panels = allPanels;
+
             Debug.Log("Panels successfully randomized and initialized.");
             GameManager.Instance.StartGame();
         }
@@ -108,7 +110,7 @@ namespace Singleplayer
         {
             List<PanelScript> resultPanels = new List<PanelScript>();
 
-            var appropriatePanels = panels.FindAll(panel => panel.GetComponent<PanelScript>().GetEffectPanelInfo.Effect == panelEffect);
+            var appropriatePanels = panels.FindAll(panel => panel.GetEffectPanelInfo.Effect == panelEffect);
 
             foreach (var panel in appropriatePanels)
             {
@@ -134,8 +136,8 @@ namespace Singleplayer
                     /*HandlePlayerMovement(entity as BasePlayerController);*/
 
                     entity.GetSteps(tempSteps);
-                    PathBuilding(entity.GetCurrentPanel, tempSteps, entity);
-                    //HighlightReachablePanels(entity.GetCurrentPanel, tempSteps, entity);
+                    //PathBuilding(entity.GetCurrentPanel, tempSteps, entity);
+                    HighlightReachablePanels(entity.GetCurrentPanel, tempSteps, entity);
                     entity.StartMove();
                     break;
 
@@ -285,6 +287,7 @@ namespace Singleplayer
                         }
                         else
                         {
+                            Application.Quit();
                             Debug.Log("є пропущені панелі");
                             // нічого
                         }
@@ -438,53 +441,79 @@ namespace Singleplayer
             highlightedPathEnders = pathEnders;
         }
 
-        private void HighlightReachablePanels(PanelScript startPanel, int maxSteps, IEntity entity)
+        private void HighlightReachablePanels(PanelScript startPanel, int stepCount, IEntity entity)
         {
-            if (startPanel == null || entity == null || maxSteps <= 0)
+            // Если количество шагов = 0, текущая панель и есть конечная точка
+            if (stepCount == 0)
+            {
+                startPanel.HighlightAsPathEnder();
+                highlightedPathEnders = new List<PanelScript> { startPanel };
                 return;
+            }
 
-            HashSet<(PanelScript, Direction)> visited = new();
-            HashSet<PanelScript> result = new();
+            // Для отслеживания посещённых состояний: (панель, предыдущая панель, шаг)
+            var visited = new HashSet<(PanelScript, PanelScript, int)>();
+            var endPanels = new HashSet<PanelScript>();
+            var queue = new Queue<(PanelScript current, PanelScript prev, int steps)>();
 
-            Queue<(PanelScript panel, Direction dir, int stepsLeft)> queue = new();
-            Direction startDirection = entity.GetEntityDirection;
-
-            queue.Enqueue((startPanel, startDirection, maxSteps));
-            visited.Add((startPanel, startDirection));
+            // Начальное состояние
+            queue.Enqueue((startPanel, null, 0));
+            visited.Add((startPanel, null, 0));
 
             while (queue.Count > 0)
             {
-                var (currentPanel, currentDir, stepsLeft) = queue.Dequeue();
+                var (current, prev, steps) = queue.Dequeue();
 
-                if (stepsLeft == 0)
+                // Если достигли нужного количества шагов - фиксируем конечную панель
+                if (steps == stepCount)
                 {
-                    result.Add(currentPanel);
+                    endPanels.Add(current);
                     continue;
                 }
 
-                var forwardPanels = currentPanel.GetAvailableForwardPanels(currentDir);
-
-                foreach (var (neighbor, newDir) in forwardPanels)
+                // Получаем доступных соседей с учётом направления
+                List<PanelScript> neighbors;
+                if (steps == 0) // Первый шаг: учитываем направление движения
                 {
-                    var key = (neighbor, newDir);
-                    if (visited.Contains(key))
-                        continue;
+                    neighbors = current.GetAvailableNearPanelsOrNull(
+                        entity,
+                        null,
+                        null,
+                        true
+                    );
+                }
+                else // Последующие шаги: исключаем возврат
+                {
+                    neighbors = current.GetAvailableNearPanelsOrNull(
+                        entity,
+                        null,
+                        prev,
+                        false
+                    );
+                }
 
-                    visited.Add(key);
-                    queue.Enqueue((neighbor, newDir, stepsLeft - 1));
+                // Обрабатываем всех доступных соседей
+                foreach (var neighbor in neighbors)
+                {
+                    // Пропускаем нулевые и уже посещённые состояния
+                    if (neighbor == null) continue;
+
+                    var state = (neighbor, current, steps + 1);
+                    if (visited.Contains(state)) continue;
+
+                    visited.Add(state);
+                    queue.Enqueue(state);
                 }
             }
 
-            // Подсветка результата
-            foreach (var panel in result)
+            // Подсвечиваем конечные точки
+            foreach (var panel in endPanels)
+            {
                 panel.HighlightAsPathEnder();
+            }
 
-            highlightedPathEnders = result.ToList();
+            highlightedPathEnders = endPanels.ToList();
         }
-
-
-
-
 
         public static int FindDistanceBetweenPanels(PanelScript start, PanelScript target)
         {

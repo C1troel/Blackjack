@@ -71,7 +71,7 @@ namespace Singleplayer
             if (!CanTriggerEffect(entityInit))
             {
                 Debug.Log($"Entity {entityInit.GetEntityName} can't trigger panels.");
-                TryToEndPanelEffect(entityInit, panel);
+                EndPanelEffect(entityInit);
                 yield break;
             }
 
@@ -243,6 +243,11 @@ namespace Singleplayer
             if (triggeredPanel.GetEffectPanelInfo.Effect == PanelEffect.Recharge)
                 return;
 
+            EndPanelEffect(entity);
+        }
+
+        private void EndPanelEffect(IEntity entity)
+        {
             MapManager.Instance.TempResetMapValuesInfo();
             TurnManager.Instance.EndTurnRequest(entity);
         }

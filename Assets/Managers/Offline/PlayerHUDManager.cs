@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -8,10 +9,18 @@ namespace Singleplayer
 {
     public class PlayerHUDManager : MonoBehaviour
     {
+        private const string ROUND_PREFIX = "Round ";
+        private const string LEFT_CARDS_PREFIX = "Draw cards: ";
+        private const string LEFT_STEPS_PREFIX = "Steps left: ";
+
         [SerializeField] private TextMeshProUGUI playerStatsText;
         [SerializeField] private TextMeshProUGUI playerHpText;
         [SerializeField] private TextMeshProUGUI playerMoneyText;
         [SerializeField] private TextMeshProUGUI playerChipsText;
+
+        [SerializeField] private TextMeshProUGUI roundCountText;
+        [SerializeField] private TextMeshProUGUI leftCardsText;
+        [SerializeField] private TextMeshProUGUI stepsLeftText;
 
         [SerializeField] private Button specialAbilityBtn;
         [SerializeField] private Button cardDrawBtn;
@@ -29,7 +38,13 @@ namespace Singleplayer
             managedPlayer.HpChangeEvent += OnPlayerHpChange;
             managedPlayer.StatsChangeEvent += OnPlayerStatsChange;
             managedPlayer.SpecialAbility.GlobalEffectStateEvent += OnPlayerSpecialAbilityStateChange;
+
             managedPlayer.ManageEffectCardsHandler(playerEffectCardsHandler);
+            savingMoneyController.ManageForPlayer(managedPlayer);
+
+            managedPlayer.LeftEffectCardsChangeEvent += OnLeftEffectCardsChange;
+            managedPlayer.LeftStepsChangeEvent += OnLeftStepsChange;
+            TurnManager.Instance.OnNewRoundStarted += OnNewRoundStart;
 
             UpdateAllHud();
         }
@@ -41,6 +56,13 @@ namespace Singleplayer
             OnPlayerCurrencyChange();
             OnPlayerSpecialAbilityStateChange();
         }
+
+        private void OnLeftStepsChange() => stepsLeftText.text = LEFT_STEPS_PREFIX + managedPlayer.GetEntityLeftSteps;
+
+        private void OnLeftEffectCardsChange() => leftCardsText.text = 
+            $"{LEFT_CARDS_PREFIX}{managedPlayer.GetEntityLeftCards}/{managedPlayer.GetEntityDefaultCardUsages}";
+
+        private void OnNewRoundStart() => roundCountText.text = ROUND_PREFIX + TurnManager.Instance.CurrentRound;
 
         public void TogglePlayerHudButtons(bool isActive)
         {

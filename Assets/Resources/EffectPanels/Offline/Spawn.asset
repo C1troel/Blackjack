@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Spawn
   m_EditorClassIdentifier: 
   _effect: 13
-  _sprite: {fileID: 0}
+  _sprite: {fileID: 21300000, guid: 28f525f8e38ad2e429839d89a6c517b1, type: 3}
   _isSpawn: 1
   _allowDuplicates: 0
   _isForceStop: 1

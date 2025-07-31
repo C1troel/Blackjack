@@ -96,7 +96,7 @@ namespace Singleplayer
 
             foreach (var entity in entities)
             {
-                if (entity.Animator.speed == 0)
+                if (entity.Animator.speed < 1)
                     StartCoroutine(entity.ResumeAnimationSmoothly(2));
             }
 

@@ -23,13 +23,14 @@ namespace Singleplayer
         // Нижнє поле повинно бути приватним! (без сериалайза)?
         [SerializeField] private List<GameObject> _posOfPanels = new List<GameObject>(Enumerable.Repeat<GameObject>(null, 4));
         [SerializeField] private GameObject directionArrowPrefab;
-        /*[SerializeField] private EffectPanelInfoSingleplayer _effectPanelInfo;*/
+        [SerializeField] private EffectPanelInfoSingleplayer _effectPanelInfo;
         [SerializeField] private IPanelEffect panelEffect;
 
         private EffectPanelInfoSingleplayer effectPanelInfo;
         private SpriteRenderer panelSprite;
 
         private List<IEntity> entitiesOnPanel = new List<IEntity>();
+        private HashSet<IEntity> subscribedEntities = new HashSet<IEntity>();
         public IReadOnlyList<IEntity> EntitiesOnPanel => entitiesOnPanel;
 
         private List<GameObject> arrowsList = new List<GameObject>();
@@ -44,11 +45,18 @@ namespace Singleplayer
         private void Start()
         {
             panelSprite = GetComponent<SpriteRenderer>();
+            /*TestAttachPanelEffect();*/
         }
 
         private void Update()
         {
 
+        }
+
+        private void TestAttachPanelEffect()
+        {
+            if (_effectPanelInfo != null)
+                AttachPanelEffect(_effectPanelInfo);
         }
 
         public IEnumerator TriggerPanelEffect(IEntity entityInit, Action onComplete)
@@ -448,8 +456,13 @@ namespace Singleplayer
 
             if (!collision.gameObject.TryGetComponent<IEntity>(out var entity)) return;
 
-            if (!entity.SuppressPanelEffectTrigger)
+            Debug.Log($"Entity {entity} step on panel {effectPanelInfo.Effect}");
+
+            if (!entity.SuppressPanelEffectTrigger && !subscribedEntities.Contains(entity))
+            {
                 entity.moveEndEvent += OnEntityStay;
+                subscribedEntities.Add(entity);
+            }
 
             if (!entitiesOnPanel.Contains(entity))
             {
@@ -483,7 +496,11 @@ namespace Singleplayer
 
             if (!collision.gameObject.TryGetComponent<IEntity>(out var entity)) return;
 
-            entity.moveEndEvent -= OnEntityStay;
+            if (subscribedEntities.Contains(entity))
+            {
+                entity.moveEndEvent -= OnEntityStay;
+                subscribedEntities.Remove(entity);
+            }
 
             if (entitiesOnPanel.Contains(entity))
                 entitiesOnPanel.Remove(entity);
@@ -497,7 +514,7 @@ namespace Singleplayer
                 return;
             }
 
-            Debug.Log("OnPlayerStay");
+            Debug.Log($"Entity stayed on panel {effectPanelInfo.Effect}");
             StartCoroutine(PanelEffectsManager.Instance
                 .TriggerPanelEffect(this, entity));
         }

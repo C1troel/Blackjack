@@ -136,6 +136,11 @@ namespace Singleplayer
         {
             this.effectCardInfo = effectCardInfo;
 
+            var effectCardImage = GetComponent<Image>();
+
+            if (effectCardInfo.EffectCardSprite != null)
+                effectCardImage.sprite = effectCardInfo.EffectCardSprite;
+
             string typeName = $"{this.GetType().Namespace}.{effectCardInfo.EffectCardType}";
             var logicType = Type.GetType(typeName);
 
