@@ -124,8 +124,12 @@ namespace Singleplayer
             var player = entitiesList[0];
             var enemy = entitiesList[1];
 
-            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.Hourglass);
-            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.Hourglass);
+            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BigAttackPack);
+            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.SmallMedicine);
+            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BigDefensePack);
+            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.BigDefensePack);
+            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.BigAttackPack);
+            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.SmallMedicine);
         }
         #endregion
 

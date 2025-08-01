@@ -10,6 +10,7 @@ namespace Singleplayer
     public abstract class BaseEffectCard : MonoBehaviour, IEffectCard, IBeginDragHandler, IEndDragHandler, IDragHandler, IPointerEnterHandler, IPointerExitHandler
     {
         [HideInInspector] public Transform parentAfterDrag;
+        private int originalSiblingIndex;
 
         public event Action<BaseEffectCard> OnEffectCardUsed;
         public IEffectCardLogic EffectCardLogic { get; private set; }
@@ -54,8 +55,13 @@ namespace Singleplayer
         {
             EffectCardApplier.Instance.OnCardBeginDrag();
 
+            if (BattleManager.Instance.isBattleActive)
+                BattleManager.Instance.GetBattlePlayerEffectCardsApplier.OnCardBeginDrag();
+
             Debug.Log("BeginDrag");
             parentAfterDrag = transform.parent;
+            originalSiblingIndex = transform.GetSiblingIndex();
+
             var parentOfParent = transform.parent.transform.parent;
             transform.SetParent(parentOfParent);
             _image.raycastTarget = false;
@@ -71,24 +77,35 @@ namespace Singleplayer
         {
             Debug.Log("EndDrag");
 
-            if (!EffectCardLogic.CanCounter && (player.GetEntityLeftCards == 0 || !EffectCardLogic.CanUse))
+            if (!EffectCardLogic.CanCounter && 
+                (player.GetEntityLeftCards == 0 || !EffectCardLogic.CanUse) && 
+                !BattleManager.Instance.isBattleActive)
             {
                 transform.SetParent(parentAfterDrag);
+                transform.SetSiblingIndex(originalSiblingIndex);
                 transform.localPosition = Vector3.zero;
 
                 _image.raycastTarget = true;
                 EffectCardApplier.Instance.OnCardEndDrag();
+
+                if (BattleManager.Instance.isBattleActive)
+                    BattleManager.Instance.GetBattlePlayerEffectCardsApplier.OnCardEndDrag();
+
                 return;
             }
 
             if (eventData.pointerEnter == null || eventData.pointerEnter.GetComponent<IDropHandler>() == null)
             {
                 transform.SetParent(parentAfterDrag);
+                transform.SetSiblingIndex(originalSiblingIndex);
                 transform.localPosition = Vector3.zero;
             }
 
             _image.raycastTarget = true;
             EffectCardApplier.Instance.OnCardEndDrag();
+
+            if (BattleManager.Instance.isBattleActive)
+                BattleManager.Instance.GetBattlePlayerEffectCardsApplier.OnCardEndDrag();
         }
 
 
@@ -98,6 +115,12 @@ namespace Singleplayer
                 return;
 
             GameManager.Instance.TogglePlayerHudButtons(false);
+            RemoveCardOutline();
+            _animator.SetTrigger("CardUsage");
+        }
+
+        public virtual void UseCardInBattle()
+        {
             RemoveCardOutline();
             _animator.SetTrigger("CardUsage");
         }

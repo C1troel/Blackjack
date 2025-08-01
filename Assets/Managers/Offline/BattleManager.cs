@@ -29,10 +29,13 @@ namespace Singleplayer
         [SerializeField] private GameObject DefHandContainer;
         [SerializeField] private GameObject BattleButtonsContainer;
 
+        [SerializeField] private BattlePlayerEffectCardsHandler battleEffectCardsHandler;
+        [SerializeField] private BattleEffectCardApplier battleEffectCardsApplier;
+
         /// <summary>
         /// Наступні 8 змінних потрібні для тесту додавання карт до рук гравця(поки не налаштована система ефектних карт)
         /// </summary>
-        [SerializeField] private GameObject TESTAddingCardButtonsAtk;
+        /*[SerializeField] private GameObject TESTAddingCardButtonsAtk;
         [SerializeField] private Button TESTAdd1CardButtonAtk;
         [SerializeField] private Button TESTAdd2CardButtonAtk;
         [SerializeField] private Button TESTAdd3CardButtonAtk;
@@ -40,7 +43,7 @@ namespace Singleplayer
         [SerializeField] private GameObject TESTAddingCardButtonsDef;
         [SerializeField] private Button TESTAdd1CardButtonDef;
         [SerializeField] private Button TESTAdd2CardButtonDef;
-        [SerializeField] private Button TESTAdd3CardButtonDef;
+        [SerializeField] private Button TESTAdd3CardButtonDef;*/
 
         [SerializeField] private TextMeshProUGUI TESTleftCardsAddingText;
         [SerializeField] private TextMeshProUGUI TESTAlreadyAddedCardsText;
@@ -70,10 +73,10 @@ namespace Singleplayer
         private Coroutine cardGiving;
         private Coroutine timerRunning;
 
-        private ValueTuple<int, int> playerCardAdds = new ValueTuple<int, int>(0, 0);
+        private ValueTuple<int, int> entitiesCardAdds = new ValueTuple<int, int>(0, 0); // Item1 = atk, Item2 = def
 
-        private int leftCardAdds = 3;
-        private int TESTalreadyCardsAdds = 0;
+        /*private int leftCardAdds = 3;*/
+        /*private int alreadyAddedCardsCount = 0;*/
 
         private bool? atkPlayerSplitChoose = null;
         private bool? atkPlayerInsuranceChoose = null;
@@ -99,7 +102,7 @@ namespace Singleplayer
         {
             SetupBattleButtons();
 
-            SetListenersToAddingButtons();
+            /*SetListenersToAddingButtons();*/
         }
 
         public void TryToStartBattle(IEntity atk, IEntity def)
@@ -157,11 +160,11 @@ namespace Singleplayer
             switch (entity.GetEntityType)
             {
                 case EntityType.Player:
-                    AllowAtkForPlayer();
+                    AllowAtkForPlayer(entity);
                     break;
 
                 case EntityType.Enemy:
-                    AtkForEnemy();
+                    AtkForEnemy(entity);
                     break;
 
                 case EntityType.Ally:
@@ -173,11 +176,14 @@ namespace Singleplayer
             }
         }
 
-        private void AllowAtkForPlayer()
+        private void AllowAtkForPlayer(IEntity entity)
         {
+            var player = entity as BasePlayerController;
             _atackButton.gameObject.SetActive(true);
+            battleEffectCardsApplier.ToggleBattleCardApplier(true);
+            battleEffectCardsHandler.ShowPlayerBattleEffectCards(player, true);
 
-            TESTAddingCardButtonsAtk.SetActive(true);
+            /*TESTAddingCardButtonsAtk.SetActive(true);*/
         }
 
         private void OnAttackButtonClick()
@@ -186,13 +192,19 @@ namespace Singleplayer
             Debug.Log("OnAttackButtonClick");
             StartAttack();
 
-            TurnCardAddingButtons(false);
-            ResetAddingCardsTextBoxes(true);
+            battleEffectCardsApplier.ToggleBattleCardApplier(false);
+            battleEffectCardsHandler.HideAndReturnPlayerBattleEffectCards();
+            /*TurnCardAddingButtons(false);
+            ResetAddingCardsTextBoxes(true);*/
         }
 
-        private void AtkForEnemy() // метод для реалізації атаки, противником
+        private void AtkForEnemy(IEntity entity) // метод для реалізації атаки, противником
         {
-            // код перевірки того, чи є бойові карти у противника
+            var enemy = entity as BaseEnemy;
+
+            if (entity.GetCurrentPanel.GetEffectPanelInfo.Effect != PanelEffect.VIPClub)
+                enemy.EnemyEffectCardsHandler.UseAllCardsByPurpose(EffectCardPurpose.BattleAttack);
+
             StartAttack();
         }
 
@@ -225,12 +237,13 @@ namespace Singleplayer
             }
         }
 
-        private void AllowDefForPlayer(IEntity player)
+        private void AllowDefForPlayer(IEntity entity)
         {
-            #region TestAddingCards
-            TESTAlreadyAddedCardsText.text = TESTalreadyCardsAdds.ToString();
+            var player = entity as BasePlayerController;
+            /*#region TestAddingCards
+            TESTAlreadyAddedCardsText.text = alreadyAddedCardsCount.ToString();
             TESTleftCardsAddingText.text = leftCardAdds.ToString();
-            #endregion
+            #endregion*/
 
             if (IsFrozenDuringTimeStop(player))
             {
@@ -241,7 +254,9 @@ namespace Singleplayer
             _defendButton.gameObject.SetActive(true);
             _splitDefButton.gameObject.SetActive(true);
 
-            TESTAddingCardButtonsDef.SetActive(true);
+            battleEffectCardsApplier.ToggleBattleCardApplier(true);
+            battleEffectCardsHandler.ShowPlayerBattleEffectCards(player, false);
+            /*TESTAddingCardButtonsDef.SetActive(true);*/
         }
 
         private void OnDefendButtonClick()
@@ -251,8 +266,10 @@ namespace Singleplayer
             Debug.Log("OnDefendButtonClick");
             StartDefend();
 
-            TurnCardAddingButtons(false);
-            ResetAddingCardsTextBoxes(false);
+            battleEffectCardsApplier.ToggleBattleCardApplier(false);
+            battleEffectCardsHandler.HideAndReturnPlayerBattleEffectCards();
+            /*TurnCardAddingButtons(false);
+            ResetAddingCardsTextBoxes(false);*/
         }
 
         private void OnSplitDefButtonClick()
@@ -266,17 +283,22 @@ namespace Singleplayer
             StopTimer();
         }
 
-        private void DefForEnemy(IEntity enemy)
+        private void DefForEnemy(IEntity entity)
         {
+            var enemy = entity as BaseEnemy;
+
             if (IsFrozenDuringTimeStop(enemy))
             {
                 StartDefend();
                 return;
             }
 
-            // код перевірки того, чи є захисні карти у противника
             // також можливо додати шанс на вибір спліта / не шанс а перевірка на те, що він і так програє
             // також інші обробки, наприклад ефектів
+
+            if (entity.GetCurrentPanel.GetEffectPanelInfo.Effect != PanelEffect.VIPClub)
+                enemy.EnemyEffectCardsHandler.UseAllCardsByPurpose(EffectCardPurpose.BattleDefense);
+
             StartDefend();
         }
 
@@ -426,12 +448,12 @@ namespace Singleplayer
             else if (atkPlayerSplitChoose == false)
                 Debug.Log($"SkipATKSplit!!!");
 
-            if (!isAtkBlackJack && (playerCardAdds.Item1 != 0))
+            if (!isAtkBlackJack && (entitiesCardAdds.Item1 != 0))
             {
                 yield return StartCoroutine(SpawnLeftCards(true));
                 totalAtkScore = SummarizeHandDamage(entitiesHands[0].Item2);
             }
-            if (!isDefBlackJack && (playerCardAdds.Item2 != 0))
+            if (!isDefBlackJack && (entitiesCardAdds.Item2 != 0))
             {
                 yield return StartCoroutine(SpawnLeftCards(false));
                 totalDefScore = SummarizeHandDamage(entitiesHands[1].Item2);
@@ -701,7 +723,7 @@ namespace Singleplayer
             foreach (var card in entitiesHands[1].Item2)
                 Destroy(card.gameObject);
 
-            playerCardAdds = new ValueTuple<int, int>(0, 0);
+            entitiesCardAdds = new ValueTuple<int, int>(0, 0);
 
             entitiesHands.Clear();
 
@@ -715,7 +737,6 @@ namespace Singleplayer
             battleAvatars.Clear();
             atkPlayerSplitChoose = null;
             atkPlayerInsuranceChoose = null;
-            ResetAddingCards();
         }
 
         private void RevealFacedDownCard() => entitiesHands[1].Item2.Find(card => card.isFacedDown).FlipCard();
@@ -859,10 +880,10 @@ namespace Singleplayer
         {
             if (isForAtk)
             {
-                while (playerCardAdds.Item1 > 0)
+                while (entitiesCardAdds.Item1 > 0)
                 {
                     SpawnNextCard(0, true, false);
-                    --playerCardAdds.Item1;
+                    --entitiesCardAdds.Item1;
 
                     while (cardGiving != null)
                         yield return null;
@@ -870,10 +891,10 @@ namespace Singleplayer
             }
             else if (!isForAtk)
             {
-                while (playerCardAdds.Item2 > 0)
+                while (entitiesCardAdds.Item2 > 0)
                 {
                     SpawnNextCard(0, false, false);
-                    --playerCardAdds.Item2;
+                    --entitiesCardAdds.Item2;
 
                     while (cardGiving != null)
                         yield return null;
@@ -903,7 +924,7 @@ namespace Singleplayer
                 }
             }
 
-            for (int i = 0; i < playerCardAdds.Item1; i++)
+            for (int i = 0; i < entitiesCardAdds.Item1; i++)
             {
                 if (i == 0)
                 {
@@ -937,7 +958,7 @@ namespace Singleplayer
 
                 for (int j = 0; j < hands.Count; j++)
                 {
-                    for (int k = i; k < playerCardAdds.Item1; k++)
+                    for (int k = i; k < entitiesCardAdds.Item1; k++)
                     {
                         if (isCanSplit && j == 0 && k == i)
                             continue;
@@ -953,7 +974,7 @@ namespace Singleplayer
                 break;
             }
 
-            playerCardAdds.Item1 = 0;
+            entitiesCardAdds.Item1 = 0;
 
             // ! додати підрахунок додаткових карт атакуючому
             for (int i = 0; i < hands.Count; i++) // підрахунок усього дамагу гравця атаки 
@@ -975,7 +996,7 @@ namespace Singleplayer
                     var defPlayer = entitiesHands[1].Item1;
                     var atkPlayer = entitiesHands[0].Item1;
 
-                    if (!isDefBlackJack && (playerCardAdds.Item2 != 0))
+                    if (!isDefBlackJack && (entitiesCardAdds.Item2 != 0))
                     {
                         yield return StartCoroutine(SpawnLeftCards(false));
                         totalDefScore = SummarizeHandDamage(entitiesHands[1].Item2);
@@ -1202,6 +1223,24 @@ namespace Singleplayer
             split
         }
 
+        #region Додавання додаткових карт
+        public void AddAdditionalCards(int amount, bool forAtk)
+        {
+            if (forAtk)
+                entitiesCardAdds.Item1 += amount;
+            else
+                entitiesCardAdds.Item2 += amount;
+        }
+        #endregion
+
+        public BattleEffectCardApplier GetBattlePlayerEffectCardsApplier => battleEffectCardsApplier;
+
+        /*private void ResetAddingCards()
+        {
+            *//*leftCardAdds = 3;*//*
+            alreadyAddedCardsCount = 0;
+        }
+
         #region TESTAddingCards
         private void SetListenersToAddingButtons()
         {
@@ -1226,13 +1265,13 @@ namespace Singleplayer
             TESTAlreadyAddedCardsText.text = string.Empty;
             TESTleftCardsAddingText.text = string.Empty;
 
-            if (TESTalreadyCardsAdds == 0)
+            if (alreadyAddedCardsCount == 0)
                 return;
 
             if (isAtk)
-                TESTSendAtkAddCards(TESTalreadyCardsAdds);
+                TESTSendAtkAddCards(alreadyAddedCardsCount);
             else
-                TESTSendDefAddCards(TESTalreadyCardsAdds);
+                TESTSendDefAddCards(alreadyAddedCardsCount);
         }
 
         private void TESTSendAtkAddCards(int addCardsAmount)
@@ -1247,8 +1286,8 @@ namespace Singleplayer
 
         private void ResetAddingCards()
         {
-            leftCardAdds = 3;
-            TESTalreadyCardsAdds = 0;
+            *//*leftCardAdds = 3;*//*
+            alreadyAddedCardsCount = 0;
         }
 
         private void OnAdd1CardButtonAtk()
@@ -1260,10 +1299,10 @@ namespace Singleplayer
             }
 
             leftCardAdds -= 1;
-            ++TESTalreadyCardsAdds;
+            ++alreadyAddedCardsCount;
 
             TESTleftCardsAddingText.text = leftCardAdds.ToString();
-            TESTAlreadyAddedCardsText.text = TESTalreadyCardsAdds.ToString();
+            TESTAlreadyAddedCardsText.text = alreadyAddedCardsCount.ToString();
         }
 
         private void OnAdd2CardButtonAtk()
@@ -1275,10 +1314,10 @@ namespace Singleplayer
             }
 
             leftCardAdds -= 2;
-            TESTalreadyCardsAdds += 2;
+            alreadyAddedCardsCount += 2;
 
             TESTleftCardsAddingText.text = leftCardAdds.ToString();
-            TESTAlreadyAddedCardsText.text = TESTalreadyCardsAdds.ToString();
+            TESTAlreadyAddedCardsText.text = alreadyAddedCardsCount.ToString();
         }
 
         private void OnAdd3CardButtonAtk()
@@ -1290,10 +1329,10 @@ namespace Singleplayer
             }
 
             leftCardAdds -= 3;
-            TESTalreadyCardsAdds += 3;
+            alreadyAddedCardsCount += 3;
 
             TESTleftCardsAddingText.text = leftCardAdds.ToString();
-            TESTAlreadyAddedCardsText.text = TESTalreadyCardsAdds.ToString();
+            TESTAlreadyAddedCardsText.text = alreadyAddedCardsCount.ToString();
         }
 
         private void OnAdd1CardButtonDef()
@@ -1305,10 +1344,10 @@ namespace Singleplayer
             }
 
             leftCardAdds -= 1;
-            ++TESTalreadyCardsAdds;
+            ++alreadyAddedCardsCount;
 
             TESTleftCardsAddingText.text = leftCardAdds.ToString();
-            TESTAlreadyAddedCardsText.text = TESTalreadyCardsAdds.ToString();
+            TESTAlreadyAddedCardsText.text = alreadyAddedCardsCount.ToString();
         }
 
         private void OnAdd2CardButtonDef()
@@ -1320,10 +1359,10 @@ namespace Singleplayer
             }
 
             leftCardAdds -= 2;
-            TESTalreadyCardsAdds += 2;
+            alreadyAddedCardsCount += 2;
 
             TESTleftCardsAddingText.text = leftCardAdds.ToString();
-            TESTAlreadyAddedCardsText.text = TESTalreadyCardsAdds.ToString();
+            TESTAlreadyAddedCardsText.text = alreadyAddedCardsCount.ToString();
         }
 
         private void OnAdd3CardButtonDef()
@@ -1335,12 +1374,12 @@ namespace Singleplayer
             }
 
             leftCardAdds -= 3;
-            TESTalreadyCardsAdds += 3;
+            alreadyAddedCardsCount += 3;
 
             TESTleftCardsAddingText.text = leftCardAdds.ToString();
-            TESTAlreadyAddedCardsText.text = TESTalreadyCardsAdds.ToString();
+            TESTAlreadyAddedCardsText.text = alreadyAddedCardsCount.ToString();
         }
 
-        #endregion
+        #endregion*/
     }
 }

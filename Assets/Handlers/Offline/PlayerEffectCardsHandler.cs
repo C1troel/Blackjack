@@ -138,16 +138,33 @@ namespace Singleplayer
                 RemoveEffectCard(card);
         }
 
+        public List<BaseEffectCard> MoveEffectCardsByPurpose(EffectCardPurpose effectCardPurpose)
+        {
+            var matchedCards = playerEffectCardsList.FindAll(effectCard => 
+            effectCard.EffectCardLogic.EffectCardInfo.EffectCardPurposes.Contains(effectCardPurpose));
+
+            foreach (var movedCard in matchedCards)
+                RemoveFromList(movedCard);
+
+            return matchedCards;
+        }
+
+        public void RemoveFromList(BaseEffectCard card)
+        {
+            playerEffectCardsList.Remove(card);
+            card.OnEffectCardUsed -= OnEffectCardUsed;
+        }
+
         public void RemoveEffectCard(BaseEffectCard card)
         {
             playerEffectCardsList.Remove(card);
+            card.OnEffectCardUsed -= OnEffectCardUsed;
             Destroy(card.gameObject);
         }
 
         private void OnEffectCardUsed(BaseEffectCard usedEffectCard)
         {
-            playerEffectCardsList.Remove(usedEffectCard);
-            Destroy(usedEffectCard.gameObject);
+            RemoveEffectCard(usedEffectCard);
         }
     }
 }

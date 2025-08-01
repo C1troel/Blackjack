@@ -84,6 +84,18 @@ namespace Singleplayer
             return counterCards;
         }
 
+        public void UseAllCardsByPurpose(EffectCardPurpose effectCardPurpose)
+        {
+            var matchedCards = effectCardsList.FindAll(effectCard => 
+            effectCard.EffectCardInfo.EffectCardPurposes.Contains(effectCardPurpose));
+
+            foreach (var effectCard in matchedCards)
+            {
+                GameManager.Instance.StartCoroutine(effectCard.ApplyEffect(null, entityOwner));
+                RemoveEffectCard(effectCard);
+            }
+        }
+
         public void RemoveRandomEffectCards(int amount)
         {
             if (effectCardsList.Count == 0 || amount <= 0)

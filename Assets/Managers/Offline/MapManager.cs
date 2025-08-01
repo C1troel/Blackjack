@@ -704,6 +704,12 @@ namespace Singleplayer
 
         public void OnEffectCardPlayed(BaseEffectCard effectCard)
         {
+            if (BattleManager.Instance.isBattleActive)
+            {
+                effectCard.ApplyEffect();
+                return;
+            }
+
             currentEffectRevealHandler = () => OnEffectCardRevealEnd(effectCard);
             usedCard.EffectRevealEvent += currentEffectRevealHandler;
 

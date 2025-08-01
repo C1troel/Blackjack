@@ -7,10 +7,12 @@ namespace Singleplayer
 {
     public class BigAttackPack : BaseEffectCardLogic
     {
+        private const int ADDING_CARDS_AMOUNT = 3;
         public override IEnumerator ApplyEffect(Action onComplete, IEntity entityInit = null)
         {
-            Debug.Log("Big attack pack activated...");
+            BattleManager.Instance.AddAdditionalCards(ADDING_CARDS_AMOUNT, true);
             yield return null;
+            onComplete?.Invoke();
         }
 
         public override void TryToUseCard(Action<bool> onComplete, IEntity entityInit)
