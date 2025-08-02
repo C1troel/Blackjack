@@ -127,7 +127,7 @@ namespace Singleplayer
 
         public void MakeADraw(IEntity entity)
         {
-            int tempSteps = 4;
+            int tempSteps = 1;
 
             switch (entity.GetEntityType)
             {

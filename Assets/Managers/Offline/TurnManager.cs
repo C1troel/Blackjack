@@ -45,7 +45,11 @@ namespace Singleplayer
 
             while (true)
             {
+                yield return null;
                 if (turnQueue.Count == 0) yield break;
+
+                if (BattleManager.Instance.isBattleActive)
+                    yield return null;
 
                 CurrentTurnEntity = turnQueue.Dequeue();
                 Debug.Log($"Now it's {CurrentTurnEntity.GetEntityName}'s turn");

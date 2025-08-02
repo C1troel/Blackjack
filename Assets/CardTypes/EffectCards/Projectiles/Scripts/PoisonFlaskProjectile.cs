@@ -1,3 +1,4 @@
+using Singleplayer.PassiveEffects;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,10 +7,10 @@ using UnityEngine;
 
 namespace Singleplayer
 {
-    public class FireballProjectile : MonoBehaviour, IProjectile
+    public class PoisonFlaskProjectile : MonoBehaviour, IProjectile
     {
-        private const string EXPLOSION_TRIGGER = "Explode";
-        private const string FLY_ANIMATION_NAME = "FireballFly";
+        private const string EXPLOSION_TRIGGER = "Explode"; // заглушка
+        private const string FLY_ANIMATION_NAME = "FireballFly"; // заглушка
 
         [SerializeField] private Animator animator;
         [SerializeField] private SpriteRenderer spriteRenderer;
@@ -20,19 +21,11 @@ namespace Singleplayer
         private IEntity targetEntity;
         private PanelScript landingPanel;
         private EffectCardInfo effectCardInfo;
-        private int damage;
 
-        void Start()
-        {}
-
-        void Update()
-        {}
-
-        public void Initialize(Action onComplete, IEntity targetEntity, PanelScript landingPanel, int damage , EffectCardInfo effectCardInfo)
+        public void Initialize(Action onComplete, IEntity targetEntity, PanelScript landingPanel, EffectCardInfo effectCardInfo)
         {
             this.targetEntity = targetEntity;
             this.effectCardInfo = effectCardInfo;
-            this.damage = damage;
             this.landingPanel = landingPanel;
             animator.speed = 0;
             animator.enabled = true;
@@ -99,7 +92,7 @@ namespace Singleplayer
         public void OnAnimationFlyEnd()
         {
             animator.speed = 0;
-            TryToDamageTarget();
+            TryToApplyPoison();
         }
 
         private void Explode()
@@ -121,7 +114,7 @@ namespace Singleplayer
             Destroy(gameObject);
         }
 
-        private void TryToDamageTarget()
+        private void TryToApplyPoison()
         {
             if (!landingPanel.EntitiesOnPanel.Contains(targetEntity))
             {
@@ -152,7 +145,7 @@ namespace Singleplayer
             }
 
             if (possibleCounterCards == null || possibleCounterCards.Count == 0)
-                DamageTarget();
+                PoisonTarget();
             else
             {
                 switch (targetEntity.GetEntityType)
@@ -191,7 +184,7 @@ namespace Singleplayer
             if (usedEddectCard == null)
             {
                 Debug.Log("Player is skipped countering incoming projectile");
-                DamageTarget();
+                PoisonTarget();
                 return;
             }
 
@@ -203,11 +196,12 @@ namespace Singleplayer
             DeleteProjectile();
         }
 
-        private void DamageTarget()
+        private void PoisonTarget()
         {
             Debug.Log($"Entity {targetEntity.GetEntityName} health before dealing damage: {targetEntity.GetEntityHp}");
             Explode();
-            GameManager.Instance.DealDamage(targetEntity, damage, false);
+            var posionEffect = new Poison(effectCardInfo.EffectsDuration);
+            targetEntity.PassiveEffectHandler.TryToAddEffect(posionEffect);
             Debug.Log($"Entity {targetEntity.GetEntityName} health after dealing damage: {targetEntity.GetEntityHp}");
         }
     }

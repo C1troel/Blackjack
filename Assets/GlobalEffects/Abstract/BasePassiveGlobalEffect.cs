@@ -45,7 +45,7 @@ namespace Singleplayer
 
             public virtual void EndPassiveEffect(IEntity entityInit)
             {
-                Debug.Log("End of passive effect...");
+                Debug.Log($"End of passive effect {GetType().Name}...");
             }
         }
 
@@ -56,7 +56,8 @@ namespace Singleplayer
             Wound,
             Patch,
             Plague,
-            ShoppingMania
+            ShoppingMania,
+            Poison
         }
     }
 }

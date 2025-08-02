@@ -3,10 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Singleplayer {
-    public class SmallMedicine : BaseEffectCardLogic
+namespace Singleplayer
+{
+    public class MediumMedicine : BaseEffectCardLogic
     {
-        private const int HEAL_AMOUNT = 20;
+        private const int HEAL_AMOUNT = 40;
 
         public override IEnumerator ApplyEffect(Action onComplete, IEntity entityInit = null)
         {

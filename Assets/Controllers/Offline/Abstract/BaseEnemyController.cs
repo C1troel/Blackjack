@@ -236,7 +236,7 @@ namespace Singleplayer
             var foundPathToPlayer = MapManager.FindShortestPathConsideringDirection(currentPanel, player.GetCurrentPanel, this);
             foundPathToPlayer.RemoveAt(0);
 
-            #region DebugInfo
+            /*#region DebugInfo
 
             Debug.Log("Found enemy path to player:");
             foreach (var panel in foundPathToPlayer)
@@ -244,7 +244,7 @@ namespace Singleplayer
                 Debug.Log(panel.name);
             }
 
-            #endregion
+            #endregion*/
 
             if (moving != null)
                 StopCoroutine(moving);

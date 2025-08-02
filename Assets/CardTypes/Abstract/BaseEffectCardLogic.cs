@@ -13,7 +13,13 @@ namespace Singleplayer
         TestMagicShield,
         Hourglass,
         BigAttackPack,
-        BigDefensePack
+        BigDefensePack,
+        SmallAttackPack,
+        MediumAttackPack,
+        SmallDefensePack,
+        MediumDefensePack,
+        MediumMedicine,
+        PoisonFlask
     }
 
     public enum EffectCardPurpose

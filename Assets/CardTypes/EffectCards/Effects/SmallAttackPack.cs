@@ -5,9 +5,9 @@ using UnityEngine;
 
 namespace Singleplayer
 {
-    public class BigAttackPack : BaseEffectCardLogic
+    public class SmallAttackPack : BaseEffectCardLogic
     {
-        private const int ADDING_CARDS_AMOUNT = 3;
+        private const int ADDING_CARDS_AMOUNT = 1;
         public override IEnumerator ApplyEffect(Action onComplete, IEntity entityInit = null)
         {
             BattleManager.Instance.AddAdditionalCards(ADDING_CARDS_AMOUNT, true);
