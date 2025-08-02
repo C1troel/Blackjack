@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5f91851c51771a5429b0a8c95f56e107, type: 3}
-  m_Name: Fireball
+  m_Name: Pistol
   m_EditorClassIdentifier: 
-  _effectCardSprite: {fileID: 21300000, guid: 21ca70266aebc054ba04bee60d93082f, type: 3}
-  _effectiveDistanceInPanels: 6
+  _effectCardSprite: {fileID: 21300000, guid: 8da3770ed794a2440b5b91acc6d4cede, type: 3}
+  _effectiveDistanceInPanels: 10
   _effectsDuration: 0
-  _effectCardMaterials: 04000000
+  _effectCardMaterials: 01000000
   _effectCardPurposes: 00000000
-  _effectCardDmgType: 2
-  _effectCardType: 1
+  _effectCardDmgType: 1
+  _effectCardType: 12
   _vulnerabilities: []
-  _projectilePrefab: {fileID: 430679867480060597, guid: 8d462cd0e7a493f4b894677ef3f958ff, type: 3}
+  _projectilePrefab: {fileID: 5080410355101928181, guid: ffef3d32c5061d244b418b8c8bdf39db, type: 3}

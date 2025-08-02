@@ -31,6 +31,8 @@ namespace Singleplayer
                     activeEffects.Remove(existingEffect);
                 }
 
+                effect.CacheEntityOwner(entity);
+                effect.TriggerImmediately();
                 activeEffects.Add(effect);
             }
 

@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Singleplayer
 {
     [CreateAssetMenu(fileName = "ProjectileEffectCard", menuName = "Infos/New ProjectileEffectCardInfo")]
-    public class ProjectilelEffectCardInfo : EffectCardInfo
+    public class ProjectileEffectCardInfo : EffectCardInfo
     {
         [SerializeField] private GameObject _projectilePrefab;
 

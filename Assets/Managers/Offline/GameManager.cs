@@ -28,8 +28,10 @@ namespace Singleplayer
         [SerializeField] MapManager mapManager;
         [SerializeField] float playersZCordOffset;
 
-        private float currentZCordForPlayers = 0.5f;
+        private float currentZCordForPlayers = -0.5f; // пр€мо впливаЇ на обробник кл≥к≥в(IPointerClickHandler) - = ближче до камери, + = дальше
 
+        public delegate void EntityDamageDelegate(ref int damage, IEntity damagedEntity);
+        public EntityDamageDelegate OnEntityDamageDeal;
         public BasePlayerController PlayerData { get; private set; }
         public List<Sprite> BasicCardsList { get; private set; }
         public bool IsChoosing { get; private set; }
@@ -130,10 +132,10 @@ namespace Singleplayer
             EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.BigDefensePack);
             EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.BigAttackPack);
             EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.SmallMedicine);*/
-            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.PoisonFlask);
+            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.Rage);
             EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.TestMagicShield);
             /*EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.TestMagicShield);*/
-            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.PoisonFlask);
+            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.Rage);
         }
         #endregion
 
@@ -372,18 +374,11 @@ namespace Singleplayer
                 return;
             }
 
-            if (entity.PassiveEffectHandler.GetEffect(PassiveEffectType.Wound) is Wound woundEffect)
-            {
-                woundEffect.IncreaseDamage(ref damage);
-                entity.PassiveEffectHandler.ApplyAsConditionalEffect(PassiveEffectType.Wound);
-            }
-            if (entity.PassiveEffectHandler.GetEffect(PassiveEffectType.Patch) is Patch patchEffect)
-            {
-                patchEffect.NulifyDamage(ref damage);
-                entity.PassiveEffectHandler.ApplyAsConditionalEffect(PassiveEffectType.Patch);
-            }
+            OnEntityDamageDeal?.Invoke(ref damage, entity);
 
+            Debug.Log($"Entity {entity.GetEntityName} health before damage: {entity.GetEntityHp}");
             entity.GetDamage(isBlockable ? (damage - entity.GetEntityDef) : damage);
+            Debug.Log($"Entity {entity.GetEntityName} health after damage: {entity.GetEntityHp}");
 
             // нижн≥й метод потр≥бно оновити п≥сл€ того, €к буде перел≥к ход≥в гравц€ та ворог≥в
             /*UpdateClientScrollViewClientRpc(ReturnPlayerInfos());*/

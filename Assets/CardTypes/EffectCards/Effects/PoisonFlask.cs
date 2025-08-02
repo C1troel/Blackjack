@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Singleplayer
 {
@@ -26,20 +28,26 @@ namespace Singleplayer
                     break;
 
                 case EntityType.Enemy:
-                    target = gameManager.GetEntityWithType(EntityType.Player);
+                    target = HandleEnemyTargeting();
                     break;
             }
 
             yield return new WaitUntil(() => target != null);
 
             Debug.Log($"Fireball target: {target.GetEntityName}");
-            ThrowPoisonFlaskToEntity(target, onComplete);
+            ThrowPoisonFlaskToEntity(target, entityInit, onComplete);
 
             /*onComplete?.Invoke();*/
         }
 
         public override void TryToUseCard(Action<bool> onComplete, IEntity entityInit)
         {
+            if (HandleEnemyTargeting() == null)
+            {
+                onComplete?.Invoke(false);
+                return;
+            }
+
             MapManager.Instance.OnEffectCardPlayedByEntity(() =>
                 GameManager.Instance.StartCoroutine(
                     ApplyEffect(() =>
@@ -49,9 +57,26 @@ namespace Singleplayer
                 this);
         }
 
-        private void ThrowPoisonFlaskToEntity(IEntity target, Action onComplete)
+        private IEntity HandleEnemyTargeting()
         {
-            var projectilEffectCardInfo = EffectCardInfo as ProjectilelEffectCardInfo;
+            var aliveTargets = TargetEnemiesList
+                .Where(entity => entity.GetEntityHp > 0 
+                && entity.GetCurrentPanel.GetEffectPanelInfo.Effect != PanelEffect.VIPClub)
+                .ToList();
+
+            if (aliveTargets.Count == 0)
+                return null;
+
+            var player = aliveTargets.FirstOrDefault(e => e.GetEntityType == EntityType.Player);
+            if (player != null)
+                return player;
+
+            return aliveTargets[Random.Range(0, aliveTargets.Count)];
+        }
+
+        private void ThrowPoisonFlaskToEntity(IEntity target, IEntity entityInit, Action onComplete)
+        {
+            var projectilEffectCardInfo = EffectCardInfo as ProjectileEffectCardInfo;
 
             var poisonFlaskPrefab = projectilEffectCardInfo.ProjectilePrefab;
 
@@ -61,7 +86,7 @@ namespace Singleplayer
             GameObject posionFlaskGO = GameManager.Instantiate(poisonFlaskPrefab, spawnPos, Quaternion.identity);
             
             PoisonFlaskProjectile fireballProjectile = posionFlaskGO.GetComponent<PoisonFlaskProjectile>();
-            fireballProjectile.Initialize(onComplete, target, targetsPanel, EffectCardInfo);
+            fireballProjectile.Initialize(onComplete, target, entityInit, targetsPanel, EffectCardInfo);
         }
     }
 }

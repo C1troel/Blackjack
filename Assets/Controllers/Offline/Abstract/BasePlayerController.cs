@@ -71,6 +71,7 @@ namespace Singleplayer
 
         void Start()
         {
+            SubscribeToClickEvent();
             initialZ = transform.position.z; // Сохраняем начальную координату z
             SetupMoveCardsDeckPlayerSuit();
             PassiveEffectHandler = new PassiveEffectHandler(this);
@@ -102,6 +103,18 @@ namespace Singleplayer
             }
 
             transform.position = new Vector3(transform.position.x, transform.position.y, initialZ);
+        }
+
+        private void SubscribeToClickEvent()
+        {
+            var clickHandler = GetComponentInChildren<ClickHandler>();
+            clickHandler.OnEntityClickEvent += OnPlayerClickEvent;
+        }
+
+        private void OnPlayerClickEvent()
+        {
+            Debug.Log($"Entity {characterInfo.CharacterName} being clicked");
+            OnSelfClickHandled?.Invoke(this);
         }
 
         private void SetupMoveCardsDeckPlayerSuit()
@@ -145,7 +158,10 @@ namespace Singleplayer
 
         public void OnNewTurnStart()
         {
+            ResetPlayerStats();
             PassiveEffectHandler.ProcessEffects();
+            NormalizeHp();
+
             SpecialAbility.OnNewTurnStart();
         }
 
@@ -294,6 +310,18 @@ namespace Singleplayer
             CurencyChange();
         }
 
+        protected virtual void ResetPlayerStats()
+        {
+            atk = characterInfo.DefaultAtk;
+            def = characterInfo.DefaultDef;
+        }
+
+        protected virtual void NormalizeHp()
+        {
+            hp = Mathf.Min(hp, currentMaxHp);
+            HpChange();
+        }
+
         public void GainMoney(int value, bool withChips)
         {
             if (withChips)
@@ -313,6 +341,14 @@ namespace Singleplayer
 
             if (hp == 0)
                 Knockout();
+        }
+
+        public virtual void RaiseAtkStat(int value)
+        {
+            if (value <= 0) return;
+            atk += value;
+
+            StatsChange();
         }
 
         private void Knockout()

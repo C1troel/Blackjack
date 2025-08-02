@@ -12,6 +12,7 @@ namespace Singleplayer
         void MoveEnd();
         void StopMoving();
         void GetDamage(int value);
+        void RaiseAtkStat(int value);
         void Heal(int value);
         void GetSteps(int value);
         void OnNewTurnStart();

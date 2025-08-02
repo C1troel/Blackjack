@@ -2,15 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace Singleplayer
 {
-    public class Fireball : BaseEffectCardLogic
+    public class Pistol : BaseEffectCardLogic
     {
-        private const int DAMAGE = 30;
+        private const int DAMAGE = 20;
         private float spawnCordsOffset = -60f;
 
         public override IEnumerator ApplyEffect(Action onComplete, IEntity entityInit = null)
@@ -36,8 +35,8 @@ namespace Singleplayer
 
             yield return new WaitUntil(() => target != null);
 
-            Debug.Log($"Fireball target: {target.GetEntityName}");
-            ThrowFireballToEntity(target, entityInit, onComplete);
+            Debug.Log($"Pistol bullet target: {target.GetEntityName}");
+            ShootEntity(target, entityInit, onComplete);
 
             /*onComplete?.Invoke();*/
         }
@@ -76,19 +75,19 @@ namespace Singleplayer
             return aliveTargets[Random.Range(0, aliveTargets.Count)];
         }
 
-        private void ThrowFireballToEntity(IEntity target, IEntity entityInit, Action onComplete)
+        private void ShootEntity(IEntity target, IEntity entityInit, Action onComplete)
         {
             var projectilEffectCardInfo = EffectCardInfo as ProjectileEffectCardInfo;
 
-            var fireballPrefab = projectilEffectCardInfo.ProjectilePrefab;
+            var pistolBulletPrefab = projectilEffectCardInfo.ProjectilePrefab;
 
             var targetsPanel = target.GetCurrentPanel;
             Vector3 spawnPos = new Vector3(targetsPanel.transform.position.x + spawnCordsOffset, targetsPanel.transform.position.y);
 
-            GameObject fireballGO = GameManager.Instantiate(fireballPrefab, spawnPos, Quaternion.identity);
+            GameObject pistolBulletGO = GameManager.Instantiate(pistolBulletPrefab, spawnPos, Quaternion.identity);
 
-            FireballProjectile fireballProjectile = fireballGO.GetComponent<FireballProjectile>();
-            fireballProjectile.Initialize(onComplete, target, entityInit, targetsPanel, DAMAGE, EffectCardInfo);
+            PistolBulletProjectile pistolBulletProjectile = pistolBulletGO.GetComponent<PistolBulletProjectile>();
+            pistolBulletProjectile.Initialize(onComplete, target, entityInit, targetsPanel, DAMAGE, EffectCardInfo);
         }
     }
 }

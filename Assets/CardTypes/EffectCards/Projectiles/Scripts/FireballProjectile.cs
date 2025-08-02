@@ -22,15 +22,18 @@ namespace Singleplayer
         private EffectCardInfo effectCardInfo;
         private int damage;
 
+        public IEntity entityOwner { get; private set; }
+
         void Start()
         {}
 
         void Update()
         {}
 
-        public void Initialize(Action onComplete, IEntity targetEntity, PanelScript landingPanel, int damage , EffectCardInfo effectCardInfo)
+        public void Initialize(Action onComplete, IEntity targetEntity, IEntity entityOwner, PanelScript landingPanel, int damage , EffectCardInfo effectCardInfo)
         {
             this.targetEntity = targetEntity;
+            this.entityOwner = entityOwner;
             this.effectCardInfo = effectCardInfo;
             this.damage = damage;
             this.landingPanel = landingPanel;

@@ -94,7 +94,10 @@ namespace Singleplayer
 
         public virtual void OnNewTurnStart()
         {
+            ResetEntityStats();
             PassiveEffectHandler.ProcessEffects();
+            NormalizeHp();
+
             EnemyEffectCardsHandler.OnNewTurnStart();
             SpecialAbility?.OnNewTurnStart();
         }
@@ -308,10 +311,26 @@ namespace Singleplayer
         #endregion
 
         #region ¬плив на сутн≥сть
+
+        protected virtual void ResetEntityStats()
+        {
+
+            atk = enemyInfo.DefaultAtk;
+            def = enemyInfo.DefaultDef;
+        }
+
+        protected virtual void NormalizeHp() => hp = Mathf.Min(hp, maxHp);
+
         public virtual void GetDamage(int value)
         {
             hp -= value;
             hp = Mathf.Max(hp, 0);
+        }
+
+        public virtual void RaiseAtkStat(int value)
+        {
+            if (value <= 0) return;
+            atk += value;
         }
 
         public virtual void Heal(int value)

@@ -19,7 +19,10 @@ namespace Singleplayer
         SmallDefensePack,
         MediumDefensePack,
         MediumMedicine,
-        PoisonFlask
+        PoisonFlask,
+        Pistol,
+        Explosive,
+        Rage
     }
 
     public enum EffectCardPurpose
@@ -32,7 +35,7 @@ namespace Singleplayer
 
     public abstract class BaseEffectCardLogic : IEffectCardLogic
     {
-        public List<IEntity> TargetEnemiesList { get; private set; }
+        public List<IEntity> TargetEnemiesList { get; protected set; }
         public EffectCardInfo EffectCardInfo { get; protected set; }
         public bool CanUse {  get; protected set; }
 
