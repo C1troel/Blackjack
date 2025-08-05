@@ -132,10 +132,10 @@ namespace Singleplayer
             EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.BigDefensePack);
             EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.BigAttackPack);
             EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.SmallMedicine);*/
-            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.Regroup);
+            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.DonorFineNotice);
             EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.TestMagicShield);
             /*EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.TestMagicShield);*/
-            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.Regroup);
+            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.DonorFineNotice);
         }
         #endregion
 

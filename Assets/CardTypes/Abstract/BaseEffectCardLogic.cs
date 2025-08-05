@@ -24,7 +24,8 @@ namespace Singleplayer
         Explosive,
         Rage,
         BackstabKnife,
-        Regroup
+        Regroup,
+        DonorFineNotice
     }
 
     public enum EffectCardPurpose

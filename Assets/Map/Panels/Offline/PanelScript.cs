@@ -27,11 +27,13 @@ namespace Singleplayer
         [SerializeField] private IPanelEffect panelEffect;
 
         private EffectPanelInfoSingleplayer effectPanelInfo;
+
         private SpriteRenderer panelSprite;
+        private Material defaultMaterial;
+        private Material outlineSpriteMaterial;
 
         private List<IEntity> entitiesOnPanel = new List<IEntity>();
         private HashSet<IEntity> subscribedEntities = new HashSet<IEntity>();
-        public IReadOnlyList<IEntity> EntitiesOnPanel => entitiesOnPanel;
 
         private List<GameObject> arrowsList = new List<GameObject>();
 
@@ -42,9 +44,14 @@ namespace Singleplayer
             _sidePanels = new List<GameObject>(Enumerable.Repeat<GameObject>(null, 4));
         }*/
 
+        public event Action<PanelScript> OnPanelClicked;
+        public IReadOnlyList<IEntity> EntitiesOnPanel => entitiesOnPanel;
+
         private void Start()
         {
             panelSprite = GetComponent<SpriteRenderer>();
+            defaultMaterial = panelSprite.material;
+            outlineSpriteMaterial = EffectCardDealer.Instance.GetEffectCardOutlineMaterial; // заглушка, щоб була хоч якась обводка
             /*TestAttachPanelEffect();*/
         }
 
@@ -93,6 +100,18 @@ namespace Singleplayer
         {
             // Місце для майбутнього коду коли помітка про те що дана панель є кінцем шляху буде зроблена нормально
             Debug.Log($"Removing highlight for panel: {gameObject.name}");
+        }
+
+        public void SetOutline(bool highlight)
+        {
+            if (highlight)
+            {
+                panelSprite.material = outlineSpriteMaterial;
+            }
+            else
+            {
+                panelSprite.material = defaultMaterial;
+            }
         }
 
         public void EnableTeleportation()
@@ -457,14 +476,17 @@ namespace Singleplayer
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (isClickableForTeleportation)
+            /*if (isClickableForTeleportation)
             {
                 isClickableForTeleportation = false;
                 Debug.Log($"{gameObject.name} was clicked for teleportation!");
                 Teleportation();
             }
 
-            Debug.Log($"{gameObject.name} was clicked!");
+            Debug.Log($"{gameObject.name} was clicked!");*/
+
+            Debug.Log($"Panel {gameObject.name} clicked");
+            OnPanelClicked?.Invoke(this);
         }
 
         private void Teleportation()

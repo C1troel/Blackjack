@@ -171,7 +171,7 @@ namespace Singleplayer
 
                 if (stepsDrawnThisTurn.Count == 2 && stepsDrawnThisTurn.Sum() == 21)
                 {
-                    AccessPlayerToTeleport(player);
+                    EnableTeleportMode(player);
                     return;
                 }
 
@@ -183,6 +183,35 @@ namespace Singleplayer
             usedCard.MoveCardValueSelectedEvent += AwaitPlayerMoveCardChoosing;
 
             usedCard.RevealMoveCard(moveCard);
+        }
+
+        private void EnableTeleportMode(BasePlayerController player)
+        {
+            var OutlinedPanels = new List<PanelScript>();
+
+            foreach (Transform panelTransform in parentOfAllPanels.transform)
+            {
+                var panelScript = panelTransform.GetComponent<PanelScript>();
+                if (panelScript == null)
+                    continue;
+
+                panelScript.OnPanelClicked += OnTeleportPanelClicked;
+                OutlinedPanels.Add(panelScript);
+
+                panelScript.SetOutline(true);
+            }
+
+            void OnTeleportPanelClicked(PanelScript clickedPanel)
+            {
+                foreach (var panel in OutlinedPanels)
+                {
+                    panel.OnPanelClicked -= OnTeleportPanelClicked;
+                    panel.SetOutline(false);
+                }
+                OutlinedPanels.Clear();
+
+                GameManager.Instance.TeleportEntity(clickedPanel.transform.position, player, clickedPanel);
+            }
         }
 
         private void HandleEnemyMovement(BaseEnemy enemy)
@@ -230,6 +259,46 @@ namespace Singleplayer
                 foreach (var panel in highlightedPathEnders)
                     panel.RemoveHighlight();
             }
+        }
+
+        public void StartChoosingPanel(Action<PanelScript> callback, List<PanelScript> allowedPanels = null)
+        {
+            Debug.Log("Start choosing panel");
+
+            PanelScript chosenPanel = null;
+
+            allowedPanels ??= GetAllPanelsOnMap();
+
+            foreach (var panel in allowedPanels)
+            {
+                panel.OnPanelClicked += OnPanelChosen;
+                panel.SetOutline(true);
+            }
+
+            void OnPanelChosen(PanelScript panel)
+            {
+                chosenPanel = panel;
+
+                foreach (var p in allowedPanels)
+                {
+                    p.OnPanelClicked -= OnPanelChosen;
+                    p.SetOutline(false);
+                }
+
+                callback?.Invoke(panel);
+            }
+        }
+
+        private List<PanelScript> GetAllPanelsOnMap()
+        {
+            List<PanelScript> panels = new List<PanelScript>();
+            foreach (Transform child in parentOfAllPanels.transform)
+            {
+                var panel = child.GetComponent<PanelScript>();
+                if (panel != null)
+                    panels.Add(panel);
+            }
+            return panels;
         }
 
         #region Пошуки шляху
@@ -701,6 +770,49 @@ namespace Singleplayer
 
             return foundEntities;
         }
+
+        public static List<PanelScript> GetPanelsInRadius(PanelScript start, int radius)
+        {
+            List<PanelScript> panelsInRadius = new List<PanelScript>();
+
+            if (start == null || radius < 0)
+                return panelsInRadius;
+
+            Queue<(PanelScript panel, int distance)> queue = new Queue<(PanelScript, int)>();
+            HashSet<PanelScript> visited = new HashSet<PanelScript>();
+
+            queue.Enqueue((start, 0));
+            visited.Add(start);
+
+            while (queue.Count > 0)
+            {
+                var (currentPanel, distance) = queue.Dequeue();
+
+                if (distance > radius)
+                    continue;
+
+                panelsInRadius.Add(currentPanel);
+
+                if (distance < radius)
+                {
+                    var neighbors = currentPanel.GetAvailableNearPanelsOrNull(null);
+                    if (neighbors == null)
+                        continue;
+
+                    foreach (var neighbor in neighbors)
+                    {
+                        if (!visited.Contains(neighbor))
+                        {
+                            visited.Add(neighbor);
+                            queue.Enqueue((neighbor, distance + 1));
+                        }
+                    }
+                }
+            }
+
+            return panelsInRadius;
+        }
+
 
         #endregion
 
