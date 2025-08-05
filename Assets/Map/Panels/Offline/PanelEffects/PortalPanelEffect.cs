@@ -13,7 +13,8 @@ namespace Singleplayer
             portals.RemoveAll(panel => panel == entityInit.GetCurrentPanel);
 
             var targetPos = portals[UnityEngine.Random.Range(0, portals.Count)].transform.position;
-            
+
+            entityInit.SuppressPanelEffectTrigger = true;
             GameManager.Instance.TeleportEntity(targetPos, entityInit);
 
             Debug.Log("PortalEffect: Teleport done.");

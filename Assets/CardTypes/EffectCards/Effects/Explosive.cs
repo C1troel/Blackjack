@@ -20,9 +20,9 @@ namespace Singleplayer
                 .ToList();
 
             foreach (var entity in nearEntities)
-                gameManager.DealDamage(entity, OUTPUT_DAMAGE, false);
+                gameManager.DealDamage(entity, OUTPUT_DAMAGE, false, EffectCardInfo.EffectCardDmgType);
 
-            gameManager.DealDamage(entityInit, SELF_DAMAGE, false);
+            gameManager.DealDamage(entityInit, SELF_DAMAGE, false, EffectCardInfo.EffectCardDmgType);
             yield return null;
             onComplete?.Invoke();
         }

@@ -30,7 +30,7 @@ namespace Singleplayer
 
         private float currentZCordForPlayers = -0.5f; // прямо впливає на обробник кліків(IPointerClickHandler) - = ближче до камери, + = дальше
 
-        public delegate void EntityDamageDelegate(ref int damage, IEntity damagedEntity);
+        public delegate void EntityDamageDelegate(ref int damage, IEntity damagedEntity, EffectCardDmgType effectCardDmgType);
         public EntityDamageDelegate OnEntityDamageDeal;
         public BasePlayerController PlayerData { get; private set; }
         public List<Sprite> BasicCardsList { get; private set; }
@@ -132,10 +132,10 @@ namespace Singleplayer
             EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.BigDefensePack);
             EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.BigAttackPack);
             EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.SmallMedicine);*/
-            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.Rage);
+            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BackstabKnife);
             EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.TestMagicShield);
             /*EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.TestMagicShield);*/
-            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.Rage);
+            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.BackstabKnife);
         }
         #endregion
 
@@ -360,7 +360,7 @@ namespace Singleplayer
         public SavingMoneyController GetSavingMoneyController => playerHUDManager.GetSavingMoneyController;
         public ShoppingController GetShoppingController => playerHUDManager.GetShoppingController;
 
-        public void DealDamage(IEntity entity, int damage, bool isBlockable = false)
+        public void DealDamage(IEntity entity, int damage, bool isBlockable = false, EffectCardDmgType effectCardDmgType = EffectCardDmgType.None)
         {
             if (entity == null || entity.GetEntityHp == 0)
             {
@@ -374,7 +374,7 @@ namespace Singleplayer
                 return;
             }
 
-            OnEntityDamageDeal?.Invoke(ref damage, entity);
+            OnEntityDamageDeal?.Invoke(ref damage, entity, effectCardDmgType);
 
             Debug.Log($"Entity {entity.GetEntityName} health before damage: {entity.GetEntityHp}");
             entity.GetDamage(isBlockable ? (damage - entity.GetEntityDef) : damage);

@@ -24,7 +24,7 @@ namespace Singleplayer
                 Debug.Log("Entity is protected by patch");
             }
 
-            public void TryToDecreaseIncomingDamage(ref int damage, IEntity damagedEntity)
+            public void TryToDecreaseIncomingDamage(ref int damage, IEntity damagedEntity, EffectCardDmgType effectCardDmgType)
             {
                 if (damagedEntity != entityOwner)
                     return;

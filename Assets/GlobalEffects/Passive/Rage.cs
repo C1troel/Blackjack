@@ -31,7 +31,7 @@ namespace Singleplayer
                 TurnsRemaining--;
             }
 
-            private void TryToIncreaseIncomingDamage(ref int damage, IEntity damagedEntity)
+            private void TryToIncreaseIncomingDamage(ref int damage, IEntity damagedEntity, EffectCardDmgType effectCardDmgType)
             {
                 if (damagedEntity != entityOwner)
                     return;

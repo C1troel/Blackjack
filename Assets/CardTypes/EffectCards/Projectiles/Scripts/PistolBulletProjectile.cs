@@ -211,7 +211,7 @@ namespace Singleplayer
         {
             Debug.Log($"Entity {targetEntity.GetEntityName} health before dealing damage: {targetEntity.GetEntityHp}");
             Explode();
-            GameManager.Instance.DealDamage(targetEntity, damage, false);
+            GameManager.Instance.DealDamage(targetEntity, damage, false, effectCardInfo.EffectCardDmgType);
             Debug.Log($"Entity {targetEntity.GetEntityName} health after dealing damage: {targetEntity.GetEntityHp}");
         }
     }

@@ -25,7 +25,7 @@ namespace Singleplayer
                 Debug.Log("Entity is still being wounded");
             }
 
-            private void TryToIncreaseIncomingDamage(ref int damage, IEntity damagedEntity)
+            private void TryToIncreaseIncomingDamage(ref int damage, IEntity damagedEntity, EffectCardDmgType effectCardDmgType)
             {
                 if (damagedEntity != entityOwner)
                     return;

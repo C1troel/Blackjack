@@ -22,7 +22,8 @@ namespace Singleplayer
         PoisonFlask,
         Pistol,
         Explosive,
-        Rage
+        Rage,
+        BackstabKnife
     }
 
     public enum EffectCardPurpose
