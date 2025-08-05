@@ -551,18 +551,27 @@ namespace Singleplayer
             if (start == null || target == null || entity == null)
                 return null;
 
-            Queue<(PanelScript panel, Direction direction)> queue = new Queue<(PanelScript, Direction)>();
-            Dictionary<(PanelScript, Direction), (PanelScript, Direction)> cameFrom = new Dictionary<(PanelScript, Direction), (PanelScript, Direction)>();
+            bool ignoreOppositeOnStart = entity.IgnoreDirectionOnce;
+            entity.IgnoreDirectionOnce = false;
+
+            Queue<((PanelScript panel, Direction direction) state, bool ignoreOppositeOnce)> queue =
+                new Queue<((PanelScript, Direction), bool)>();
+
+            Dictionary<(PanelScript, Direction), (PanelScript, Direction)> cameFrom =
+                new Dictionary<(PanelScript, Direction), (PanelScript, Direction)>();
+
             HashSet<(PanelScript, Direction)> visited = new HashSet<(PanelScript, Direction)>();
 
             Direction startDirection = entity.GetEntityDirection;
-            queue.Enqueue((start, startDirection));
-            visited.Add((start, startDirection));
-            cameFrom[(start, startDirection)] = (null, Direction.Standart);
+            var startState = (start, startDirection);
+
+            queue.Enqueue((startState, ignoreOppositeOnStart));
+            visited.Add(startState);
+            cameFrom[startState] = (null, Direction.Standart);
 
             while (queue.Count > 0)
             {
-                var (currentPanel, currentDirection) = queue.Dequeue();
+                var ((currentPanel, currentDirection), ignoreOpposite) = queue.Dequeue();
 
                 for (int i = 0; i < 4; i++)
                 {
@@ -572,23 +581,21 @@ namespace Singleplayer
 
                     Direction newDirection = (Direction)i;
 
-                    // «аборон€Їмо рух у протилежний б≥к
-                    if (newDirection == GetOppositeDirection(currentDirection))
+                    if (!ignoreOpposite && newDirection == GetOppositeDirection(currentDirection))
                         continue;
 
-                    var state = (neighbor, newDirection);
-                    if (visited.Contains(state))
+                    var nextState = (neighbor, newDirection);
+                    if (visited.Contains(nextState))
                         continue;
 
-                    visited.Add(state);
-                    cameFrom[state] = (currentPanel, currentDirection);
-                    queue.Enqueue(state);
+                    visited.Add(nextState);
+                    cameFrom[nextState] = (currentPanel, currentDirection);
+                    queue.Enqueue((nextState, false));
 
-                    // якщо ми дос€гли панел≥ ц≥л≥, ≥ це не стартова панель Ч усп≥х!
                     if (neighbor == target && neighbor != start)
                     {
                         List<PanelScript> path = new List<PanelScript>();
-                        var current = state;
+                        var current = nextState;
 
                         while (current.Item1 != null)
                         {
@@ -602,8 +609,6 @@ namespace Singleplayer
                 }
             }
 
-            // ќсобливий випадок: €кщо ми стоњмо на ц≥л≥ Ч ≥ хочемо знайти шл€х до нењ з ≥ншого боку
-            // —пробуЇмо повний обх≥д ≥ пошук "≥ншого входу" на цю ж панель
             foreach (var kvp in cameFrom.Keys)
             {
                 if (kvp.Item1 == target && kvp.Item1 == start)
@@ -619,7 +624,6 @@ namespace Singleplayer
 
                     fallbackPath.Reverse();
 
-                    // якщо Ї обх≥д (2+ кроки), повертаЇмо його
                     if (fallbackPath.Count > 1)
                         return fallbackPath;
                 }
@@ -627,8 +631,6 @@ namespace Singleplayer
 
             return null;
         }
-
-
 
         public static Direction GetDirectionFromTo(PanelScript from, PanelScript to)
         {

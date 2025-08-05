@@ -179,37 +179,23 @@ namespace Singleplayer
             int availablePanelsCount = _posOfPanels.Count(panel => panel != null);
             Direction playerDirection = entity.GetEntityDirection;
 
-            /*if (availablePanelsCount == 1) // устаревший
-            {
-                if (_posOfPanels[(int)playerDirection] != null)
-                {
-                    return (_posOfPanels[(int)playerDirection].GetComponent<PanelScript>(), playerDirection);
-                }
-                else
-                {
-                    for (int i = 0; i < _posOfPanels.Count; i++)
-                    {
-                        var panel = _posOfPanels[i];
-
-                        if (panel != null)
-                        {
-                            return (panel.GetComponent<PanelScript>(), (PlayerController.Direction)i);
-                        }
-                    }
-                }
-            }*/
+            bool isDirectionMatter = !entity.IgnoreDirectionOnce;
+            entity.IgnoreDirectionOnce = false;
 
             if (availablePanelsCount > 1)
             {
                 List<GameObject> tempPanelList = new List<GameObject>();
                 tempPanelList.AddRange(_posOfPanels);
 
-                for (int i = 0; i < tempPanelList.Count; i++)
+                if (isDirectionMatter)
                 {
-                    if (tempPanelList[i] != null && (Pos)i == GetOppositePosOrNone((Pos)playerDirection))
+                    for (int i = 0; i < tempPanelList.Count; i++)
                     {
-                        tempPanelList[i] = null;
-                        --availablePanelsCount;
+                        if (tempPanelList[i] != null && (Pos)i == GetOppositePosOrNone((Pos)playerDirection))
+                        {
+                            tempPanelList[i] = null;
+                            --availablePanelsCount;
+                        }
                     }
                 }
 
@@ -244,9 +230,7 @@ namespace Singleplayer
                             if (_posOfPanels[panelI] == null)
                                 continue;
 
-                            var currentPanelScript = _posOfPanels[panelI].GetComponent<PanelScript>();
-
-                            if ((Pos)panelI == GetOppositePosOrNone((Pos)playerDirection))
+                            if (isDirectionMatter && (Pos)panelI == GetOppositePosOrNone((Pos)playerDirection))
                                 continue;
 
                             SpawnDirectionArrows(panelI, entity as BasePlayerController);
@@ -254,8 +238,7 @@ namespace Singleplayer
 
                         break;
 
-                    case EntityType.Enemy: // Покищо заглушка побудована на рандомі(хоча для переміщення боса підходить)
-
+                    case EntityType.Enemy:
                         GameObject nextPanel = null;
                         int randomIterator = 0;
 
@@ -278,6 +261,7 @@ namespace Singleplayer
 
             return (null, playerDirection);
         }
+
 
         public void AssignSideOfPanel(GameObject panel, Pos side)
         {

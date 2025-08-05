@@ -36,6 +36,7 @@ namespace Singleplayer
         public Animator Animator { get; protected set; }
 
         public bool SuppressPanelEffectTrigger { get; set; } = true;
+        public bool IgnoreDirectionOnce { get; set; } = false;
 
         private void Start()
         {

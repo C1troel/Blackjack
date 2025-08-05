@@ -38,6 +38,10 @@ namespace Singleplayer
 
             public void RemoveEffect(BasePassiveGlobalEffect effect)
             {
+                if (!activeEffects.Contains(effect))
+                    return;
+
+                effect.EndPassiveEffect(entity);
                 activeEffects.Remove(effect);
             }
 
@@ -77,10 +81,7 @@ namespace Singleplayer
                     activeEffects[i].HandlePassiveEffect(entity);
 
                     if (activeEffects[i].TurnsRemaining == 0)
-                    {
-                        activeEffects[i].EndPassiveEffect(entity);
-                        activeEffects.RemoveAt(i);
-                    }
+                        RemoveEffect(activeEffects[i]);
                 }
             }
 

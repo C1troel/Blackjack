@@ -31,6 +31,7 @@ namespace Singleplayer
         /*public bool IsTemporarilyImmortal { get; protected set; }*/ // можливо для іншого режиму складності(наприклад для легкого)
 
         public bool SuppressPanelEffectTrigger { get; set; } = true;
+        public bool IgnoreDirectionOnce { get; set; } = false;
 
         protected CharacterInfo characterInfo;
 
@@ -458,7 +459,9 @@ namespace Singleplayer
                 destinationInfo.Item2 = direction;
             }
             else
-                destinationInfo = currentPanel.GetNextPanelOrNull(player);
+            {
+                destinationInfo = currentPanel.GetNextPanelOrNull(player); //<- то самое место где первый раз отбираются панели
+            }
 
             if (destinationInfo.Item1 == null)
             {

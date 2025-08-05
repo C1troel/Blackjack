@@ -32,6 +32,7 @@ namespace Singleplayer
                 Debug.Log($"{GetType().Name} passive effect is triggered");
                 damage -= DAMAGE_REDUCTION;
                 TurnsRemaining = 0;
+                damagedEntity.PassiveEffectHandler.RemoveEffect(this);
             }
 
             public override void EndPassiveEffect(IEntity entityInit)
