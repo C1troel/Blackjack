@@ -17,7 +17,7 @@ namespace Singleplayer
 
         protected bool isEventAttack, isBoss, canTriggerPanels, canMove;
 
-        protected Direction direction;
+        protected Direction direction = Direction.Standart;
 
         protected PanelScript currentPanel;
         protected Coroutine moving;
@@ -86,8 +86,7 @@ namespace Singleplayer
             Animator = gameObject.GetComponent<Animator>();
             EnemyEffectCardsHandler = new EnemyEffectCardsHandler(this, enemyInfo.MaxEffectCards);
             SetupSpecialAbility();
-            
-            direction = Direction.Left; // Left
+
             //direction = ??? // код для визначення можливої траекторії руху після спавну ворога
         }
 
@@ -301,6 +300,33 @@ namespace Singleplayer
         {
             canMove = false;
             WalkOff();
+        }
+
+        public virtual void SetRandomAvailableDirection()
+        {
+            if (currentPanel == null)
+                return;
+
+            var availableDirections = new List<PanelScript.Pos>();
+
+            for (int i = 0; i < 4; i++)
+            {
+                var neighbor = currentPanel.GetNeighborByIndex(i);
+                if (neighbor != null)
+                {
+                    availableDirections.Add((PanelScript.Pos)i);
+                }
+            }
+
+            if (availableDirections.Contains((PanelScript.Pos)direction))
+                return;
+
+            if (availableDirections.Count > 0)
+            {
+                var randomDir = availableDirections[UnityEngine.Random.Range(0, availableDirections.Count)];
+                Debug.Log($"Выбрано направление: {randomDir}");
+                direction = (Direction)randomDir;
+            }
         }
 
         public virtual void TurnEntity()

@@ -23,6 +23,7 @@ namespace Singleplayer
         IEnumerator ResumeAnimationSmoothly(float duration);
         void SetOutline();
         void RemoveOutline();
+        void SetRandomAvailableDirection();
         void TurnEntity();
         void EnableAttacking();
         void DecreaseEffectCardsUsages();

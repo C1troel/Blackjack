@@ -26,7 +26,8 @@ namespace Singleplayer
         BackstabKnife,
         Regroup,
         DonorFineNotice,
-        GoldenMagnet
+        GoldenMagnet,
+        UnstableTeleporter
     }
 
     public enum EffectCardPurpose

@@ -137,7 +137,7 @@ namespace Singleplayer
             var player = entitiesList[0];
             var enemy = entitiesList[1];
 
-            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.GoldenMagnet);
+            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.UnstableTeleporter);
             EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.TestMagicShield);
 
             EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.DonorFineNotice);
@@ -189,10 +189,20 @@ namespace Singleplayer
 
         public void StartGame()
         {
+            StartCoroutine(StartingGame());
+        }
+
+        private IEnumerator StartingGame()
+        {
             OnPlayerLoad();
             SpawnStartingEnemies();
 
-            TestSpawnDroppedMoney();
+            yield return null;
+
+            foreach (var entity in entitiesList)
+                entity.SetRandomAvailableDirection();
+
+            /*TestSpawnDroppedMoney();*/
             /*TestChangeTurnsOrder();*/
             TurnManager.Instance.InitializeTurnOrder(entitiesList);
 
@@ -343,6 +353,9 @@ namespace Singleplayer
 
             if (entity.GetEntityType == EntityType.Player)
                 ((MonoBehaviour)entity).GetComponentInChildren<CameraController>().ForceSnapToPlayer();
+
+            yield return null;
+            entity.SetRandomAvailableDirection();
 
             if (panelTrigger != null)
             {
