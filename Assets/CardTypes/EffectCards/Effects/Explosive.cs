@@ -14,6 +14,8 @@ namespace Singleplayer
         public override IEnumerator ApplyEffect(Action onComplete, IEntity entityInit = null)
         {
             var gameManager = GameManager.Instance;
+            entityInit ??= gameManager.GetEntityWithType(EntityType.Player);
+
             var nearEntities = MapManager
                 .FindEntitiesAtDistance(entityInit.GetCurrentPanel, EffectCardInfo.EffectiveDistanceInPanels)
                 .Where(e => e != entityInit)

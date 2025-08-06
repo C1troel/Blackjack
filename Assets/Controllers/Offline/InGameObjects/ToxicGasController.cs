@@ -1,13 +1,15 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace Singleplayer
 {
-    public class ToxicGasController : MonoBehaviour
+    public class ToxicGasController : MonoBehaviour, IMapObject
     {
         private const float DAMAGE_MULT = 0.2f;
         private int remainingRounds = 0;
+        private PanelScript currentPanel;
 
         public void Initialize(int roundDuration)
         {
@@ -17,9 +19,9 @@ namespace Singleplayer
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if (!collision.gameObject.TryGetComponent<IEntity>(out var entity)) return;
+            if (!collision.gameObject.TryGetComponent<PanelScript>(out var panel)) return;
 
-            ApplyDamage(entity);
+            currentPanel = panel;
         }
 
         private void ApplyDamage(IEntity entity)
@@ -31,9 +33,18 @@ namespace Singleplayer
         private void OnNewRoundStarted()
         {
             if (remainingRounds == 0)
+            {
+                currentPanel.TryToRemoveMapObject(gameObject);
                 Destroy(gameObject);
+            }
 
             remainingRounds--;
+        }
+
+        public void OnEntityStay(Action onCompleteCallback, IEntity stayedEntity)
+        {
+            ApplyDamage(stayedEntity);
+            onCompleteCallback?.Invoke();
         }
     }
 }

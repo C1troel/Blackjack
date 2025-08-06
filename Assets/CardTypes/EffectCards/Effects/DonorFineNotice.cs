@@ -52,6 +52,7 @@ namespace Singleplayer
 
         public override bool CheckIfCanBeUsed(IEntity entityOwner)
         {
+            CanUse = true;
             return true;
         }
 

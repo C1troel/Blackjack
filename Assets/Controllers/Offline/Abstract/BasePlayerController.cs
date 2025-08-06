@@ -366,7 +366,7 @@ namespace Singleplayer
                 var droppedMoneyPrefab = GameManager.Instance.GetDroppedMoneyPrefab;
                 var droppedMoneyGO = Instantiate(droppedMoneyPrefab, currentPanel.transform.position, Quaternion.identity);
                 var droppedMoneyHandler = droppedMoneyGO.GetComponent<DroppedMoneyHandler>();
-                droppedMoneyHandler.ManageDroppedMoney(this, lostMoney);
+                droppedMoneyHandler.ManageDroppedMoney(lostMoney);
                 droppedMoneyGO.SetActive(true);
             }
 

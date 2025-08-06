@@ -33,6 +33,7 @@ namespace Singleplayer
         private Material outlineSpriteMaterial;
 
         private List<IEntity> entitiesOnPanel = new List<IEntity>();
+        private List<GameObject> objectsOnPanel = new List<GameObject>();
         private HashSet<IEntity> subscribedEntities = new HashSet<IEntity>();
 
         private List<GameObject> arrowsList = new List<GameObject>();
@@ -46,6 +47,7 @@ namespace Singleplayer
 
         public event Action<PanelScript> OnPanelClicked;
         public IReadOnlyList<IEntity> EntitiesOnPanel => entitiesOnPanel;
+        public IReadOnlyList<GameObject> ObjectsOnPanel => objectsOnPanel;
 
         private void Start()
         {
@@ -457,7 +459,15 @@ namespace Singleplayer
                 Debug.LogWarning($"Client call: this: {this.gameObject.name}, other: {collision.transform.name}");*/
             #endregion 
 
-            if (!collision.gameObject.TryGetComponent<IEntity>(out var entity)) return;
+            if (!collision.gameObject.TryGetComponent<IEntity>(out var entity))
+            {
+                if (!objectsOnPanel.Contains(collision.gameObject))
+                {
+                    Debug.Log($"Panel {gameObject.name} adding object: {collision.name}");
+                    objectsOnPanel.Add(collision.gameObject);
+                }
+                return;
+            }
 
             Debug.Log($"Entity {entity} step on panel {effectPanelInfo.Effect}");
 
@@ -472,6 +482,17 @@ namespace Singleplayer
                 entitiesOnPanel.Add(entity);
                 StartCoroutine(entity.OnStepOntoPanel(this));
             }
+        }
+
+        public void TryToRemoveMapObject(GameObject mapObject)
+        {
+            if (!objectsOnPanel.Contains(mapObject))
+            {
+                Debug.Log($"Panel {gameObject.name} doesn`t have map object {mapObject.name}");
+                return;
+            }
+
+            objectsOnPanel.Remove(mapObject);
         }
 
         public void OnPointerClick(PointerEventData eventData)
@@ -500,7 +521,15 @@ namespace Singleplayer
         {
             var a = this;
 
-            if (!collision.gameObject.TryGetComponent<IEntity>(out var entity)) return;
+            if (!collision.gameObject.TryGetComponent<IEntity>(out var entity))
+            {
+                if (objectsOnPanel.Contains(collision.gameObject))
+                {
+                    Debug.Log($"Panel {gameObject.name} deleting object: {collision.name}");
+                    objectsOnPanel.Remove(collision.gameObject);
+                }
+                return;
+            }
 
             if (subscribedEntities.Contains(entity))
             {
@@ -521,8 +550,35 @@ namespace Singleplayer
             }
 
             Debug.Log($"Entity stayed on panel {effectPanelInfo.Effect}");
-            StartCoroutine(PanelEffectsManager.Instance
-                .TriggerPanelEffect(this, entity));
+            StartCoroutine(HandleMapObjectsAndEffect(entity));
+        }
+
+        private IEnumerator HandleMapObjectsAndEffect(IEntity entity)
+        {
+            List<IMapObject> mapObjects = new List<IMapObject>();
+
+            foreach (var obj in objectsOnPanel)
+            {
+                if (obj == null) continue;
+                if (obj.TryGetComponent<IMapObject>(out var mapObj))
+                {
+                    mapObjects.Add(mapObj);
+                }
+            }
+
+            foreach (var mapObj in mapObjects)
+            {
+                bool isCompleted = false;
+
+                if (entity.GetEntityHp <= 0)
+                    yield break;
+
+                mapObj.OnEntityStay(() => isCompleted = true, entity);
+
+                yield return new WaitUntil(() => isCompleted);
+            }
+
+            yield return PanelEffectsManager.Instance.TriggerPanelEffect(this, entity);
         }
 
         private Pos GetPosRelativelyFromOtherPanelOrNone(GameObject otherPanel)

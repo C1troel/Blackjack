@@ -114,6 +114,7 @@ namespace Singleplayer
             if (!EffectCardLogic.CanCounter && (player.GetEntityLeftCards == 0 || !EffectCardLogic.CanUse))
                 return;
 
+            /*player.DecreaseEffectCardsUsages();*/
             GameManager.Instance.TogglePlayerHudButtons(false);
             RemoveCardOutline();
             _animator.SetTrigger("CardUsage");
@@ -129,6 +130,7 @@ namespace Singleplayer
         {
             _animator.enabled = false;
             _image.enabled = false;
+            player.DecreaseEffectCardsUsages();
             MapManager.Instance.OnEffectCardPlayed(this);
         }
 

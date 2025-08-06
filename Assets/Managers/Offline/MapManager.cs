@@ -813,6 +813,28 @@ namespace Singleplayer
             return panelsInRadius;
         }
 
+        public static List<T> FindObjectsOfTypeAroundPanel<T>(PanelScript centerPanel, int radius) where T : MonoBehaviour
+        {
+            List<T> foundObjects = new();
+
+            List<PanelScript> nearbyPanels = GetPanelsInRadius(centerPanel, radius);
+
+            foreach (var panel in nearbyPanels)
+            {
+                foreach (var obj in panel.ObjectsOnPanel)
+                {
+                    if (obj == null) continue;
+
+                    if (obj.TryGetComponent<T>(out var component))
+                    {
+                        foundObjects.Add(component);
+                    }
+                }
+            }
+
+            return foundObjects;
+        }
+
 
         #endregion
 

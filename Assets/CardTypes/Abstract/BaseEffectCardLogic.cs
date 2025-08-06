@@ -25,7 +25,8 @@ namespace Singleplayer
         Rage,
         BackstabKnife,
         Regroup,
-        DonorFineNotice
+        DonorFineNotice,
+        GoldenMagnet
     }
 
     public enum EffectCardPurpose

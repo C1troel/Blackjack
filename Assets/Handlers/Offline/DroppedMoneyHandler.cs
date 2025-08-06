@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Services.Lobbies.Models;
@@ -5,32 +6,29 @@ using UnityEngine;
 
 namespace Singleplayer
 {
-    public class DroppedMoneyHandler : MonoBehaviour
+    public class DroppedMoneyHandler : MonoBehaviour, IMapObject
     {
-        private IEntity moneyOwner;
+        private PanelScript currentPanel;
         private int moneyAmount;
-        public void ManageDroppedMoney(IEntity moneyOwner, int moneyAmount)
+        public void ManageDroppedMoney(int moneyAmount)
         {
-            this.moneyOwner = moneyOwner;
             this.moneyAmount = moneyAmount;
         }
 
-        void OnTriggerEnter2D(Collider2D collision)
+        public void OnEntityStay(Action onCompleteCallback, IEntity stayedEntity)
         {
-            if (!collision.gameObject.TryGetComponent<IEntity>(out var entity)) return;
-
-            if (entity.GetEntityHp == 0)
+            if (stayedEntity.GetEntityHp == 0)
                 return;
 
-            switch (entity.GetEntityType)
+            switch (stayedEntity.GetEntityType)
             {
                 case EntityType.Player:
-                    var player = entity as BasePlayerController;
+                    var player = stayedEntity as BasePlayerController;
                     player.GainMoney(moneyAmount, false);
                     break;
 
                 case EntityType.Enemy:
-                    var enemy = entity as BaseEnemy;
+                    var enemy = stayedEntity as BaseEnemy;
                     enemy.PickUpMoney(moneyAmount);
                     break;
 
@@ -41,7 +39,17 @@ namespace Singleplayer
                     break;
             }
 
+            onCompleteCallback?.Invoke();
+
+            currentPanel.TryToRemoveMapObject(gameObject);
             Destroy(gameObject);
+        }
+
+        void OnTriggerEnter2D(Collider2D collision)
+        {
+            if (!collision.gameObject.TryGetComponent<PanelScript>(out var panel)) return;
+
+            currentPanel = panel;
         }
     }
 }

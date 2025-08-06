@@ -19,6 +19,8 @@ namespace Singleplayer
 
         [SerializeField] GameObject testPlayerSpawnPanel;
         [SerializeField] GameObject testEnemySpawnPanel;
+        [SerializeField] GameObject testDroppedMoneySpawnPanel;
+
         [SerializeField] GameObject inputBlock;
         [SerializeField] GameObject droppedMoneyPrefab;
 
@@ -121,20 +123,23 @@ namespace Singleplayer
             BlackjackManager.Instance.PreselectCardForNextGame(preselectedCard);
         }
 
+        private void TestSpawnDroppedMoney()
+        {
+            var droppedMoneyGO = Instantiate(droppedMoneyPrefab, testDroppedMoneySpawnPanel.transform.position, Quaternion.identity);
+            var droppedMoneyHandler = droppedMoneyGO.GetComponent<DroppedMoneyHandler>();
+
+            droppedMoneyHandler.ManageDroppedMoney(50);
+            droppedMoneyGO.SetActive(true);
+        }
+
         private void TestAddingEffectCards()
         {
             var player = entitiesList[0];
             var enemy = entitiesList[1];
 
-            /*EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BigAttackPack);
-            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.SmallMedicine);
-            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BigDefensePack);
-            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.BigDefensePack);
-            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.BigAttackPack);
-            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.SmallMedicine);*/
-            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.DonorFineNotice);
+            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.GoldenMagnet);
             EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.TestMagicShield);
-            /*EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.TestMagicShield);*/
+
             EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.DonorFineNotice);
         }
         #endregion
@@ -187,6 +192,7 @@ namespace Singleplayer
             OnPlayerLoad();
             SpawnStartingEnemies();
 
+            TestSpawnDroppedMoney();
             /*TestChangeTurnsOrder();*/
             TurnManager.Instance.InitializeTurnOrder(entitiesList);
 
