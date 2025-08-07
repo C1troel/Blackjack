@@ -27,7 +27,8 @@ namespace Singleplayer
         Regroup,
         DonorFineNotice,
         GoldenMagnet,
-        UnstableTeleporter
+        UnstableTeleporter,
+        Mirror
     }
 
     public enum EffectCardPurpose

@@ -137,10 +137,11 @@ namespace Singleplayer
             var player = entitiesList[0];
             var enemy = entitiesList[1];
 
-            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.UnstableTeleporter);
-            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.TestMagicShield);
+            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.Fireball);
+            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.Mirror);
 
-            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.DonorFineNotice);
+            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.Mirror);
+            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.Fireball);
         }
         #endregion
 
@@ -203,7 +204,7 @@ namespace Singleplayer
                 entity.SetRandomAvailableDirection();
 
             /*TestSpawnDroppedMoney();*/
-            /*TestChangeTurnsOrder();*/
+            TestChangeTurnsOrder();
             TurnManager.Instance.InitializeTurnOrder(entitiesList);
 
             #region Tests

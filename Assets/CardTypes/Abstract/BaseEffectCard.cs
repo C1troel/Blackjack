@@ -130,13 +130,16 @@ namespace Singleplayer
         {
             _animator.enabled = false;
             _image.enabled = false;
-            player.DecreaseEffectCardsUsages();
+
+            if (!EffectCardLogic.CanCounter)
+                player.DecreaseEffectCardsUsages();
+
             MapManager.Instance.OnEffectCardPlayed(this);
         }
 
         public void ApplyEffect(IEntity entityInit = null)
         {
-            StartCoroutine(EffectCardLogic.ApplyEffect(() =>
+            EffectCardDealer.Instance.StartCoroutine(EffectCardLogic.ApplyEffect(() =>
             OnEffectCardApplyEnd(),
             entityInit));
         }

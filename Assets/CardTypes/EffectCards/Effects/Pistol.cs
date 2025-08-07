@@ -87,7 +87,7 @@ namespace Singleplayer
             GameObject pistolBulletGO = GameManager.Instantiate(pistolBulletPrefab, spawnPos, Quaternion.identity);
 
             PistolBulletProjectile pistolBulletProjectile = pistolBulletGO.GetComponent<PistolBulletProjectile>();
-            pistolBulletProjectile.Initialize(onComplete, target, entityInit, targetsPanel, DAMAGE, EffectCardInfo);
+            pistolBulletProjectile.Initialize(onComplete, target, entityInit, targetsPanel, EffectCardInfo);
         }
     }
 }

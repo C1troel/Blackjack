@@ -21,3 +21,4 @@ MonoBehaviour:
   _effectCardType: 11
   _vulnerabilities: []
   _projectilePrefab: {fileID: 1673483464526169418, guid: 7aa057653e7998e45a1850658a503073, type: 3}
+  _spawnCordsOffset: -60

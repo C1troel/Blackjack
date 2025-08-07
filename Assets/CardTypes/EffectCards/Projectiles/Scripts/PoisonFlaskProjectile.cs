@@ -20,8 +20,8 @@ namespace Singleplayer
 
         private IEntity targetEntity;
         private PanelScript landingPanel;
-        private EffectCardInfo effectCardInfo;
 
+        public EffectCardInfo effectCardInfo { get; private set; }
         public IEntity entityOwner { get; private set; }
 
         public void Initialize(Action onComplete, IEntity targetEntity, IEntity entityOwner, PanelScript landingPanel, EffectCardInfo effectCardInfo)
@@ -206,6 +206,13 @@ namespace Singleplayer
             var posionEffect = new Poison(effectCardInfo.EffectsDuration);
             targetEntity.PassiveEffectHandler.TryToAddEffect(posionEffect);
             Debug.Log($"Entity {targetEntity.GetEntityName} health after dealing damage: {targetEntity.GetEntityHp}");
+        }
+
+        public Action ReflectProjectile()
+        {
+            var returnedCallback = entityOnCompleteCallback;
+            entityOnCompleteCallback = null;
+            return returnedCallback;
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Singleplayer
 {
     public abstract class BaseEnemy : MonoBehaviour, IEntity
     {
-        protected int hp, maxHp, atk, def, money, leftCards, defaultCardUsages, leftSteps, currentMaxHp;
+        protected int hp, maxHp, atk, def, money, leftCards, defaultCardUsages, leftSteps;
         protected float moveSpeed = 300f; // хардкод!(швидкість переміщення в просторі)
         protected float previousCordY = -1170f; // хардкод!
         protected float initialZ;
@@ -77,7 +77,7 @@ namespace Singleplayer
             this.enemyInfo = enemyInfo;
 
             hp = enemyInfo.DefaultHp;
-            currentMaxHp = enemyInfo.DefaultHp;
+            maxHp = enemyInfo.DefaultHp;
             money = enemyInfo.DefaultMoney;
             atk = enemyInfo.DefaultAtk;
             def = enemyInfo.DefaultDef;
@@ -362,12 +362,12 @@ namespace Singleplayer
 
         public virtual void Heal(int value)
         {
-            if (hp == currentMaxHp)
+            if (hp == maxHp)
                 return;
 
-            if ((hp + value) > currentMaxHp)
+            if ((hp + value) > maxHp)
             {
-                hp = currentMaxHp;
+                hp = maxHp;
                 return;
             }
 

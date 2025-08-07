@@ -30,7 +30,7 @@ namespace Singleplayer
         public int DefaultAtk => _defaultAtk;
         public int DefaultDef => _defaultDef;
         public int DefaultCardUsages => _defaultCardUsages;
-        public int MaxEffectCards => _defaultCardUsages;
+        public int MaxEffectCards => _maxEffectCards;
         public bool CanTriggerPanels => _canTriggerPanels;
         public bool IsBoss => _isBoss;
         public ActiveGlobalEffectInfo SpecialAbility => _specialAbility;

@@ -8,7 +8,9 @@ namespace Singleplayer
     public class ProjectileEffectCardInfo : EffectCardInfo
     {
         [SerializeField] private GameObject _projectilePrefab;
+        [SerializeField] private float _spawnCordsOffset;
 
         public GameObject ProjectilePrefab => _projectilePrefab;
+        public float SpawnCordsOffset => _spawnCordsOffset;
     }
 }

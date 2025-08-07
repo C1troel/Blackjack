@@ -8,6 +8,7 @@ namespace Singleplayer
 {
     public class FireballProjectile : MonoBehaviour, IProjectile
     {
+        private const int DAMAGE = 30;
         private const string EXPLOSION_TRIGGER = "Explode";
         private const string FLY_ANIMATION_NAME = "FireballFly";
 
@@ -19,9 +20,8 @@ namespace Singleplayer
 
         private IEntity targetEntity;
         private PanelScript landingPanel;
-        private EffectCardInfo effectCardInfo;
-        private int damage;
 
+        public EffectCardInfo effectCardInfo { get; private set; }
         public IEntity entityOwner { get; private set; }
 
         void Start()
@@ -30,26 +30,26 @@ namespace Singleplayer
         void Update()
         {}
 
-        public void Initialize(Action onComplete, IEntity targetEntity, IEntity entityOwner, PanelScript landingPanel, int damage , EffectCardInfo effectCardInfo)
+        public void Initialize(Action onComplete, IEntity targetEntity, IEntity entityOwner, PanelScript landingPanel, EffectCardInfo effectCardInfo)
         {
             this.targetEntity = targetEntity;
             this.entityOwner = entityOwner;
             this.effectCardInfo = effectCardInfo;
-            this.damage = damage;
             this.landingPanel = landingPanel;
             animator.speed = 0;
             animator.enabled = true;
             entityOnCompleteCallback = onComplete;
 
+            ProjectileManager.Instance.AddAvaitingProjectile(this);
+
             if (GlobalEffectsManager.Instance.isTimeStopped)
             {
-                ProjectileManager.Instance.AddAvaitingProjectile(this);
                 entityOnCompleteCallback?.Invoke();
                 entityOnCompleteCallback = null;
                 return;
             }
 
-            StartProjectileActivity(null);
+            /*StartProjectileActivity(null);*/
         }
 
         public void StartProjectileActivity(Action<IProjectile> callback)
@@ -210,8 +210,15 @@ namespace Singleplayer
         {
             Debug.Log($"Entity {targetEntity.GetEntityName} health before dealing damage: {targetEntity.GetEntityHp}");
             Explode();
-            GameManager.Instance.DealDamage(targetEntity, damage, false, effectCardInfo.EffectCardDmgType);
+            GameManager.Instance.DealDamage(targetEntity, DAMAGE, false, effectCardInfo.EffectCardDmgType);
             Debug.Log($"Entity {targetEntity.GetEntityName} health after dealing damage: {targetEntity.GetEntityHp}");
+        }
+
+        public Action ReflectProjectile()
+        {
+            var returnedCallback = entityOnCompleteCallback;
+            entityOnCompleteCallback = null;
+            return returnedCallback;
         }
     }
 }

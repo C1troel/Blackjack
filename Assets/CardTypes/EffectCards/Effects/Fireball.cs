@@ -10,9 +10,6 @@ namespace Singleplayer
 {
     public class Fireball : BaseEffectCardLogic
     {
-        private const int DAMAGE = 30;
-        private float spawnCordsOffset = -60f;
-
         public override IEnumerator ApplyEffect(Action onComplete, IEntity entityInit = null)
         {
             IEntity target = null;
@@ -83,12 +80,12 @@ namespace Singleplayer
             var fireballPrefab = projectilEffectCardInfo.ProjectilePrefab;
 
             var targetsPanel = target.GetCurrentPanel;
-            Vector3 spawnPos = new Vector3(targetsPanel.transform.position.x + spawnCordsOffset, targetsPanel.transform.position.y);
+            Vector3 spawnPos = new Vector3(targetsPanel.transform.position.x + projectilEffectCardInfo.SpawnCordsOffset, targetsPanel.transform.position.y);
 
             GameObject fireballGO = GameManager.Instantiate(fireballPrefab, spawnPos, Quaternion.identity);
 
             FireballProjectile fireballProjectile = fireballGO.GetComponent<FireballProjectile>();
-            fireballProjectile.Initialize(onComplete, target, entityInit, targetsPanel, DAMAGE, EffectCardInfo);
+            fireballProjectile.Initialize(onComplete, target, entityInit, targetsPanel, EffectCardInfo);
         }
     }
 }
