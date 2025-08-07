@@ -28,7 +28,8 @@ namespace Singleplayer
         DonorFineNotice,
         GoldenMagnet,
         UnstableTeleporter,
-        Mirror
+        Mirror,
+        KindlyMirror
     }
 
     public enum EffectCardPurpose

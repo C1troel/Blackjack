@@ -138,9 +138,9 @@ namespace Singleplayer
             var enemy = entitiesList[1];
 
             EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.Fireball);
-            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.Mirror);
+            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.KindlyMirror);
 
-            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.Mirror);
+            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.KindlyMirror);
             EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.Fireball);
         }
         #endregion
