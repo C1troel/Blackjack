@@ -10,7 +10,7 @@ namespace Singleplayer
     {
         SmallMedicine,
         Fireball,
-        TestMagicShield,
+        BallsOfSteel,
         Hourglass,
         BigAttackPack,
         BigDefensePack,
