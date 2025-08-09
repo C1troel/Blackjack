@@ -10106,7 +10106,7 @@ MonoBehaviour:
   testPredefindCharacterName: TimeStopper
   playerPref: {fileID: 1091366665892431321, guid: a2c9085a93bcc0547972b02c76068e22, type: 3}
   testPlayerSpawnPanel: {fileID: 9150493611487188671}
-  testEnemySpawnPanel: {fileID: 9150493611106445761}
+  testEnemySpawnPanel: {fileID: 9150493610541128045}
   testDroppedMoneySpawnPanel: {fileID: 9150493610541128045}
   inputBlock: {fileID: 7498455835032814808}
   droppedMoneyPrefab: {fileID: 1901776789308406174, guid: 72a61977caed5134db346b79cc67c8b7, type: 3}

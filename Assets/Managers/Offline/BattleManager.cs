@@ -166,6 +166,10 @@ namespace Singleplayer
         {
             var player = entity as BasePlayerController;
             _atackButton.gameObject.SetActive(true);
+
+            if (entity.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.DoubleDown))
+                return;
+
             battleEffectCardsApplier.ToggleBattleCardApplier(true);
             battleEffectCardsHandler.ShowPlayerBattleEffectCards(player, true);
 
@@ -188,8 +192,11 @@ namespace Singleplayer
         {
             var enemy = entity as BaseEnemy;
 
-            if (entity.GetCurrentPanel.GetEffectPanelInfo.Effect != PanelEffect.VIPClub)
+            if (entity.GetCurrentPanel.GetEffectPanelInfo.Effect != PanelEffect.VIPClub &&
+                    !entity.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.DoubleDown))
+            {
                 enemy.EnemyEffectCardsHandler.UseAllCardsByPurpose(EffectCardPurpose.BattleAttack);
+            }
 
             StartAttack();
         }
@@ -240,6 +247,9 @@ namespace Singleplayer
             _defendButton.gameObject.SetActive(true);
             _splitDefButton.gameObject.SetActive(true);
 
+            if (entity.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.DoubleDown))
+                return;
+
             battleEffectCardsApplier.ToggleBattleCardApplier(true);
             battleEffectCardsHandler.ShowPlayerBattleEffectCards(player, false);
             /*TESTAddingCardButtonsDef.SetActive(true);*/
@@ -282,8 +292,11 @@ namespace Singleplayer
             // також можливо додати шанс на вибір спліта / не шанс а перевірка на те, що він і так програє
             // також інші обробки, наприклад ефектів
 
-            if (entity.GetCurrentPanel.GetEffectPanelInfo.Effect != PanelEffect.VIPClub)
+            if (entity.GetCurrentPanel.GetEffectPanelInfo.Effect != PanelEffect.VIPClub &&
+                    !entity.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.DoubleDown))
+            {
                 enemy.EnemyEffectCardsHandler.UseAllCardsByPurpose(EffectCardPurpose.BattleDefense);
+            }
 
             StartDefend();
         }
@@ -375,24 +388,29 @@ namespace Singleplayer
             bool isAtkBlackJack = false;
             bool isDefBlackJack = false;
 
+            bool isAtkDoubleDowns = entitiesHands[0].Item1.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.DoubleDown);
+
             bool isEvade = false;
 
-            for (int i = 0; i < entitiesHands[0].Item2.Count; i++)
+            if (!isAtkDoubleDowns)
             {
-                totalAtkScore += GetScoreFromString(entitiesHands[0].Item2[i].gameObject.transform.Find("1Side").GetComponent<Image>().sprite.name);
-
-                if (totalAtkScore == 21 && i == 1)
+                for (int i = 0; i < entitiesHands[0].Item2.Count; i++)
                 {
-                    isAtkBlackJack = true;
-                    break;
-                }
+                    totalAtkScore += GetScoreFromString(entitiesHands[0].Item2[i].gameObject.transform.Find("1Side").GetComponent<Image>().sprite.name);
 
-                if (i == 1)
-                {
-                    if (CheckForSplit(entitiesHands[0].Item2[i], entitiesHands[0].Item2[i - 1]) && atkPlayerInsuranceChoose != true)
+                    if (totalAtkScore == 21 && i == 1)
                     {
-                        yield return StartCoroutine(AtkSplitHandler());
+                        isAtkBlackJack = true;
                         break;
+                    }
+
+                    if (i == 1)
+                    {
+                        if (CheckForSplit(entitiesHands[0].Item2[i], entitiesHands[0].Item2[i - 1]) && atkPlayerInsuranceChoose != true)
+                        {
+                            yield return StartCoroutine(AtkSplitHandler());
+                            break;
+                        }
                     }
                 }
             }
@@ -439,6 +457,11 @@ namespace Singleplayer
                 yield return StartCoroutine(SpawnLeftCards(true));
                 totalAtkScore = SummarizeHandDamage(entitiesHands[0].Item2);
             }
+            else if (entitiesHands[0].Item1.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.DoubleDown))
+            {
+                yield return StartCoroutine(SpawnLeftCards(true));
+                totalAtkScore = SummarizeHandDamage(entitiesHands[0].Item2);
+            }
             if (!isDefBlackJack && (entitiesCardAdds.Item2 != 0))
             {
                 yield return StartCoroutine(SpawnLeftCards(false));
@@ -451,6 +474,9 @@ namespace Singleplayer
                 GameManager.Instance.DealDamage(atkPlayer, totalAtkScore / 2);
                 yield break;
             }
+
+            if (isAtkDoubleDowns)
+                totalAtkScore *= 2;
 
             var totalDamage = totalAtkScore == totalDefScore ? 5 :
                 (totalAtkScore + atkPlayer.GetEntityAtk + 10) -
@@ -882,6 +908,14 @@ namespace Singleplayer
 
         private IEnumerator SpawnLeftCards(bool isForAtk)
         {
+            if (isForAtk && entitiesHands[0].Item1.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.DoubleDown))
+            {
+                SpawnNextCard(0, true, false);
+
+                while (cardGiving != null)
+                    yield return null;
+            }
+
             if (isForAtk)
             {
                 while (entitiesCardAdds.Item1 > 0)

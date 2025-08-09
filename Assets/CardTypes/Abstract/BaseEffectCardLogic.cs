@@ -30,7 +30,8 @@ namespace Singleplayer
         UnstableTeleporter,
         Mirror,
         KindlyMirror,
-        Magic8Ball
+        Magic8Ball,
+        BigSwing
     }
 
     public enum EffectCardPurpose

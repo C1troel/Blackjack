@@ -19,7 +19,8 @@ namespace Singleplayer
             ShoppingMania,
             Poison,
             Rage,
-            Clairvoyance
+            Clairvoyance,
+            DoubleDown
         }
 
         public abstract class BasePassiveGlobalEffect
