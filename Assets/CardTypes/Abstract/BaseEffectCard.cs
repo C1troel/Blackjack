@@ -55,7 +55,7 @@ namespace Singleplayer
         {
             EffectCardApplier.Instance.OnCardBeginDrag();
 
-            if (BattleManager.Instance.isBattleActive)
+            if (BattleManager.Instance.IsBattleActive)
                 BattleManager.Instance.GetBattlePlayerEffectCardsApplier.OnCardBeginDrag();
 
             Debug.Log("BeginDrag");
@@ -79,7 +79,7 @@ namespace Singleplayer
 
             if (!EffectCardLogic.CanCounter && 
                 (player.GetEntityLeftCards == 0 || !EffectCardLogic.CanUse) && 
-                !BattleManager.Instance.isBattleActive)
+                !BattleManager.Instance.IsBattleActive)
             {
                 transform.SetParent(parentAfterDrag);
                 transform.SetSiblingIndex(originalSiblingIndex);
@@ -88,7 +88,7 @@ namespace Singleplayer
                 _image.raycastTarget = true;
                 EffectCardApplier.Instance.OnCardEndDrag();
 
-                if (BattleManager.Instance.isBattleActive)
+                if (BattleManager.Instance.IsBattleActive)
                     BattleManager.Instance.GetBattlePlayerEffectCardsApplier.OnCardEndDrag();
 
                 return;
@@ -104,7 +104,7 @@ namespace Singleplayer
             _image.raycastTarget = true;
             EffectCardApplier.Instance.OnCardEndDrag();
 
-            if (BattleManager.Instance.isBattleActive)
+            if (BattleManager.Instance.IsBattleActive)
                 BattleManager.Instance.GetBattlePlayerEffectCardsApplier.OnCardEndDrag();
         }
 

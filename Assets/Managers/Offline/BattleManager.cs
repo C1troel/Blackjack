@@ -32,22 +32,8 @@ namespace Singleplayer
         [SerializeField] private BattlePlayerEffectCardsHandler battleEffectCardsHandler;
         [SerializeField] private BattleEffectCardApplier battleEffectCardsApplier;
 
-        /// <summary>
-        /// Наступні 8 змінних потрібні для тесту додавання карт до рук гравця(поки не налаштована система ефектних карт)
-        /// </summary>
-        /*[SerializeField] private GameObject TESTAddingCardButtonsAtk;
-        [SerializeField] private Button TESTAdd1CardButtonAtk;
-        [SerializeField] private Button TESTAdd2CardButtonAtk;
-        [SerializeField] private Button TESTAdd3CardButtonAtk;
-
-        [SerializeField] private GameObject TESTAddingCardButtonsDef;
-        [SerializeField] private Button TESTAdd1CardButtonDef;
-        [SerializeField] private Button TESTAdd2CardButtonDef;
-        [SerializeField] private Button TESTAdd3CardButtonDef;*/
-
         [SerializeField] private TextMeshProUGUI TESTleftCardsAddingText;
         [SerializeField] private TextMeshProUGUI TESTAlreadyAddedCardsText;
-
 
         [SerializeField] private TextMeshProUGUI timerText;
 
@@ -81,9 +67,11 @@ namespace Singleplayer
         private bool? atkPlayerSplitChoose = null;
         private bool? atkPlayerInsuranceChoose = null;
 
-        private bool? startBattle = null;
+        public bool IsBattleActive { get; private set; } = false;
 
-        public bool isBattleActive { get; private set; } = false;
+        public delegate void EntityDrawCardDelegate(NextCardScript takenCard, IEntity entityInit);
+        public EntityDrawCardDelegate OnEntityDrawCard;
+
         public static BattleManager Instance { get; private set; }
 
         private void Awake()
@@ -110,7 +98,7 @@ namespace Singleplayer
             if ((!CanAttack(atk)) || (!CanAttack(def)))
                 return;
 
-            isBattleActive = true;
+            IsBattleActive = true;
 
             GameManager.Instance.TogglePlayersHUD(false);
 
@@ -148,8 +136,6 @@ namespace Singleplayer
             SpawnBattleAvatars(atkName, defName);
 
             AttackerPlayerTurn(atk);
-
-            // Видать сначала обом игрокам по 2 карти Диллер(Защитник)/Атакер
 
         }
 
@@ -372,7 +358,7 @@ namespace Singleplayer
 
             GameManager.Instance.TogglePlayersHUD(true);
 
-            isBattleActive = false;
+            IsBattleActive = false;
 
             /*var entityInit = entitiesHands[0].Item1;*/
 
@@ -553,6 +539,19 @@ namespace Singleplayer
 
         private void AtkInsuranceForEnemy() // Обробка страхування гравця атаки, для противників
         {
+            if (entitiesHands[0].Item1.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.Clairvoyance))
+            {
+                var faceSide = entitiesHands[1].Item2[1].gameObject.transform.Find("2Side").GetComponent<Image>().sprite.name;
+                int cardScore = GetScoreFromString(faceSide);
+
+                if (cardScore != 10)
+                    atkPlayerInsuranceChoose = false;
+                else
+                    atkPlayerInsuranceChoose = true;
+
+                return;
+            }
+
             if (Random.Range(1, 101) <= 5) // приблизний шанс блекджеку з перших двох карт
                 atkPlayerInsuranceChoose = true;
             else
@@ -628,7 +627,12 @@ namespace Singleplayer
             Vector2 destinationCords = new Vector2();
 
             if (!facedDown)
-                nextCard.GetComponent<NextCardScript>().FlipCard();
+                card.FlipCard();
+            else
+            {
+                var entityInit = isAttacker ? entitiesHands[0].Item1 : entitiesHands[1].Item1;
+                OnEntityDrawCard?.Invoke(card, entityInit);
+            }
 
             if (isAttacker && handNumber == -1)
             {

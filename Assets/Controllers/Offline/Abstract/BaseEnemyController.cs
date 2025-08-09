@@ -428,7 +428,7 @@ namespace Singleplayer
             StopMoving();
             Debug.LogWarning($"ATK: {Atk.GetEntityName} DEF: {Def.GetEntityName}");
             battleManager.TryToStartBattle(Atk, Def);
-            yield return new WaitUntil(() => !battleManager.isBattleActive);
+            yield return new WaitUntil(() => !battleManager.IsBattleActive);
             StartMove();
         }
 

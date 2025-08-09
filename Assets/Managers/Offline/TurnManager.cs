@@ -48,7 +48,7 @@ namespace Singleplayer
                 yield return null;
                 if (turnQueue.Count == 0) yield break;
 
-                if (BattleManager.Instance.isBattleActive)
+                if (BattleManager.Instance.IsBattleActive)
                     yield return null;
 
                 CurrentTurnEntity = turnQueue.Dequeue();

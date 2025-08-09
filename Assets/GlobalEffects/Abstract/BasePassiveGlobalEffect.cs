@@ -9,6 +9,19 @@ namespace Singleplayer
 {
     namespace PassiveEffects
     {
+        public enum PassiveEffectType
+        {
+            TimeStop,
+            Chronomaster,
+            Wound,
+            Patch,
+            Plague,
+            ShoppingMania,
+            Poison,
+            Rage,
+            Clairvoyance
+        }
+
         public abstract class BasePassiveGlobalEffect
         {
             protected IEntity entityOwner;
@@ -55,18 +68,6 @@ namespace Singleplayer
             {
                 Debug.Log($"End of passive effect {GetType().Name}...");
             }
-        }
-
-        public enum PassiveEffectType
-        {
-            TimeStop,
-            Chronomaster,
-            Wound,
-            Patch,
-            Plague,
-            ShoppingMania,
-            Poison,
-            Rage
         }
     }
 }

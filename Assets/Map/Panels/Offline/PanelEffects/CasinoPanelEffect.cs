@@ -23,7 +23,7 @@ namespace Singleplayer
             Debug.Log("Panel starting blackjack game");
             blackjackManager.StartBlackjack();
 
-            yield return new WaitUntil(() => !blackjackManager.isBlackjackGameRunning);
+            yield return new WaitUntil(() => !blackjackManager.IsBlackjackGameRunning);
 
             onComplete?.Invoke();
         }

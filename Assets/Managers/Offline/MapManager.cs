@@ -127,7 +127,7 @@ namespace Singleplayer
 
         public void MakeADraw(IEntity entity)
         {
-            int tempSteps = 1;
+            int tempSteps = 5;
 
             switch (entity.GetEntityType)
             {
@@ -840,7 +840,7 @@ namespace Singleplayer
 
         public void OnEffectCardPlayed(BaseEffectCard effectCard)
         {
-            if (BattleManager.Instance.isBattleActive)
+            if (BattleManager.Instance.IsBattleActive)
             {
                 effectCard.ApplyEffect();
                 return;

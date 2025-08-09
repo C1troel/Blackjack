@@ -49,7 +49,10 @@ namespace Singleplayer
 
         private PlayerAct playerAct = PlayerAct.None;
 
-        public bool isBlackjackGameRunning { get; private set; } = false;
+        public bool IsBlackjackGameRunning { get; private set; } = false;
+
+        public delegate void EntityDrawCardDelegate(BlackjackCard takenCard, IEntity entityInit);
+        public EntityDrawCardDelegate OnEntityDrawCard;
 
         public static BlackjackManager Instance { get; private set; }
 
@@ -73,7 +76,7 @@ namespace Singleplayer
         public void StartBlackjack()
         {
             GameManager.Instance.TogglePlayersHUD(false);
-            isBlackjackGameRunning = true;
+            IsBlackjackGameRunning = true;
 
             SetupDeck();
 
@@ -96,7 +99,7 @@ namespace Singleplayer
             blackjackHUD.gameObject.SetActive(false);
             GameManager.Instance.TogglePlayersHUD(true);
 
-            isBlackjackGameRunning = false;
+            IsBlackjackGameRunning = false;
 
             startBtnsContainer.SetActive(false);
             betsContainer.SetActive(false);
@@ -109,6 +112,9 @@ namespace Singleplayer
 
             foreach (Transform hand in dealerHand.transform)
                 Destroy(hand.gameObject);
+
+            Destroy(preparedNextCard.gameObject);
+            preparedNextCard = null;
         }
 
         private void SetupDeck()
@@ -408,7 +414,10 @@ namespace Singleplayer
             bool isDealerBlackjack = dealerHand.CheckForBlackjack();
 
             while (dealerHand.GetHandScores() < DEALER_STAND_SCORE)
-                yield return SpawnNextBlackjackCard(-1, true, false);
+            {
+                yield return GiveCardToHand(preparedNextCard, dealerHand);
+                preparedNextCard = PrepareNextCard(true);
+            }
 
             yield return new WaitForSeconds(1f);
 
@@ -424,13 +433,22 @@ namespace Singleplayer
                 {
                     Debug.Log("Hand is being busted!");
                 }
+                else if(dealerHandScore > 21)
+                {
+                    Debug.Log("Dealer hand is being busted!");
+                    int win = (int)(handController.hasBlackjack ? handController.handBet * 2.5 : handController.handBet * 2);
+                    int totalWin = handController.isInsured ? win * 2 : win;
+
+                    player.GainMoney(totalWin, false);
+                    Debug.Log($"Hand with total score of {playerHandScore} win with total prize of {totalWin}");
+                }
                 else if (isDealerBlackjack && handController.isInsured)
                 {
                     int totalWin = handController.handBet * 2;
                     player.GainMoney(totalWin, false);
                     Debug.Log($"Hand with total score of {playerHandScore} win insure bet with total prize of {totalWin}");
                 }
-                else if (playerHandScore < dealerHandScore || playerHandScore > 21)
+                else if (playerHandScore < dealerHandScore)
                 {
                     Debug.Log($"Hand with total score of {playerHandScore} loose!!!");
                     continue;
@@ -629,6 +647,11 @@ namespace Singleplayer
 
             if (!facedDown)
                 card.FlipCard();
+            else
+            {
+                var player = GameManager.Instance.GetEntityWithType(EntityType.Player);
+                OnEntityDrawCard?.Invoke(card, player);
+            }
 
             return card;
         }
@@ -716,9 +739,14 @@ namespace Singleplayer
 
             if (!facedDown)
             {
-                blackjackCard.GetComponent<BlackjackCard>().FlipCard();
+                card.FlipCard();
                 Debug.Log($"BlackjackManager object activeness is {this.gameObject.activeSelf}");
                 yield return new WaitForSeconds(1f);
+            }
+            else
+            {
+                var player = GameManager.Instance.GetEntityWithType(EntityType.Player);
+                OnEntityDrawCard?.Invoke(card, player);
             }
 
             if (isDealer)

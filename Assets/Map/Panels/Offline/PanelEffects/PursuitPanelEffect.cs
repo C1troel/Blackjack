@@ -40,7 +40,7 @@ namespace Singleplayer
 
                 var battleManager = BattleManager.Instance;
                 battleManager.TryToStartBattle(entity, target);
-                yield return new WaitUntil(() => !battleManager.isBattleActive);
+                yield return new WaitUntil(() => !battleManager.IsBattleActive);
             }
 
             onComplete?.Invoke();

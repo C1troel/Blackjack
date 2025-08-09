@@ -29,7 +29,8 @@ namespace Singleplayer
         GoldenMagnet,
         UnstableTeleporter,
         Mirror,
-        KindlyMirror
+        KindlyMirror,
+        Magic8Ball
     }
 
     public enum EffectCardPurpose
