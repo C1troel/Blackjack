@@ -138,6 +138,8 @@ namespace Singleplayer
             var enemy = entitiesList[1];
 
             EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BigSwing);
+            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.SplitReach);
+            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BigAttackPack);
             EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BigAttackPack);
 
             EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.BigDefensePack);
@@ -395,8 +397,16 @@ namespace Singleplayer
 
             OnEntityDamageDeal?.Invoke(ref damage, entity, effectCardDmgType);
 
+            int initialDamage = isBlockable ? (damage - entity.GetEntityDef) : damage;
+
+            if (initialDamage <= 0)
+            {
+                Debug.Log($"Trying to damage entity {entity.GetEntityName} but initial damage is {initialDamage}");
+                return;
+            }
+
             Debug.Log($"Entity {entity.GetEntityName} health before damage: {entity.GetEntityHp}");
-            entity.GetDamage(isBlockable ? (damage - entity.GetEntityDef) : damage);
+            entity.GetDamage(initialDamage);
             Debug.Log($"Entity {entity.GetEntityName} health after damage: {entity.GetEntityHp}");
 
             // нижн≥й метод потр≥бно оновити п≥сл€ того, €к буде перел≥к ход≥в гравц€ та ворог≥в

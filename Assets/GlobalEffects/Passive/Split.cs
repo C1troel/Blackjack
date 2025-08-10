@@ -1,4 +1,3 @@
-using Singleplayer.PassiveEffects;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,13 +6,13 @@ namespace Singleplayer
 {
     namespace PassiveEffects
     {
-        public class DoubleDown : BasePassiveGlobalEffect
+        public class Split : BasePassiveGlobalEffect
         {
-            public DoubleDown(PassiveGlobalEffectInfo passiveGlobalEffectInfo) : base(passiveGlobalEffectInfo)
-            { }
+            public Split(PassiveGlobalEffectInfo passiveGlobalEffectInfo) : base(passiveGlobalEffectInfo)
+            {}
 
-            public DoubleDown(int turns) : base(turns)
-            { }
+            public Split(int turns) : base(turns)
+            {}
 
             public override void HandlePassiveEffect(IEntity entityOwner)
             {

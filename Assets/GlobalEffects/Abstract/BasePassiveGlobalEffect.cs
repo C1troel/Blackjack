@@ -20,7 +20,8 @@ namespace Singleplayer
             Poison,
             Rage,
             Clairvoyance,
-            DoubleDown
+            DoubleDown,
+            Split
         }
 
         public abstract class BasePassiveGlobalEffect

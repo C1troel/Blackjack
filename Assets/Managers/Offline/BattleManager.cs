@@ -135,6 +135,9 @@ namespace Singleplayer
 
             SpawnBattleAvatars(atkName, defName);
 
+            if (atk.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.DoubleDown))
+                entitiesCardAdds.Item1 += 1;
+
             AttackerPlayerTurn(atk);
 
         }
@@ -388,11 +391,12 @@ namespace Singleplayer
             bool isAtkBlackJack = false;
             bool isDefBlackJack = false;
 
-            bool isAtkDoubleDowns = entitiesHands[0].Item1.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.DoubleDown);
+            bool isAtkHaveDoubleEffect = entitiesHands[0].Item1.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.DoubleDown);
+            bool isAtkHaveSplitEffect = entitiesHands[0].Item1.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.Split);
 
             bool isEvade = false;
 
-            if (!isAtkDoubleDowns)
+            if (!isAtkHaveDoubleEffect && !isAtkHaveSplitEffect)
             {
                 for (int i = 0; i < entitiesHands[0].Item2.Count; i++)
                 {
@@ -429,8 +433,6 @@ namespace Singleplayer
                     isEvade = CheckForSplit(entitiesHands[1].Item2[i], entitiesHands[1].Item2[i - 1]);
             }
 
-            Debug.Log($"totalDefScore: {totalDefScore}");
-
             var atkPlayer = entitiesHands[0].Item1;
             var defPlayer = entitiesHands[1].Item1;
 
@@ -440,7 +442,7 @@ namespace Singleplayer
                 yield break;
             }
 
-            if (atkPlayerSplitChoose == true)
+            if (atkPlayerSplitChoose == true || isAtkHaveSplitEffect)
             {
                 atkPlayerSplitChoose = null;
                 Debug.Log($"ATKSplit!!!");
@@ -453,11 +455,6 @@ namespace Singleplayer
                 Debug.Log($"SkipATKSplit!!!");
 
             if (!isAtkBlackJack && (entitiesCardAdds.Item1 != 0))
-            {
-                yield return StartCoroutine(SpawnLeftCards(true));
-                totalAtkScore = SummarizeHandDamage(entitiesHands[0].Item2);
-            }
-            else if (entitiesHands[0].Item1.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.DoubleDown))
             {
                 yield return StartCoroutine(SpawnLeftCards(true));
                 totalAtkScore = SummarizeHandDamage(entitiesHands[0].Item2);
@@ -475,8 +472,10 @@ namespace Singleplayer
                 yield break;
             }
 
-            if (isAtkDoubleDowns)
+            if (isAtkHaveDoubleEffect)
                 totalAtkScore *= 2;
+            if (defPlayer.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.Split))
+                totalDefScore /= 2;
 
             var totalDamage = totalAtkScore == totalDefScore ? 5 :
                 (totalAtkScore + atkPlayer.GetEntityAtk + 10) -
@@ -908,14 +907,6 @@ namespace Singleplayer
 
         private IEnumerator SpawnLeftCards(bool isForAtk)
         {
-            if (isForAtk && entitiesHands[0].Item1.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.DoubleDown))
-            {
-                SpawnNextCard(0, true, false);
-
-                while (cardGiving != null)
-                    yield return null;
-            }
-
             if (isForAtk)
             {
                 while (entitiesCardAdds.Item1 > 0)
@@ -948,10 +939,13 @@ namespace Singleplayer
             int totalAtkScore = 0;
             int totalDefScore = 0;
 
-            bool isDefBlackJack = false;
-            bool isCanSplit = true;
+            bool isAtkHaveDoubleEffect = entitiesHands[0].Item1.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.DoubleDown);
+            bool isAtkHaveSplitEffect = entitiesHands[0].Item1.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.Split);
 
-            for (int i = 0; i < entitiesHands[1].Item2.Count; i++) // додати підрахунок додаткових карт
+            bool isDefBlackJack = false;
+            bool isCanSplit = !isAtkHaveDoubleEffect;
+
+            for (int i = 0; i < entitiesHands[1].Item2.Count; i++)
             {
                 totalDefScore += GetScoreFromString(entitiesHands[1].Item2[i].gameObject.transform.Find("1Side").GetComponent<Image>().sprite.name);
 
@@ -964,6 +958,7 @@ namespace Singleplayer
 
             for (int i = 0; i < entitiesCardAdds.Item1; i++)
             {
+
                 if (i == 0)
                 {
                     SpawnNextCard(0, true, false);
@@ -993,9 +988,14 @@ namespace Singleplayer
                 }
 
                 hands = entitiesHands[0].Item2.FindAll(card => card.isAppended == false);
+                bool isFirstHandAlreadyFull = entitiesHands[0].Item2
+                    .FindAll(card => card.isAppended == true && card.handNumber == 0).Count == entitiesCardAdds.Item1;
 
                 for (int j = 0; j < hands.Count; j++)
                 {
+                    if (j == 0 && isFirstHandAlreadyFull)
+                        continue;
+
                     for (int k = i; k < entitiesCardAdds.Item1; k++)
                     {
                         if (isCanSplit && j == 0 && k == i)
@@ -1029,6 +1029,9 @@ namespace Singleplayer
                     }
                 }
 
+                if (isAtkHaveDoubleEffect)
+                    totalAtkScore *= 2;
+
                 if (i == 0)
                 {
                     var defPlayer = entitiesHands[1].Item1;
@@ -1040,14 +1043,22 @@ namespace Singleplayer
                         totalDefScore = SummarizeHandDamage(entitiesHands[1].Item2);
                     }
 
+                    if (defPlayer.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.Split))
+                        totalDefScore /= 2;
+
                     var totalDamage = totalAtkScore == totalDefScore ? 5 :
                     (totalAtkScore + atkPlayer.GetEntityAtk + 10) -
                     (isDefSplitting ? 0 : (totalDefScore + defPlayer.GetEntityDef));
 
+                    if (isAtkHaveSplitEffect)
+                        totalDamage /= 2;
+
+                    Debug.Log($"SplitController: totalAtk: {totalDamage} totalDef: {totalDefScore}");
+
                     if (isDefBlackJack)
                     {
                         GameManager.Instance.DealDamage(atkPlayer, totalDamage);
-                        GameManager.Instance.Heal(defPlayer, totalDamage / 2); // там де зупинився
+                        GameManager.Instance.Heal(defPlayer, totalDamage / 2);
                         Debug.Log($"AfterSplitIsDefBlackJack!!!");
                         continue;
                     }
@@ -1067,6 +1078,9 @@ namespace Singleplayer
                 if (anotherEntity == null)
                     yield break;
 
+                if (isAtkHaveSplitEffect)
+                    totalAtkScore /= 2;
+
                 GameManager.Instance.DealDamage(anotherEntity, totalAtkScore, true);
                 Debug.Log($"Split damage to Entity: {anotherEntity.GetEntityName}; Dmg: {totalAtkScore}");
                 alreadyAttackedEntities.Add(anotherEntity);
@@ -1078,6 +1092,13 @@ namespace Singleplayer
         #endregion
 
         #region Звичайні функції
+
+        public void ToggleBattleHudControls(bool isActive)
+        {
+            _atackButton.interactable = isActive;
+            _defendButton.interactable = isActive;
+            battleEffectCardsApplier.ToggleBattleCardApplier(isActive);
+        }
 
         private bool CheckForSplit(NextCardScript card1, NextCardScript card2)
         {

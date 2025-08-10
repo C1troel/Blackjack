@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -122,6 +123,7 @@ namespace Singleplayer
 
         public virtual void UseCardInBattle()
         {
+            BattleManager.Instance.ToggleBattleHudControls(false);
             RemoveCardOutline();
             _animator.SetTrigger("CardUsage");
         }
@@ -131,8 +133,15 @@ namespace Singleplayer
             _animator.enabled = false;
             _image.enabled = false;
 
-            if (!EffectCardLogic.CanCounter)
+            bool isBattlePurpose = EffectCardLogic.EffectCardInfo.EffectCardPurposes
+                .Any(p => p == EffectCardPurpose.BattleAttack || p == EffectCardPurpose.BattleDefense);
+
+            bool isBattleAndPurpose = isBattlePurpose && BattleManager.Instance.IsBattleActive;
+
+            if (!EffectCardLogic.CanCounter || !isBattleAndPurpose)
+            {
                 player.DecreaseEffectCardsUsages();
+            }
 
             MapManager.Instance.OnEffectCardPlayed(this);
         }
@@ -148,6 +157,11 @@ namespace Singleplayer
         {
             OnEffectCardUsed?.Invoke(this);
             GameManager.Instance.TogglePlayerHudButtons(true);
+
+            var battleManager = BattleManager.Instance;
+
+            if (battleManager.IsBattleActive)
+                battleManager.ToggleBattleHudControls(true);
         }
 
         public void CheckIfCanBeUsed(IEntity entityOwner)

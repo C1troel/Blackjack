@@ -31,7 +31,8 @@ namespace Singleplayer
         Mirror,
         KindlyMirror,
         Magic8Ball,
-        BigSwing
+        BigSwing,
+        SplitReach
     }
 
     public enum EffectCardPurpose

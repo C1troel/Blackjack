@@ -660,7 +660,7 @@ namespace Singleplayer
         public int GetEntityChips => chips;
         public int GetEntityAtk => atk;
         public int GetEntityLeftCards => leftCards;
-        public int GetEntityDefaultCardUsages => leftCards;
+        public int GetEntityDefaultCardUsages => defaultCardUsages;
         public int GetEntityLeftSteps => leftSteps;
         public bool GetEntityAttackAccess => isEventAttack;
         public string GetEntitySuit => cardSuit;
