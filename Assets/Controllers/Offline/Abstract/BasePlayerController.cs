@@ -351,6 +351,14 @@ namespace Singleplayer
             StatsChange();
         }
 
+        public virtual void RaiseLeftCards(int value)
+        {
+            if (value <= 0) return;
+            leftCards += value;
+
+            LeftEffectCardsChangeEvent?.Invoke();
+        }
+
         private void Knockout()
         {
             Dead();

@@ -13,6 +13,7 @@ namespace Singleplayer
         void StopMoving();
         void GetDamage(int value);
         void RaiseAtkStat(int value);
+        void RaiseLeftCards(int value);
         void Heal(int value);
         void GetSteps(int value);
         void OnNewTurnStart();

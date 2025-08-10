@@ -139,6 +139,7 @@ namespace Singleplayer
 
             EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BigSwing);
             EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.SplitReach);
+            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.Trick);
             EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BigAttackPack);
             EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BigAttackPack);
 

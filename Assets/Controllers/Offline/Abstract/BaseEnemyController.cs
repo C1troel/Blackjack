@@ -360,6 +360,12 @@ namespace Singleplayer
             atk += value;
         }
 
+        public virtual void RaiseLeftCards(int value)
+        {
+            if (value <= 0) return;
+            leftCards += value;
+        }
+
         public virtual void Heal(int value)
         {
             if (hp == maxHp)
