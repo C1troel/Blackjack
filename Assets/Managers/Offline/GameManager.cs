@@ -34,6 +34,8 @@ namespace Singleplayer
 
         public delegate void EntityDamageDelegate(ref int damage, IEntity damagedEntity, EffectCardDmgType effectCardDmgType);
         public EntityDamageDelegate OnEntityDamageDeal;
+
+        public event Action<IEntity> OnEntityListChange;
         public BasePlayerController PlayerData { get; private set; }
         public List<Sprite> BasicCardsList { get; private set; }
         public bool IsChoosing { get; private set; }
@@ -197,8 +199,8 @@ namespace Singleplayer
 
         private IEnumerator StartingGame()
         {
-            OnPlayerLoad();
             SpawnStartingEnemies();
+            OnPlayerLoad();
 
             yield return null;
 
@@ -229,6 +231,8 @@ namespace Singleplayer
         {
             var spawnedEnemy = enemySpawnManager.SpawnEnemy(testEnemySpawnPanel.transform.position, EnemyType.Bodyguard);
             entitiesList.Add(spawnedEnemy);
+            OnEntityListChange?.Invoke(spawnedEnemy);
+
             spawnedEnemy.gameObject.SetActive(true);
             MapManagerSubscription(spawnedEnemy);
         }
@@ -305,6 +309,30 @@ namespace Singleplayer
         }*/
         #endregion
 
+        public void RemoveEntityFromGame(IEntity entity)
+        {
+            if (!entitiesList.Contains(entity))
+            {
+                Debug.Log($"Entity {entity.GetEntityName} was not in the game");
+                return;
+            }
+
+            entitiesList.Remove(entity);
+            OnEntityListChange?.Invoke(entity);
+        }
+
+        public void AddEntityToGame(IEntity entity)
+        {
+            if (entitiesList.Contains(entity))
+            {
+                Debug.Log($"Entity {entity.GetEntityName} already in the game");
+                return;
+            }
+
+            entitiesList.Add(entity);
+            OnEntityListChange?.Invoke(entity);
+        }
+
         public void TogglePlayersHUD(bool enable)
         {
             Debug.Log($"PlayerHUD activeness before: {playerHUD.gameObject.activeSelf}");
@@ -335,11 +363,6 @@ namespace Singleplayer
         public void SpecialAbilityRequest()
         {
             PlayerData.SpecialAbility.TryToActivate();
-        }
-
-        public void StartPlayerTurn(BasePlayerController player)
-        {
-            player.StartTurn();
         }
 
         public void TeleportEntity(Vector2 cords, IEntity entity, PanelScript panelTrigger = null)
@@ -529,6 +552,7 @@ namespace Singleplayer
             var player = EntitySpawnManager.Instance.SpawnPlayableCharacter(cords, characterType);
             player.ResetEffectCardsUsages();
             entitiesList.Add(player);
+            OnEntityListChange?.Invoke(player);
 
             player.transform.position = new Vector3(testPlayerSpawnPanel.transform.position.x, testPlayerSpawnPanel.transform.position.y, currentZCordForPlayers);
             currentZCordForPlayers = playersZCordOffset;

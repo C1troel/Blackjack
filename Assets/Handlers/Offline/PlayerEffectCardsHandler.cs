@@ -164,6 +164,7 @@ namespace Singleplayer
 
         private void OnEffectCardUsed(BaseEffectCard usedEffectCard)
         {
+            CheckAllCardsUsability();
             RemoveEffectCard(usedEffectCard);
         }
     }

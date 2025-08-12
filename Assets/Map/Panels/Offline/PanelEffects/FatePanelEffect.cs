@@ -12,7 +12,10 @@ namespace Singleplayer
     {
         public IEnumerator Execute(IEntity entity, Action onComplete)
         {
-            if (Random.Range(0, 2) == 0)
+            var enemy = entity as BaseEnemy;
+            bool entityIsBoss = enemy != null && enemy.enemyInfo.IsBoss;
+
+            if (Random.Range(0, 2) == 0 && !entityIsBoss)
                 TriggerGoodEffect(entity);
             else
                 TriggerBadEffect(entity);

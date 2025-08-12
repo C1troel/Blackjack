@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Singleplayer
@@ -9,6 +10,12 @@ namespace Singleplayer
     {
         public IEnumerator Execute(IEntity entity, Action onComplete)
         {
+            if (!CheckForAvailableEntities(entity))
+            {
+                onComplete?.Invoke();
+                yield break;
+            }
+
             IEntity target = null;
 
             switch (entity.GetEntityType)
@@ -44,6 +51,34 @@ namespace Singleplayer
             }
 
             onComplete?.Invoke();
+        }
+
+        private bool CheckForAvailableEntities(IEntity entityInit)
+        {
+            var allEntities = GameManager.Instance.GetEntitiesList().ToList();
+            allEntities.Remove(entityInit);
+            allEntities.RemoveAll(entity => entity.GetEntityHp == 0);
+
+            switch (entityInit.GetEntityType)
+            {
+                case EntityType.Player:
+                    allEntities.RemoveAll(entity => entity.GetEntityType == EntityType.Ally);
+                    break;
+
+                case EntityType.Enemy:
+                    allEntities.RemoveAll(entity => entity.GetEntityType == EntityType.Enemy);
+                    break;
+
+                case EntityType.Ally:
+                    allEntities.RemoveAll(entity => entity.GetEntityType == EntityType.Ally);
+                    allEntities.RemoveAll(entity => entity.GetEntityType == EntityType.Player);
+                    break;
+
+                default:
+                    break;
+            }
+
+            return allEntities.Count != 0;
         }
 
         private IEntity HandleEnemyTargeting(IEntity entityInit)

@@ -21,7 +21,10 @@ namespace Singleplayer
                     eventsList.Add(effect as EventActiveGlobalEffectInfo);
             }
 
-            if (Random.Range(0, 2) == 0)
+            var enemy = entity as BaseEnemy;
+            bool entityIsBoss = enemy != null && enemy.enemyInfo.IsBoss;
+
+            if (Random.Range(0, 2) == 0 && !entityIsBoss)
                 TriggerBadEvent();
             else
                 TriggerGoodEvent();

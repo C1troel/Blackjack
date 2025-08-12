@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Singleplayer
 {
-    public class TestMagicShield : BaseEffectCardLogic
+    public class BallsOfSteel : BaseEffectCardLogic
     {
         public override IEnumerator ApplyEffect(Action onComplete, IEntity entityInit = null)
         {

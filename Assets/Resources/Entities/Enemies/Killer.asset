@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e96a1caadeaaa84d97c7e4cc88ee881, type: 3}
-  m_Name: TestEnemy
+  m_Name: Killer
   m_EditorClassIdentifier: 
-  _defaultHp: 100
+  _defaultHp: 200
   _defaultAtk: 20
   _defaultMoney: 0
   _defaultDef: 10
   _defaultCardUsages: 1
   _maxEffectCards: 2
   _isBoss: 0
-  _canTriggerPanels: 0
+  _canTriggerPanels: 1
   _specialAbility: {fileID: 0}
-  _enemyName: TestEnemy
+  _enemyName: Killer
   _entityType: 1
   _enemyType: 1

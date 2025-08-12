@@ -77,6 +77,8 @@ namespace Singleplayer
 
             var entitiesInEffectiveCardRadius = MapManager.FindEntitiesAtDistance(entityOwner.GetCurrentPanel, EffectCardInfo.EffectiveDistanceInPanels);
 
+            entitiesInEffectiveCardRadius.RemoveAll(entity => entity.GetEntityHp <= 0);
+
             switch (entityOwner.GetEntityType)
             {
                 case EntityType.Player:

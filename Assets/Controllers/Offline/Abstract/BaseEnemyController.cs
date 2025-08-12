@@ -4,12 +4,22 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
 
 namespace Singleplayer
 {
+    public enum EnemyType
+    {
+        Bodyguard,
+        Killer,
+        MrBet
+    }
+
     public abstract class BaseEnemy : MonoBehaviour, IEntity
     {
+        protected const string DEAD_CLIP_NAME = "Die";
+
         protected int hp, maxHp, atk, def, money, leftCards, defaultCardUsages, leftSteps;
         protected float moveSpeed = 300f; // хардкод!(швидкість переміщення в просторі)
         protected float previousCordY = -1170f; // хардкод!
@@ -21,12 +31,12 @@ namespace Singleplayer
 
         protected PanelScript currentPanel;
         protected Coroutine moving;
-        protected EnemyInfo enemyInfo;
 
         protected SpriteRenderer spriteRenderer;
         protected Material defaultSpriteMaterial;
         protected Material outlineSpriteMaterial;
 
+        public EnemyInfo enemyInfo { get; protected set; }
         public EnemyEffectCardsHandler EnemyEffectCardsHandler { get; private set; }
         public IPassiveEffectHandler PassiveEffectHandler {  get; protected set; }
         public BaseActiveGlobalEffect SpecialAbility { get; protected set; }
@@ -94,6 +104,8 @@ namespace Singleplayer
 
         public virtual void OnNewTurnStart()
         {
+            /*GetDamage(hp);*/
+            
             ResetEntityStats();
             PassiveEffectHandler.ProcessEffects();
             NormalizeHp();
@@ -104,6 +116,8 @@ namespace Singleplayer
 
         public virtual void StartTurn()
         {
+            Debug.Log($"{enemyInfo.name} starting his turn");
+
             ResetEffectCardsUsages();
             ProcessEnemyTurn();
         }
@@ -352,6 +366,63 @@ namespace Singleplayer
         {
             hp -= value;
             hp = Mathf.Max(hp, 0);
+
+            if (hp == 0)
+                Knockout();
+        }
+
+        protected virtual void Knockout()
+        {
+            ManageKnockoutAnimationHandler();
+            Dead();
+
+            CleanUpEnemyData();
+
+            DropMoney();
+
+            GameManager.Instance.RemoveEntityFromGame(this);
+        }
+
+        protected virtual void DropMoney()
+        {
+            var gameManager = GameManager.Instance;
+            int droppedMoneyAmount = (enemyInfo.DefaultHp / 20) + money;
+
+            var droppedMoneyPrefab = gameManager.GetDroppedMoneyPrefab;
+            var droppedMoneyGO = Instantiate(droppedMoneyPrefab, currentPanel.transform.position, Quaternion.identity);
+            var droppedMoneyHandler = droppedMoneyGO.GetComponent<DroppedMoneyHandler>();
+            droppedMoneyHandler.ManageDroppedMoney(droppedMoneyAmount);
+            droppedMoneyGO.SetActive(true);
+        }
+
+        private void OnKnockoutAnimationEnd()
+        {
+            Destroy(gameObject);
+        }
+
+        protected virtual void CleanUpEnemyData()
+        {
+            PassiveEffectHandler.RemoveAllEffects();
+
+            gameObject.GetComponent<BoxCollider2D>().enabled = false;
+            Destroy(gameObject.GetComponent<Rigidbody2D>());
+
+            if (moving != null)
+            {
+                StopCoroutine(moving);
+                moving = null;
+            }
+            StopAllCoroutines(); // На випадок інших корутин
+
+            var clickHandler = GetComponentInChildren<ClickHandler>();
+            if (clickHandler != null)
+            {
+                clickHandler.OnEntityClickEvent -= OnEntityClickEvent;
+            }
+
+            // Очищення власних івентів (для запобігання memory leak)
+            moveEndEvent = null;
+            OnSelfClickHandled = null;
         }
 
         public virtual void RaiseAtkStat(int value)
@@ -547,6 +618,36 @@ namespace Singleplayer
                 specialAbilityInfo = activeGlobalEffectInfo;
 
             SpecialAbility = BaseActiveGlobalEffect.GetActiveGlobalEffectInstance(specialAbilityInfo, this);
+        }
+
+        protected void ManageKnockoutAnimationHandler()
+        {
+            AnimationClip clip = GetAnimationClipByName(Animator, DEAD_CLIP_NAME);
+            if (clip == null)
+            {
+                Debug.LogWarning($"Клип {DEAD_CLIP_NAME} не найден!");
+                return;
+            }
+
+            AnimationEvent[] events = clip.events;
+            if (events.Length == 0)
+            {
+                Debug.LogWarning($"Клип {clip.name} не содержит событий!");
+                return;
+            }
+
+            events[0].functionName = nameof(OnKnockoutAnimationEnd);
+            clip.events = events;
+        }
+
+        protected AnimationClip GetAnimationClipByName(Animator anim, string name)
+        {
+            foreach (var clip in anim.runtimeAnimatorController.animationClips)
+            {
+                if (clip.name == name)
+                    return clip;
+            }
+            return null;
         }
         #endregion
 

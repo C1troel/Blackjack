@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 namespace Singleplayer
@@ -530,6 +532,8 @@ namespace Singleplayer
                 }
                 return;
             }
+
+            Debug.Log($"Panel {this.name} Lost entity {entity.GetEntityName}");
 
             if (subscribedEntities.Contains(entity))
             {

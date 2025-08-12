@@ -2,6 +2,7 @@ using Singleplayer.PassiveEffects;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Singleplayer
@@ -10,6 +11,7 @@ namespace Singleplayer
     {
         private Queue<IEntity> turnQueue = new Queue<IEntity>();
         private bool isTurnActive = false;
+        private Coroutine currentTurnHandling;
         public IEntity CurrentTurnEntity { get; private set; }
 
         public event Action OnNewRoundStarted;
@@ -27,15 +29,13 @@ namespace Singleplayer
             Instance = this;
         }
 
+        private void Start()
+        {
+            GameManager.Instance.OnEntityListChange += OnEntitiesListChange;
+        }
+
         public void InitializeTurnOrder(List<IEntity> entities)
         {
-            turnQueue.Clear();
-
-            foreach (var entity in entities)
-            {
-                turnQueue.Enqueue(entity);
-            }
-
             StartCoroutine(HandleTurns());
         }
 
@@ -62,12 +62,15 @@ namespace Singleplayer
                         Debug.Log("=== New Round Started ===");
                         OnNewRoundStart();
 
-                        StartCoroutine(HandlePlayerTurn());
+                        currentTurnHandling = StartCoroutine(HandlePlayerTurn());
+                        yield return new WaitUntil(() => currentTurnHandling == null);
                         yield return new WaitUntil(() => isTurnActive == false);
                         break;
 
                     case EntityType.Enemy:
-                        StartCoroutine(HandleEnemyTurn());
+                        currentTurnHandling = StartCoroutine(HandleEnemyTurn());
+                        Debug.Log(currentTurnHandling == null ? "Coroutine is null" : "Coroutine started");
+                        yield return new WaitUntil(() => currentTurnHandling == null);
                         yield return new WaitUntil(() => isTurnActive == false);
                         break;
 
@@ -82,6 +85,21 @@ namespace Singleplayer
             }
         }
 
+        private void OnEntitiesListChange(IEntity entity)
+        {
+            var currentEntitiesList = GameManager.Instance.GetEntitiesList();
+
+            if (currentEntitiesList.Contains(entity))
+                turnQueue.Enqueue(entity);
+            else
+            {
+                turnQueue = new Queue<IEntity>(turnQueue.Where(e => e != entity));
+
+                if (CurrentTurnEntity == entity)
+                    EndTurnRequest(entity);
+            }
+        }
+
         private void OnNewRoundStart()
         {
             CurrentRound++;
@@ -90,11 +108,23 @@ namespace Singleplayer
 
         private IEnumerator HandleEnemyTurn()
         {
+            yield return null;
+
+            if (!isTurnActive) yield break;
+
             var enemy = CurrentTurnEntity as BaseEnemy;
             enemy.OnNewTurnStart();
 
-            while (ProjectileManager.Instance.avaitingProjectiles.Count > 0 
-                && !GlobalEffectsManager.Instance.isTimeStopped) yield return null;
+            if (!isTurnActive) yield break;
+
+            while (ProjectileManager.Instance.avaitingProjectiles.Count > 0
+                   && !GlobalEffectsManager.Instance.isTimeStopped
+                   && isTurnActive)
+            {
+                yield return null;
+            }
+
+            if (!isTurnActive) yield break;
 
             if (IsFrozenDuringTimeStop(enemy))
             {
@@ -102,16 +132,33 @@ namespace Singleplayer
                 yield break;
             }
 
+            if (!isTurnActive) yield break;
+
             enemy.StartTurn();
+
+            while (isTurnActive)
+                yield return null;
         }
 
         private IEnumerator HandlePlayerTurn()
         {
+            yield return null;
+
+            if (!isTurnActive) yield break;
+
             var player = CurrentTurnEntity as BasePlayerController;
             player.OnNewTurnStart();
 
+            if (!isTurnActive) yield break;
+
             while (ProjectileManager.Instance.avaitingProjectiles.Count > 0
-                && !GlobalEffectsManager.Instance.isTimeStopped) yield return null;
+                   && !GlobalEffectsManager.Instance.isTimeStopped
+                   && isTurnActive)
+            {
+                yield return null;
+            }
+
+            if (!isTurnActive) yield break;
 
             if (IsFrozenDuringTimeStop(player))
             {
@@ -119,7 +166,12 @@ namespace Singleplayer
                 yield break;
             }
 
+            if (!isTurnActive) yield break;
+
             player.StartTurn();
+
+            while (isTurnActive)
+                yield return null;
         }
 
         private void HandleTimeStopCounters(IEntity entity)
@@ -212,13 +264,20 @@ namespace Singleplayer
 
         private void EndTurn()
         {
+            isTurnActive = false;
             // якщо гравець Ч ховаЇмо HUD
             if (CurrentTurnEntity.GetEntityType == EntityType.Player)
             {
                 GameManager.Instance.TogglePlayerHudButtons(false);
             }
 
-            isTurnActive = false; // сигнал корутин≥, що можна переходити до наступного
+            if (currentTurnHandling != null)
+            {
+                Debug.Log("currentTurnHandling is active");
+                StopCoroutine(currentTurnHandling);
+            }
+
+            currentTurnHandling = null; // сигнал корутин≥, що можна переходити до наступного
         }
     }
 }

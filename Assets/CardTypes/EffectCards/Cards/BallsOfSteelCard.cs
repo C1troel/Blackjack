@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Singleplayer
 {
-    public class TestMagicShieldCard : BaseEffectCard
+    public class BallsOfSteelCard : BaseEffectCard
     {
     }
 }

@@ -11,6 +11,12 @@ namespace Singleplayer
 
         public IEnumerator Execute(IEntity entity, Action onComplete)
         {
+            if (!(entity.GetEntityType == EntityType.Enemy && (entity as BaseEnemy).enemyInfo.IsBoss))
+            {
+                onComplete?.Invoke();
+                yield break;
+            }
+
             GameManager.Instance.DealDamage(entity, DAMAGE,  false);
 
             yield return null;

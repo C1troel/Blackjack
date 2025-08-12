@@ -7,6 +7,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Singleplayer {
+
     public class EntitySpawnManager : MonoBehaviour
     {
         [SerializeField] private GameObject enemyPrefab;
@@ -68,10 +69,5 @@ namespace Singleplayer {
             string typeName = $"{this.GetType().Namespace}.{enemyType}";
             GameManager.AddComponentByName(enemyGO, typeName);
         }
-    }
-
-    public enum EnemyType
-    {
-        Bodyguard = 1
     }
 }

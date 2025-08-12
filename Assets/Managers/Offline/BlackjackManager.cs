@@ -54,6 +54,9 @@ namespace Singleplayer
         public delegate void EntityDrawCardDelegate(BlackjackCard takenCard, IEntity entityInit);
         public EntityDrawCardDelegate OnEntityDrawCard;
 
+        public event Action OnBlackjackGameStart;
+        public event Action OnBlackjackGameEnd;
+
         public static BlackjackManager Instance { get; private set; }
 
         private void Awake()
@@ -113,8 +116,11 @@ namespace Singleplayer
             foreach (Transform hand in dealerHand.transform)
                 Destroy(hand.gameObject);
 
-            Destroy(preparedNextCard.gameObject);
+            if (preparedNextCard != null)
+                Destroy(preparedNextCard.gameObject);
+
             preparedNextCard = null;
+            OnBlackjackGameEnd?.Invoke();
         }
 
         private void SetupDeck()
@@ -316,6 +322,8 @@ namespace Singleplayer
 
         private IEnumerator DealFirstCards()
         {
+            OnBlackjackGameStart?.Invoke();
+
             yield return StartCoroutine(DealCardsForPlayer());
 
             yield return StartCoroutine(SpawnNextBlackjackCard(-1, true, false)); // звичайна карта дилеру
