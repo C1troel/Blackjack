@@ -20,7 +20,7 @@ MonoBehaviour:
   _maxEffectCards: 1
   _isBoss: 1
   _canTriggerPanels: 1
-  _specialAbility: {fileID: 0}
+  _specialAbility: {fileID: 11400000, guid: c3231b12cbaff854b90736ec4ca50943, type: 2}
   _enemyName: MrBet
   _entityType: 1
-  _enemyType: 0
+  _enemyType: 2

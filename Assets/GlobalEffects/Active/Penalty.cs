@@ -51,6 +51,8 @@ namespace Singleplayer
                             break;
                     }
                 }
+
+                OnGlobalEffectStateChange();
             }
 
             public override void OnNewTurnStart()

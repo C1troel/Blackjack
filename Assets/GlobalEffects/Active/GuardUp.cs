@@ -25,6 +25,8 @@ namespace Singleplayer
 
                 foreach (var entity in entities)
                     EffectCardDealer.Instance.DealEffectCardOfType(entity, EffectCardType.BigDefensePack);
+
+                OnGlobalEffectStateChange();
             }
         }
     }

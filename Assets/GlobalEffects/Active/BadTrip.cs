@@ -35,6 +35,8 @@ namespace Singleplayer
                     int initialDmg = (int)(entity.GetEntityMaxHp * DAMAGE_MULT);
                     gameManager.DealDamage(entity, initialDmg, false);
                 }
+
+                OnGlobalEffectStateChange();
             }
 
             public override void OnNewTurnStart()

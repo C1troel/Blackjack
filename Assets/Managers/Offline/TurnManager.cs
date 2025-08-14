@@ -34,7 +34,7 @@ namespace Singleplayer
             GameManager.Instance.OnEntityListChange += OnEntitiesListChange;
         }
 
-        public void InitializeTurnOrder(List<IEntity> entities)
+        public void InitializeTurnOrder()
         {
             StartCoroutine(HandleTurns());
         }

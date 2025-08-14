@@ -9,13 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 58c2bcdaa9a73694aa64cebcf076ca56, type: 3}
-  m_Name: BackStab
+  m_Script: {fileID: 11500000, guid: 6fd4a4a4e799e8b46862ef10d33b5c7e, type: 3}
+  m_Name: LuckySpin
   m_EditorClassIdentifier: 
-  _effect: 4
-  _sprite: {fileID: 21300000, guid: cb67745374e1828439e75f03ceed21ec, type: 3}
-  _isSpawn: 0
-  _allowDuplicates: 1
-  _isForceStop: 0
-  _amount: 1
-  _luckTier: 4
+  _description: Trigger some random effect
+  _isEvent: 0
+  _effectType: 11
+  _turnDuration: 0
+  _cooldownRounds: 3
+  _vulnerabilities: []

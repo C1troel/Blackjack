@@ -29,6 +29,8 @@ namespace Singleplayer
                     var targetPanel = entity.GetCurrentPanel;
                     GlobalEffectsManager.Instantiate(donorFineNoticePrefab, targetPanel.transform.position, Quaternion.identity);
                 }
+
+                OnGlobalEffectStateChange();
             }
         }
     }

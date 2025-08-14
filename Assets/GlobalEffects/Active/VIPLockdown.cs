@@ -38,6 +38,8 @@ namespace Singleplayer
                     entity.SuppressPanelEffectTrigger = true;
                     gameManager.TeleportEntity(randomVIPClubPanel.transform.position, entity);
                 }
+
+                OnGlobalEffectStateChange();
             }
 
             public override void OnNewTurnStart()

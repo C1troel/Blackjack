@@ -10,6 +10,25 @@ using Random = UnityEngine.Random;
 
 namespace Singleplayer
 {
+    public enum PanelEffect
+    {
+        None = -1,
+        Portal,
+        Pursuit,
+        Shop,
+        Event,
+        Backstab,
+        Recharge,
+        VIPClub,
+        Dealing,
+        Payoff,
+        Fate,
+        BadBeat,
+        Casino,
+        IllegalCasino,
+        Spawn
+    }
+
     public class PanelScript : MonoBehaviour, IPointerClickHandler
     {
         private const string EFFECT_PANEL_SCRIPTS_MARKER = "PanelEffect";
@@ -39,8 +58,6 @@ namespace Singleplayer
         private HashSet<IEntity> subscribedEntities = new HashSet<IEntity>();
 
         private List<GameObject> arrowsList = new List<GameObject>();
-
-        private bool isClickableForTeleportation = false;
 
         /*private void Start()
         {
@@ -118,10 +135,10 @@ namespace Singleplayer
             }
         }
 
-        public void EnableTeleportation()
+        /*public void EnableTeleportation()
         {
             isClickableForTeleportation = true;
-        }
+        }*/
 
         public void HighlightAsPathEnder()
         {
@@ -635,24 +652,5 @@ namespace Singleplayer
 
             return Pos.None;
         }
-    }
-
-    public enum PanelEffect
-    {
-        None = -1,
-        Portal,
-        Pursuit,
-        Shop,
-        Event,
-        Backstab,
-        Recharge,
-        VIPClub,
-        Dealing,
-        Payoff,
-        Fate,
-        BadBeat,
-        Casino,
-        IllegalCasino,
-        Spawn
     }
 }

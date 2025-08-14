@@ -48,6 +48,8 @@ namespace Singleplayer
 
                     gameManager.TeleportEntity(shuffledPositions[i], entity, null);
                 }
+
+                OnGlobalEffectStateChange();
             }
 
             private void ShuffleList<T>(List<T> list)

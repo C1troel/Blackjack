@@ -37,6 +37,8 @@ namespace Singleplayer
                     var plaguePassiveEffect = new PassiveEffects.Plague(effectDuration);
                     entity.PassiveEffectHandler.TryToAddEffect(plaguePassiveEffect);
                 }
+
+                OnGlobalEffectStateChange();
             }
 
             public override void OnNewTurnStart()

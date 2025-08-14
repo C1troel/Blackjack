@@ -8,6 +8,22 @@ namespace Singleplayer
 {
     namespace ActiveEffects
     {
+        public enum ActiveEffectType
+        {
+            TimeStop,
+            Tornado,
+            Plague,
+            BadTrip,
+            Penalty,
+            LuckyDraw,
+            VIPLockdown,
+            ToxicVapors,
+            HuntingSeason,
+            ArmUp,
+            GuardUp,
+            LuckySpin
+        }
+
         public abstract class BaseActiveGlobalEffect
         {
             public ActiveGlobalEffectInfo ActiveGlobalEffectInfo { get; private set; }
@@ -71,21 +87,6 @@ namespace Singleplayer
 
                 return activeEffectInstance;
             }
-        }
-
-        public enum ActiveEffectType
-        {
-            TimeStop,
-            Tornado,
-            Plague,
-            BadTrip,
-            Penalty,
-            LuckyDraw,
-            VIPLockdown,
-            ToxicVapors,
-            HuntingSeason,
-            ArmUp,
-            GuardUp
         }
     }
 }

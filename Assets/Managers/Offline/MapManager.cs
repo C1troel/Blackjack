@@ -235,12 +235,12 @@ namespace Singleplayer
             usedCard.RevealMoveCard(enemyMoveCard);
         }
 
-        private void AccessPlayerToTeleport(IEntity entity)
+        /*private void AccessPlayerToTeleport(IEntity entity)
         {
             IsPossiblePlayerTeleportation = true;
 
             AccessPlayerTeleportation();
-        }
+        }*/
 
         public void SubscribeToEntityMoveEndEvent(IEntity entity)
         {
@@ -881,7 +881,7 @@ namespace Singleplayer
             onCardRevealed?.Invoke();
         }
 
-        private void AccessPlayerTeleportation()
+        /*private void AccessPlayerTeleportation()
         {
             foreach (Transform panel in parentOfAllPanels.transform)
             {
@@ -889,6 +889,6 @@ namespace Singleplayer
                 effectPanel.HighlightAsPathEnder();
                 effectPanel.EnableTeleportation();
             }
-        }
+        }*/
     }
 }

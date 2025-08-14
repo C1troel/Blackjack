@@ -165,7 +165,6 @@ namespace Singleplayer
             if (direction != (Direction)(-1))
                 this.direction = direction;
 
-            /*--leftSteps;*/
             Debug.Log($"Coroutine Started, StepsLeft {leftSteps}");
             moving = StartCoroutine(Move(this, direction, panel));
             canMove = true;
@@ -496,7 +495,7 @@ namespace Singleplayer
         #endregion
 
         #region Сутичка з іншою сутністю
-        private IEnumerator TryToStartBattle(IEntity Atk, IEntity Def) // PlayerController Def - це заглушка, поки коду для ворогів немає
+        protected virtual IEnumerator TryToStartBattle(IEntity Atk, IEntity Def) // PlayerController Def - це заглушка, поки коду для ворогів немає
         {
             /// Код для валідації початку атаки
             Debug.Log("BattlStart");
@@ -618,6 +617,16 @@ namespace Singleplayer
                 specialAbilityInfo = activeGlobalEffectInfo;
 
             SpecialAbility = BaseActiveGlobalEffect.GetActiveGlobalEffectInstance(specialAbilityInfo, this);
+            SpecialAbility.GlobalEffectStateEvent += OnSpecialAbilityStateChange;
+        }
+
+        private void OnSpecialAbilityStateChange()
+        {
+            if (SpecialAbility.CooldownRounds <= 0)
+                return;
+
+            Debug.Log($"{this} start moving");
+            MapManager.Instance.MakeADraw(this);
         }
 
         protected void ManageKnockoutAnimationHandler()

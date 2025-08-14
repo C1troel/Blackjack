@@ -45,23 +45,6 @@ namespace Singleplayer
 
                 GlobalEffectsManager.Instance.StopTime(entityOwner);
                 OnGlobalEffectStateChange();
-
-                switch (entityOwner.GetEntityType)
-                {
-                    case EntityType.Player:
-                        break;
-
-                    case EntityType.Enemy:
-                        var enemy = entityOwner as BaseEnemy;
-                        enemy.ProcessEnemyTurn();
-                        break;
-
-                    case EntityType.Ally:
-                        break;
-
-                    default:
-                        break;
-                }
             }
 
             public override bool IsUsable()

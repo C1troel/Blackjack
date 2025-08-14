@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -46,6 +47,46 @@ namespace Singleplayer
             base.StartTurn();
         }
 
+        public override void StartMove(Direction direction = Direction.Standart, PanelScript panel = null)
+        {
+            if (pursuitCounter != 0)
+            {
+                StartMoveToPlayer();
+                return;
+            }
+
+            if (panel == null)
+            {
+                canMove = true;
+                Walk();
+                return;
+            }
+
+            if (direction != (Direction)(-1))
+                this.direction = direction;
+
+            Debug.Log($"Coroutine Started, StepsLeft {leftSteps}");
+            moving = StartCoroutine(Move(this, direction, panel));
+            canMove = true;
+            Walk();
+        }
+
+        protected override IEnumerator TryToStartBattle(IEntity Atk, IEntity Def)
+        {
+            if (pursuitCounter <= 0)
+                yield break;
+
+            Debug.Log("BattlStart");
+
+            var battleManager = BattleManager.Instance;
+            StopMoving();
+            Debug.LogWarning($"ATK: {Atk.GetEntityName} DEF: {Def.GetEntityName}");
+            battleManager.TryToStartBattle(Atk, Def);
+            yield return new WaitUntil(() => !battleManager.IsBattleActive);
+            pursuitCounter--;
+            StartMove();
+        }
+
         protected virtual void Revive()
         {
             DeadOff();
@@ -74,26 +115,27 @@ namespace Singleplayer
 
         protected virtual IEnumerator CallHenchmens()
         {
-            var entitySpawnManager = EntitySpawnManager.Instance;
+            var gameManager = GameManager.Instance;
             var mapManager = MapManager.Instance;
 
             if (henchmensCallCounter == HenchmensCallResetValue)
             {
+                henchmensCallCounter = 0;
                 for (int i = 0; i < KillersCallAmount; i++)
                 {
                     var randomPanel = mapManager.panels[Random.Range(0, mapManager.panels.Count)];
-                    var calledKiller = entitySpawnManager.SpawnEnemy(randomPanel.transform.position, EnemyType.Killer);
-                    yield return null;
-                    calledKiller.SetRandomAvailableDirection();
+                    yield return StartCoroutine(gameManager.SpawnEnemy(EnemyType.Killer, randomPanel.transform.position));
                 }
+
+                yield break;
             }
+
+            henchmensCallCounter++;
 
             for (int i = 0; i < BodyguardsCallAmount; i++)
             {
                 var randomPanel = mapManager.panels[Random.Range(0, mapManager.panels.Count)];
-                var calledBodyguard = entitySpawnManager.SpawnEnemy(randomPanel.transform.position, EnemyType.Bodyguard);
-                yield return null;
-                calledBodyguard.SetRandomAvailableDirection();
+                yield return StartCoroutine(gameManager.SpawnEnemy(EnemyType.Bodyguard, randomPanel.transform.position));
             }
 
             yield break;

@@ -35,6 +35,8 @@ namespace Singleplayer
                     var spawnedGasController = spawnedGasGO.GetComponent<ToxicGasController>();
                     spawnedGasController.Initialize(ActiveGlobalEffectInfo.TurnDuration);
                 }
+
+                OnGlobalEffectStateChange();
             }
         }
     }

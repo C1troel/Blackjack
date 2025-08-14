@@ -8,8 +8,6 @@ namespace Singleplayer
     public class SpawnPanelEffect : IPanelEffect
     {
         private const int HEAL_AMOUNT = 20;
-        private int targetStealedMoney;
-        private int totalStealedMoney = 0;
 
         public IEnumerator Execute(IEntity entity, Action onComplete)
         {
@@ -39,13 +37,8 @@ namespace Singleplayer
             }
 
             player.Pay(savedMoney, false);
-            totalStealedMoney = savedMoney;
+            GameManager.Instance.SaveStealedMoney(savedMoney);
             onComplete?.Invoke();
-        }
-
-        public void ManageWinningCondition(int targetMoney)
-        {
-            targetStealedMoney = targetMoney;
         }
     }
 }

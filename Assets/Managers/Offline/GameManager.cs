@@ -31,11 +31,14 @@ namespace Singleplayer
         [SerializeField] float playersZCordOffset;
 
         private float currentZCordForPlayers = -0.5f; // прямо впливає на обробник кліків(IPointerClickHandler) - = ближче до камери, + = дальше
+        private int targetStealMoney = 300; // хардкожене тимчасове значення кількості грошей, яке потрібно викрасти
+        private int totalStealedMoney = 0;
 
         public delegate void EntityDamageDelegate(ref int damage, IEntity damagedEntity, EffectCardDmgType effectCardDmgType);
         public EntityDamageDelegate OnEntityDamageDeal;
 
         public event Action<IEntity> OnEntityListChange;
+        public event Action OnStealedMoneySave;
         public BasePlayerController PlayerData { get; private set; }
         public List<Sprite> BasicCardsList { get; private set; }
         public bool IsChoosing { get; private set; }
@@ -137,15 +140,17 @@ namespace Singleplayer
         private void TestAddingEffectCards()
         {
             var player = entitiesList[0];
-            var enemy = entitiesList[1];
 
-            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BigSwing);
+            for (int i = 0; i < 3; i++)
+                EffectCardDealer.Instance.DealRandomEffectCard(player);
+
+            /*EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BigSwing);
             EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.SplitReach);
             EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.Trick);
             EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BigAttackPack);
             EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BigAttackPack);
 
-            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.BigDefensePack);
+            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.BigDefensePack);*/
         }
         #endregion
 
@@ -199,42 +204,57 @@ namespace Singleplayer
 
         private IEnumerator StartingGame()
         {
-            SpawnStartingEnemies();
-            OnPlayerLoad();
+            var playerSpawn =  mapManager.GetAllPanelsOfType(PanelEffect.Spawn)[0];
+            var casinoPanel = mapManager.GetAllPanelsOfType(PanelEffect.Casino)[0];
+
+            yield return StartCoroutine(OnPlayerLoad(CharacterType.TimeStopper, playerSpawn.transform.position));
+            yield return StartCoroutine(SpawnEnemy(EnemyType.MrBet, casinoPanel.transform.position)); // спавн босса
 
             yield return null;
 
             foreach (var entity in entitiesList)
                 entity.SetRandomAvailableDirection();
 
-            /*TestSpawnDroppedMoney();*/
-            /*TestChangeTurnsOrder();*/
-            TurnManager.Instance.InitializeTurnOrder(entitiesList);
+            TurnManager.Instance.InitializeTurnOrder();
 
             #region Tests
-            /*StartCoroutine(TestAwaitAndReturnEntitiesAtDistanceFromEntity(entitiesList[0], 6));
-            StartCoroutine(TestAwaitAndGetShortestAvailablePathBetweenPanels(entitiesList[1], entitiesList[0]));
-            StartCoroutine(TestAwaitAndReturnDistanceBetweenEntities(entitiesList[0], entitiesList[1]));*/
             TestAddingEffectCards();
             #endregion
         }
 
-        private void OnPlayerLoad()
+        public void SaveStealedMoney(int value)
         {
-            var player = SpawnPlayerAndAddToList(testPlayerSpawnPanel.transform.position, CharacterType.TimeStopper);
+            totalStealedMoney += value;
+            OnStealedMoneySave?.Invoke();
+        }
+
+        private void ManageWinningCondition(int conditionalValue)
+        {
+            targetStealMoney = conditionalValue;
+        }
+
+        private IEnumerator OnPlayerLoad(CharacterType characterType, Vector3 spawnCords)
+        {
+            var player = SpawnPlayerAndAddToList(spawnCords, characterType);
             PlayerData = ((MonoBehaviour)player).GetComponent<BasePlayerController>();
             playerHUDManager.ManagePlayerHud(player);
             MapManagerSubscription(player);
+
+            yield return null;
+            player.SetRandomAvailableDirection();
         }
 
-        private void SpawnStartingEnemies()
+        public IEnumerator SpawnEnemy(EnemyType enemyType, Vector3 cords)
         {
-            var spawnedEnemy = enemySpawnManager.SpawnEnemy(testEnemySpawnPanel.transform.position, EnemyType.Bodyguard);
+            var spawnedEnemy = enemySpawnManager.SpawnEnemy(cords, enemyType);
             entitiesList.Add(spawnedEnemy);
             OnEntityListChange?.Invoke(spawnedEnemy);
 
             spawnedEnemy.gameObject.SetActive(true);
             MapManagerSubscription(spawnedEnemy);
+
+            yield return null;
+            spawnedEnemy.SetRandomAvailableDirection();
         }
 
         public void StartChoosingTarget(Action<IEntity> callback, List<IEntity> allowedTargets = null)

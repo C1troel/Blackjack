@@ -41,6 +41,8 @@ namespace Singleplayer
 
                     EffectCardDealer.Instance.DealRandomEffectCard(entity);
                 }
+
+                OnGlobalEffectStateChange();
             }
 
             public override void OnNewTurnStart()
