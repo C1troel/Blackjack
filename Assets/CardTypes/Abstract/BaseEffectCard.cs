@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace Singleplayer
 {
-    public abstract class BaseEffectCard : MonoBehaviour, IEffectCard, IBeginDragHandler, IEndDragHandler, IDragHandler, IPointerEnterHandler, IPointerExitHandler
+    public abstract class BaseEffectCard : MonoBehaviour, IEffectCard, IBeginDragHandler, IEndDragHandler, IDragHandler, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
     {
         [HideInInspector] public Transform parentAfterDrag;
         private int originalSiblingIndex;
@@ -55,6 +55,7 @@ namespace Singleplayer
         public void OnBeginDrag(PointerEventData eventData)
         {
             EffectCardApplier.Instance.OnCardBeginDrag();
+            GameManager.Instance.PlayerCamera.ToggleSwipes(false);
 
             if (BattleManager.Instance.IsBattleActive)
                 BattleManager.Instance.GetBattlePlayerEffectCardsApplier.OnCardBeginDrag();
@@ -88,6 +89,7 @@ namespace Singleplayer
 
                 _image.raycastTarget = true;
                 EffectCardApplier.Instance.OnCardEndDrag();
+                GameManager.Instance.PlayerCamera.ToggleSwipes(true);
 
                 if (BattleManager.Instance.IsBattleActive)
                     BattleManager.Instance.GetBattlePlayerEffectCardsApplier.OnCardEndDrag();
@@ -104,6 +106,7 @@ namespace Singleplayer
 
             _image.raycastTarget = true;
             EffectCardApplier.Instance.OnCardEndDrag();
+            GameManager.Instance.PlayerCamera.ToggleSwipes(true);
 
             if (BattleManager.Instance.IsBattleActive)
                 BattleManager.Instance.GetBattlePlayerEffectCardsApplier.OnCardEndDrag();
@@ -201,5 +204,19 @@ namespace Singleplayer
         public EffectCardDmgType GetCardDmgType => effectCardInfo.EffectCardDmgType;
 
         public Sprite GetEffectSprite() => effectCardInfo.EffectCardSprite;
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (eventData.clickCount == 2)
+            {
+                Debug.Log("UI Double click!");
+                OnDoubleClick();
+            }
+        }
+
+        private void OnDoubleClick()
+        {
+            GameManager.Instance.GetEffectCardInfoController.ShowUpEffectCardInfo(effectCardInfo);
+        }
     }
 }

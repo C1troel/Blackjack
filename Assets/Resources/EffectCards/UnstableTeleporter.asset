@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7b391a2dc2e21c4493e63fe0d6ca231, type: 3}
   m_Name: UnstableTeleporter
   m_EditorClassIdentifier: 
-  _effectCardSprite: {fileID: 21300000, guid: 62863de8fae47df4eadce3b755692c94, type: 3}
+  _effectCardSprite: {fileID: 21300000, guid: f2891c89282af3c478ccf80cbc590289, type: 3}
   _effectiveDistanceInPanels: 0
   _effectsDuration: 0
   _effectCardMaterials: 01000000

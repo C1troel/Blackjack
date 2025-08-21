@@ -12,13 +12,14 @@ using Random = UnityEngine.Random;
 
 namespace Singleplayer
 {
-    public abstract class BasePlayerController : MonoBehaviour, IEntity
+    public abstract class BasePlayerController : MonoBehaviour, IEntity, IOutlinable
     {
         private Action<IEffectCardLogic> onCounterChoiceCallback;
         public event Action<IEntity> moveEndEvent;
         public event Action<IEntity> OnSelfClickHandled;
 
         public event Action HpChangeEvent, StatsChangeEvent, CurencyChangeEvent, LeftEffectCardsChangeEvent, LeftStepsChangeEvent;
+        public event Action<bool> OnOutlineChanged;
 
         public Animator Animator { get; protected set; }
 
@@ -89,7 +90,7 @@ namespace Singleplayer
                 moving = StartCoroutine(Move(this));
             }
 
-            if (Mathf.Abs(transform.position.y - previousCordY) > 10)
+            /*if (Mathf.Abs(transform.position.y - previousCordY) > 10)
             {
                 if (transform.position.y < previousCordY)
                 {
@@ -103,16 +104,21 @@ namespace Singleplayer
                 }
             }
 
-            transform.position = new Vector3(transform.position.x, transform.position.y, initialZ);
+            transform.position = new Vector3(transform.position.x, transform.position.y, initialZ);*/
+        }
+
+        private void LateUpdate()
+        {
+            spriteRenderer.sortingOrder = Mathf.RoundToInt(-transform.position.y * 0.5f);
         }
 
         private void SubscribeToClickEvent()
         {
             var clickHandler = GetComponentInChildren<ClickHandler>();
-            clickHandler.OnEntityClickEvent += OnPlayerClickEvent;
+            clickHandler.OnEntityClickEvent += OnEntityClick;
         }
 
-        private void OnPlayerClickEvent()
+        public void OnEntityClick()
         {
             Debug.Log($"Entity {characterInfo.CharacterName} being clicked");
             OnSelfClickHandled?.Invoke(this);
@@ -433,8 +439,17 @@ namespace Singleplayer
             Animator.speed = targetSpeed;
         }
 
-        public void SetOutline() => spriteRenderer.material = outlineSpriteMaterial;
-        public void RemoveOutline() => spriteRenderer.material = defaultSpriteMaterial;
+        public void SetOutline()
+        {
+            spriteRenderer.material = outlineSpriteMaterial;
+            OnOutlineChanged?.Invoke(true);
+        }
+
+        public void RemoveOutline()
+        {
+            spriteRenderer.material = defaultSpriteMaterial;
+            OnOutlineChanged?.Invoke(false);
+        }
 
         public virtual void GetSteps(int value)
         {

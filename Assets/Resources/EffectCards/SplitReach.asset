@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7b391a2dc2e21c4493e63fe0d6ca231, type: 3}
   m_Name: SplitReach
   m_EditorClassIdentifier: 
-  _effectCardSprite: {fileID: 21300000, guid: 9e4fef354a531d446b72020d5125348d, type: 3}
+  _effectCardSprite: {fileID: 21300000, guid: b1f74ffb5953aef43a2737976056d988, type: 3}
   _effectiveDistanceInPanels: 6
   _effectsDuration: 1
   _effectCardMaterials: 05000000

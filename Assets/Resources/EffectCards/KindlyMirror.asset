@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7b391a2dc2e21c4493e63fe0d6ca231, type: 3}
   m_Name: KindlyMirror
   m_EditorClassIdentifier: 
-  _effectCardSprite: {fileID: 21300000, guid: 7a310aaba26b180419909c4d90017b38, type: 3}
+  _effectCardSprite: {fileID: 21300000, guid: b75189f01b80e444cb36eefff57d2440, type: 3}
   _effectiveDistanceInPanels: 0
   _effectsDuration: 0
   _effectCardMaterials: 02000000

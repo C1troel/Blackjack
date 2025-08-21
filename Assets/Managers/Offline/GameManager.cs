@@ -17,8 +17,8 @@ namespace Singleplayer
         [SerializeField] string testPredefindCharacterName;
         [SerializeField] GameObject playerPref;
 
-        [SerializeField] GameObject testPlayerSpawnPanel;
-        [SerializeField] GameObject testEnemySpawnPanel;
+        /*[SerializeField] GameObject testPlayerSpawnPanel;
+        [SerializeField] GameObject testEnemySpawnPanel;*/
         [SerializeField] GameObject testDroppedMoneySpawnPanel;
 
         [SerializeField] GameObject inputBlock;
@@ -39,7 +39,9 @@ namespace Singleplayer
 
         public event Action<IEntity> OnEntityListChange;
         public event Action OnStealedMoneySave;
+        public event Action OnChoosingTriggered;
         public BasePlayerController PlayerData { get; private set; }
+        public CameraController PlayerCamera { get; private set; }
         public List<Sprite> BasicCardsList { get; private set; }
         public bool IsChoosing { get; private set; }
 
@@ -141,8 +143,13 @@ namespace Singleplayer
         {
             var player = entitiesList[0];
 
-            for (int i = 0; i < 3; i++)
-                EffectCardDealer.Instance.DealRandomEffectCard(player);
+            /*for (int i = 0; i < 3; i++)
+                EffectCardDealer.Instance.DealRandomEffectCard(player);*/
+
+            for (int i = 0; i < 5; i++)
+            {
+                EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BigAttackPack);
+            }
 
             /*EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BigSwing);
             EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.SplitReach);
@@ -220,11 +227,14 @@ namespace Singleplayer
             #region Tests
             TestAddingEffectCards();
             #endregion
+
+            playerHUDManager.OnStealedMoneySave(totalStealedMoney, targetStealMoney);
         }
 
         public void SaveStealedMoney(int value)
         {
             totalStealedMoney += value;
+            playerHUDManager.OnStealedMoneySave(totalStealedMoney, targetStealMoney);
             OnStealedMoneySave?.Invoke();
         }
 
@@ -239,6 +249,7 @@ namespace Singleplayer
             PlayerData = ((MonoBehaviour)player).GetComponent<BasePlayerController>();
             playerHUDManager.ManagePlayerHud(player);
             MapManagerSubscription(player);
+            PlayerCamera = ((MonoBehaviour)player).GetComponentInChildren<CameraController>();
 
             yield return null;
             player.SetRandomAvailableDirection();
@@ -261,6 +272,8 @@ namespace Singleplayer
         {
             Debug.Log("Choosing is started");
             IsChoosing = true;
+            OnChoosingTriggered?.Invoke();
+
             IEntity chosenTarget = null;
             List<IEntity> possibleTargetEntities = new List<IEntity>();
 
@@ -286,6 +299,7 @@ namespace Singleplayer
                 }
 
                 IsChoosing = false;
+                OnChoosingTriggered?.Invoke();
 
                 callback?.Invoke(entity);
             }
@@ -424,6 +438,7 @@ namespace Singleplayer
         public GameObject GetDroppedMoneyPrefab => droppedMoneyPrefab;
         public SavingMoneyController GetSavingMoneyController => playerHUDManager.GetSavingMoneyController;
         public ShoppingController GetShoppingController => playerHUDManager.GetShoppingController;
+        public EffectCardInfoController GetEffectCardInfoController => playerHUDManager.GetEffectCardInfoController;
 
         public void DealDamage(IEntity entity, int damage, bool isBlockable = false, EffectCardDmgType effectCardDmgType = EffectCardDmgType.None)
         {
@@ -574,7 +589,7 @@ namespace Singleplayer
             entitiesList.Add(player);
             OnEntityListChange?.Invoke(player);
 
-            player.transform.position = new Vector3(testPlayerSpawnPanel.transform.position.x, testPlayerSpawnPanel.transform.position.y, currentZCordForPlayers);
+            /*player.transform.position = new Vector3(testPlayerSpawnPanel.transform.position.x, testPlayerSpawnPanel.transform.position.y, currentZCordForPlayers);*/
             currentZCordForPlayers = playersZCordOffset;
 
             return player;

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7b391a2dc2e21c4493e63fe0d6ca231, type: 3}
   m_Name: BigSwing
   m_EditorClassIdentifier: 
-  _effectCardSprite: {fileID: 21300000, guid: 6a15298c71266594086136f6121ae454, type: 3}
+  _effectCardSprite: {fileID: 21300000, guid: dcabd942a88bdfa47ae127b583f57d40, type: 3}
   _effectiveDistanceInPanels: 6
   _effectsDuration: 1
   _effectCardMaterials: 05000000

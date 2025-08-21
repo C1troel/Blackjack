@@ -29,7 +29,7 @@ namespace Singleplayer
             var dealerUIController = DealerUIContoller.Instance;
             dealerUIController.StartDealerInteraction();
 
-            yield return new WaitUntil(() => dealerUIController.isPlayerPreselect);
+            yield return new WaitUntil(() => dealerUIController.IsPlayerPreselect);
 
             onComplete?.Invoke();
         }

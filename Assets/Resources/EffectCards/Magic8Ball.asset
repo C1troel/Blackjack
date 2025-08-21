@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7b391a2dc2e21c4493e63fe0d6ca231, type: 3}
   m_Name: Magic8Ball
   m_EditorClassIdentifier: 
-  _effectCardSprite: {fileID: 21300000, guid: f068beb6338e31243afd5b1a3ed6604f, type: 3}
+  _effectCardSprite: {fileID: 21300000, guid: 4eda37313d2c62c4d945fac8fb2cf153, type: 3}
   _effectiveDistanceInPanels: 0
   _effectsDuration: 1
   _effectCardMaterials: 

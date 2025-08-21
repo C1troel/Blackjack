@@ -21,11 +21,13 @@ namespace Singleplayer
         public event Action EffectRevealEvent;
         public event Action<int> MoveCardValueSelectedEvent;
 
+        private Sprite defaultFaceSideSprite;
         private Sprite revealedMoveCardSprite;
         private MoveCard revealedMoveCard;
 
         private void Start()
         {
+            defaultFaceSideSprite = revealedCardSide.sprite;
             SetupMoveCardUIBtns();
         }
 
@@ -61,12 +63,13 @@ namespace Singleplayer
 
         private void OnRevealEnd()
         {
-            if (revealedMoveCard == null || TurnManager.Instance.CurrentTurnEntity.GetEntityType != EntityType.Player)
+            if (revealedMoveCard == null)
             {
                 EndReveal();
                 return;
             }
-            else if (revealedMoveCard.GetSteps(revealedMoveCardSprite) != 11 && revealedMoveCard.backSide == null)
+            else if ((revealedMoveCard.GetSteps(revealedMoveCardSprite) != 11 && revealedMoveCard.backSide == null) ||
+                TurnManager.Instance.CurrentTurnEntity.GetEntityType != EntityType.Player)
             {
                 int moveCardSteps = revealedMoveCard.GetSteps(revealedMoveCardSprite);
                 SelectMoveCardValue(moveCardSteps);
@@ -136,8 +139,9 @@ namespace Singleplayer
             gameObject.SetActive(false);
             DeactivateMoveCardUI();
             transform.GetChild(1).gameObject.SetActive(true);
-            revealedCardSide.sprite = null;
+            revealedCardSide.sprite = defaultFaceSideSprite;
             revealedMoveCard = null;
+            revealedMoveCardSprite = null;
 
             RevealEffect();
 

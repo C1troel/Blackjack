@@ -1097,6 +1097,7 @@ namespace Singleplayer
         {
             _atackButton.interactable = isActive;
             _defendButton.interactable = isActive;
+            _splitDefButton.interactable = isActive;
             battleEffectCardsApplier.ToggleBattleCardApplier(isActive);
         }
 
@@ -1262,8 +1263,11 @@ namespace Singleplayer
             activeDeck = activeDeck.OrderBy(x => random.Next()).ToList();
         }
 
-        private bool CanAttack(IEntity player)
+        private bool CanAttack(IEntity entity)
         {
+            if (entity.GetEntityHp == 0)
+                return false;
+
             return true;
         }
 

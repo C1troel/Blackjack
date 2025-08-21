@@ -30,8 +30,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -289.2616, y: 37.8637, z: 0}
-  m_LocalScale: {x: 12.265661, y: 12.265661, z: 12.265661}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 6, y: 6, z: 6}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 8980110174214088972}
   - {fileID: 3694564667080931529}
@@ -253,7 +253,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 100
+  orthographic size: 70
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -290,6 +290,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   grayscaleMaterial: {fileID: 2100000, guid: ec79b2a75ed7b3d4c91936aae22afdd3, type: 2}
+  speedMultiplier: 400
+  swipeSpeedMultiplier: 100
+  additionalBorderValue: 100
+  zoomSpeed: 50
+  minZoom: 70
+  maxZoom: 140
 --- !u!114 &8734815157574667080
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -464,7 +470,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 100
+  orthographic size: 70
   m_Depth: 1
   m_CullingMask:
     serializedVersion: 2

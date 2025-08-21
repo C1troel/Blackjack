@@ -85,6 +85,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4111933426026441474}
   - component: {fileID: 7271558520832453348}
+  - component: {fileID: 9182700763492200060}
   m_Layer: 5
   m_Name: AddCardContainerToRight
   m_TagString: Untagged
@@ -108,8 +109,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 911.5134, y: 152.411}
-  m_SizeDelta: {x: 1850, y: 250}
+  m_AnchoredPosition: {x: 266.53647, y: 152.411}
+  m_SizeDelta: {x: 560, y: 250}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &7271558520832453348
 MonoBehaviour:
@@ -135,6 +136,18 @@ MonoBehaviour:
   m_Spacing: {x: -30, y: 0}
   m_Constraint: 0
   m_ConstraintCount: 2
+--- !u!114 &9182700763492200060
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1920812711247647704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1e0b4c4cf613d04f8f8c2835997efd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2257876326607187183
 GameObject:
   m_ObjectHideFlags: 0
@@ -145,6 +158,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2917303969482129345}
   - component: {fileID: 4684771603498328616}
+  - component: {fileID: 2504156730320946378}
   m_Layer: 5
   m_Name: AddCardContainerToLeft
   m_TagString: Untagged
@@ -168,8 +182,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -911.5134, y: 152.411}
-  m_SizeDelta: {x: 1850, y: 250}
+  m_AnchoredPosition: {x: -266.51367, y: 152.411}
+  m_SizeDelta: {x: 560.0004, y: 250}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &4684771603498328616
 MonoBehaviour:
@@ -195,6 +209,18 @@ MonoBehaviour:
   m_Spacing: {x: -30, y: 0}
   m_Constraint: 0
   m_ConstraintCount: 2
+--- !u!114 &2504156730320946378
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2257876326607187183}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1e0b4c4cf613d04f8f8c2835997efd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3860785337670593745
 GameObject:
   m_ObjectHideFlags: 0

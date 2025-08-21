@@ -29,6 +29,7 @@ namespace Singleplayer
         [SerializeField] private GridLayoutGroup playerHandsContainer;
 
         [Header("Control buttons")]
+        [SerializeField] private Button[] betButtons;
         [SerializeField] private Button hitBtn;
         [SerializeField] private Button standBtn;
         [SerializeField] private Button doubleBtn;
@@ -113,8 +114,10 @@ namespace Singleplayer
             foreach (Transform hand in playerHandsContainer.transform)
                 Destroy(hand.gameObject);
 
-            foreach (Transform hand in dealerHand.transform)
+            foreach (Transform hand in dealerHand.GetCardsContainer.transform)
                 Destroy(hand.gameObject);
+
+            dealerHand.ResetScores();
 
             if (preparedNextCard != null)
                 Destroy(preparedNextCard.gameObject);
@@ -162,7 +165,8 @@ namespace Singleplayer
         {
             ToggleStartBtns(false);
 
-            ToggleBetsBtns(true); // на якомусь етапі потрібно зробити виключення неможливих ставок
+            ToggleBetsBtns(true);
+            OnBlackjackGameStart?.Invoke();
         }
 
         public void MakeBetAllMoneyIn1() => MakeBet(BetType.AllMoneyIn1);
@@ -173,6 +177,30 @@ namespace Singleplayer
         public void MakeBetAllChipsIn2() => MakeBet(BetType.AllChipsIn2);
         public void MakeBetHalfChipsIn1() => MakeBet(BetType.HalfChipsIn1);
         public void MakeBetHalfChipsIn2() => MakeBet(BetType.HalfChipsIn2);
+
+        public void UpdateBetsButtonState()
+        {
+            var player = GameManager.Instance.GetEntityWithType(EntityType.Player) as BasePlayerController;
+            var playerMoney = player.GetEntityMoney;
+            var playerChips = player.GetEntityChips;
+
+            // MakeBetAllMoneyIn1
+            betButtons[0].interactable = playerMoney > 0;
+            // MakeBetAllMoneyIn2
+            betButtons[1].interactable = playerMoney > 1;
+            // MakeBetHalfMoneyIn1
+            betButtons[2].interactable = playerMoney / 2 > 0;
+            // MakeBetHalfMoneyIn2
+            betButtons[3].interactable = playerMoney / 2 > 1;
+            // MakeBetAllChipsIn1
+            betButtons[4].interactable = playerChips > 0;
+            // MakeBetAllChipsIn2
+            betButtons[5].interactable = playerChips > 1;
+            // MakeBetHalfChipsIn1
+            betButtons[6].interactable = playerChips / 2 > 0;
+            // MakeBetHalfChipsIn2
+            betButtons[7].interactable = playerChips / 2 > 1;
+        }
 
         private void MakeBet(BetType betValue)
         {
@@ -322,8 +350,6 @@ namespace Singleplayer
 
         private IEnumerator DealFirstCards()
         {
-            OnBlackjackGameStart?.Invoke();
-
             yield return StartCoroutine(DealCardsForPlayer());
 
             yield return StartCoroutine(SpawnNextBlackjackCard(-1, true, false)); // звичайна карта дилеру
@@ -627,22 +653,28 @@ namespace Singleplayer
 
         private bool CheckForPlayerSplit(HandController handController)
         {
-            var firsCard = handController.GetHandFirstCard();
+            var firstCard = handController.GetHandFirstCard();
 
-            if (firsCard == null || firsCard.transform.childCount != 1)
+            if (firstCard == null || handController.GetCardsCount() != 2)
             {
                 Debug.LogWarning("Checking split fast return");
                 return false;
             }
 
-            var firstCardName = firsCard.gameObject.transform.Find("1Side").GetComponent<Image>().sprite.name;
+            // Первая карта
+            var firstCardName = firstCard.transform.Find("1Side").GetComponent<Image>().sprite.name;
             int firstCardScore = int.Parse(firstCardName.Substring(firstCardName.Length - 2));
 
-            var secondCard = firsCard.GetAddCardsContainer.transform.GetChild(0).GetComponent<BlackjackCard>();
-            int secondCardScore = int.Parse(firstCardName.Substring(firstCardName.Length - 2));
+            // Вторая карта
+            var secondCard = firstCard.GetAddCardsContainer.transform.GetChild(0).GetComponent<BlackjackCard>();
+            var secondCardName = secondCard.transform.Find("1Side").GetComponent<Image>().sprite.name;
+            int secondCardScore = int.Parse(secondCardName.Substring(secondCardName.Length - 2));
+
+            Debug.Log($"Split check: {firstCardScore} vs {secondCardScore}");
 
             return firstCardScore == secondCardScore;
         }
+
 
         private BlackjackCard SpawnCardObject(string cardName, bool facedDown)
         {
@@ -857,6 +889,7 @@ namespace Singleplayer
 
         private void ToggleBetsBtns(bool isEnable)
         {
+            UpdateBetsButtonState();
             betsContainer.SetActive(isEnable);
         }
 

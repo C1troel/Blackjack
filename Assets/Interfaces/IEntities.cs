@@ -20,6 +20,7 @@ namespace Singleplayer
         void StartTurn();
         IEnumerator Move(IEntity entity, Direction direction = (Direction)(-1), PanelScript panel = null); // PanelScript та PlayerController також потрібен офлайновий
         IEnumerator OnStepOntoPanel(PanelScript panel);
+        void OnEntityClick();
         IEnumerator StopAnimationSmoothly(float duration);
         IEnumerator ResumeAnimationSmoothly(float duration);
         void SetOutline();
@@ -42,6 +43,7 @@ namespace Singleplayer
         int GetEntityMoney { get; }
         int GetEntityAtk { get; }
         int GetEntityLeftCards { get; }
+        int GetEntityLeftSteps { get; }
         bool GetEntityAttackAccess { get; }
         Direction GetEntityDirection { get; }
         IPassiveEffectHandler PassiveEffectHandler { get; }

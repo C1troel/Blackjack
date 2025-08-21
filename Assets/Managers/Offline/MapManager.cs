@@ -10,6 +10,7 @@ namespace Singleplayer
 {
     public class MapManager : MonoBehaviour
     {
+        [SerializeField] private GameObject previewsHandlerPrefab;
         [SerializeField] private GameObject parentOfAllPanels; // на даний момент використовується для помічення кожної панелі при телепортації
         [SerializeField] private EffectRevealCard usedCard;
 
@@ -133,18 +134,19 @@ namespace Singleplayer
             {
                 case EntityType.Player:
 
-                    /*HandlePlayerMovement(entity as BasePlayerController);*/
+                    HandlePlayerMovement(entity as BasePlayerController);
 
-                    entity.GetSteps(tempSteps);
+                    /*entity.GetSteps(tempSteps);
                     //PathBuilding(entity.GetCurrentPanel, tempSteps, entity);
                     HighlightReachablePanels(entity.GetCurrentPanel, tempSteps, entity);
-                    entity.StartMove();
+                    entity.StartMove();*/
                     break;
 
                 case EntityType.Enemy:
-                    entity.GetSteps(tempSteps);
-                    /*HandleEnemyMovement(entity as BaseEnemy);*/
-                    entity.StartMove();
+                    HandleEnemyMovement(entity as BaseEnemy);
+
+                    /*entity.GetSteps(tempSteps);
+                    entity.StartMove();*/
                     break;
 
                 case EntityType.Ally:
@@ -176,7 +178,7 @@ namespace Singleplayer
                 }
 
                 player.GetSteps(choosedPlayerSteps);
-                PathBuilding(player.GetCurrentPanel, choosedPlayerSteps, player);
+                HighlightReachablePanels(player.GetCurrentPanel, choosedPlayerSteps, player);
                 player.StartMove();
             }
 
@@ -302,7 +304,7 @@ namespace Singleplayer
         }
 
         #region Пошуки шляху
-        private void PathBuilding(PanelScript startPanel, int stepCount, IEntity entity)
+        /*private void PathBuilding(PanelScript startPanel, int stepCount, IEntity entity)
         {
             var pathEnders = new List<PanelScript>();
 
@@ -482,7 +484,7 @@ namespace Singleplayer
                         }
 
                         i++;
-                        /*if (nearPanels.Count != 0)*/ // не пойдёт
+                        *//*if (nearPanels.Count != 0)*//* // не пойдёт
                         passedPanels.Add(nearPanels[0]); 
 
                         if (passedPanels.Count > 1)
@@ -508,7 +510,7 @@ namespace Singleplayer
                 panel.HighlightAsPathEnder();
 
             highlightedPathEnders = pathEnders;
-        }
+        }*/
 
         private void HighlightReachablePanels(PanelScript startPanel, int stepCount, IEntity entity)
         {
@@ -880,6 +882,9 @@ namespace Singleplayer
             OnEffectCardPlayedEvent?.Invoke(effectCardLogic);
             onCardRevealed?.Invoke();
         }
+
+        public GameObject ParentOfAllPanels => parentOfAllPanels;
+        public GameObject PreviewsHandlerPrefab => previewsHandlerPrefab;
 
         /*private void AccessPlayerTeleportation()
         {

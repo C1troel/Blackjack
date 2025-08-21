@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Shop
   m_EditorClassIdentifier: 
   _effect: 2
-  _sprite: {fileID: 0}
+  _sprite: {fileID: 21300000, guid: 030373ae326725f4db6d8f44ccf3f7aa, type: 3}
   _isSpawn: 0
   _allowDuplicates: 1
   _isForceStop: 1

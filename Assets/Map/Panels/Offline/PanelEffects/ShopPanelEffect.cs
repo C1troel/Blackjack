@@ -19,7 +19,7 @@ namespace Singleplayer
             var shoppingController = GameManager.Instance.GetShoppingController;
             shoppingController.StartShopping();
 
-            yield return new WaitUntil(() => shoppingController.isPlayerShopping == false);
+            yield return new WaitUntil(() => shoppingController.IsPlayerShopping == false);
 
             onComplete?.Invoke();
         }

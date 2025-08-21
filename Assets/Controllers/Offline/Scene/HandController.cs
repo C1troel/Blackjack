@@ -76,7 +76,10 @@ namespace Singleplayer
             var firstCard = GetHandFirstCard();
 
             if (firstCard == null)
+            {
+                handScoreText.text = "";
                 return 0;
+            }
 
             int handScore = firstCard.GetComponent<BlackjackCard>().GetScores();
 
@@ -84,6 +87,8 @@ namespace Singleplayer
 
             return handScore;
         }
+
+        public void ResetScores() => handScoreText.text = "";
 
         public IEnumerator CloseHand()
         {

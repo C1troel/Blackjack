@@ -58,6 +58,7 @@ namespace Singleplayer
         private HashSet<IEntity> subscribedEntities = new HashSet<IEntity>();
 
         private List<GameObject> arrowsList = new List<GameObject>();
+        private PreviewsHandler activePreviewsHandler;
 
         /*private void Start()
         {
@@ -65,6 +66,9 @@ namespace Singleplayer
         }*/
 
         public event Action<PanelScript> OnPanelClicked;
+        public event Action<IEntity> OnEntityAdded;
+        public event Action<IEntity> OnEntityRemoved;
+
         public IReadOnlyList<IEntity> EntitiesOnPanel => entitiesOnPanel;
         public IReadOnlyList<GameObject> ObjectsOnPanel => objectsOnPanel;
 
@@ -140,9 +144,9 @@ namespace Singleplayer
             isClickableForTeleportation = true;
         }*/
 
-        public void HighlightAsPathEnder()
+        public void HighlightAsPathEnder() //
         {
-            GetComponent<SpriteRenderer>().sprite = SpriteLoadManager.Instance.GetPathEnderSprite();
+            /*GetComponent<SpriteRenderer>().sprite = SpriteLoadManager.Instance.GetPathEnderSprite();*/
         }
 
         public EffectPanelInfoSingleplayer GetEffectPanelInfo => effectPanelInfo;
@@ -498,7 +502,14 @@ namespace Singleplayer
 
             if (!entitiesOnPanel.Contains(entity))
             {
-                entitiesOnPanel.Add(entity);
+                if (entity.GetEntityLeftSteps == 0)
+                {
+                    entitiesOnPanel.Add(entity);
+                    OnEntityAdded?.Invoke(entity);
+
+                    if (entitiesOnPanel.Count > 1 && activePreviewsHandler == null)
+                        SpawnPreviewsHandler();
+                }
                 StartCoroutine(entity.OnStepOntoPanel(this));
             }
         }
@@ -559,11 +570,23 @@ namespace Singleplayer
             }
 
             if (entitiesOnPanel.Contains(entity))
+            {
+                if ((entitiesOnPanel.Count-1) <= 1 && activePreviewsHandler != null)
+                    RemovePreviewsHandler();
+
                 entitiesOnPanel.Remove(entity);
+                OnEntityRemoved?.Invoke(entity);
+            }
         }
 
         private void OnEntityStay(IEntity entity)
         {
+            entitiesOnPanel.Add(entity);
+            OnEntityAdded?.Invoke(entity);
+
+            if (entitiesOnPanel.Count > 1 && activePreviewsHandler == null)
+                SpawnPreviewsHandler();
+
             if (effectPanelInfo == null)
             {
                 Debug.Log("effectPanelInfo is null");
@@ -572,6 +595,44 @@ namespace Singleplayer
 
             Debug.Log($"Entity stayed on panel {effectPanelInfo.Effect}");
             StartCoroutine(HandleMapObjectsAndEffect(entity));
+        }
+
+        private void SpawnPreviewsHandler()
+        {
+            foreach (var entity in entitiesOnPanel)
+                HideEntity(entity);
+
+            var previewsHandlerPrefab = MapManager.Instance.PreviewsHandlerPrefab;
+            activePreviewsHandler = Instantiate(previewsHandlerPrefab, this.transform.position, Quaternion.identity)
+                .GetComponent<PreviewsHandler>();
+
+            activePreviewsHandler.SetupEntityPreviews(this, entitiesOnPanel);
+        }
+
+        private void RemovePreviewsHandler()
+        {
+            activePreviewsHandler.RemoveHandler();
+            activePreviewsHandler = null;
+
+            OnEntityAdded = null;
+            OnEntityRemoved = null;
+
+            foreach (var entity in entitiesOnPanel)
+                ShowEntity(entity);
+        }
+
+        private void HideEntity(IEntity entity)
+        {
+            var entityMono = entity as MonoBehaviour;
+            entityMono.GetComponent<SpriteRenderer>().enabled = false;
+            entityMono.GetComponentInChildren<ClickHandler>(true).gameObject.SetActive(false);
+        }
+
+        private void ShowEntity(IEntity entity)
+        {
+            var entityMono = entity as MonoBehaviour;
+            entityMono.GetComponent<SpriteRenderer>().enabled = true;
+            entityMono.GetComponentInChildren<ClickHandler>(true).gameObject.SetActive(true);
         }
 
         private IEnumerator HandleMapObjectsAndEffect(IEntity entity)

@@ -15,7 +15,8 @@ namespace Singleplayer
         [SerializeField] private GameObject background;
 
         private int preselectCardsAmount = 3;
-        public bool isPlayerPreselect { get; private set; } = false;
+        public event Action dealerInteractionStart;
+        public bool IsPlayerPreselect { get; private set; } = false;
         public static DealerUIContoller Instance { get; private set; }
 
         private void Awake()
@@ -37,7 +38,8 @@ namespace Singleplayer
         public void StartDealerInteraction()
         {
             /*GameManager.Instance.TogglePlayersHUD(false);*/
-            isPlayerPreselect = false;
+            dealerInteractionStart?.Invoke();
+            IsPlayerPreselect = false;
             background.SetActive(true);
 
             SetupPreselectCards();
@@ -71,7 +73,7 @@ namespace Singleplayer
         private void EndDealerInteraction()
         {
             background.SetActive(false);
-            isPlayerPreselect = true;
+            IsPlayerPreselect = true;
             /*GameManager.Instance.TogglePlayersHUD(true);*/
 
             foreach (Transform card in cardSelectionContainer.transform)

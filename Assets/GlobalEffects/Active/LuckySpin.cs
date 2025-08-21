@@ -62,6 +62,7 @@ namespace Singleplayer
                 CooldownRounds = this.ActiveGlobalEffectInfo.CooldownRounds;
 
                 GiveRandomEffect();
+                OnGlobalEffectStateChange();
             }
 
             private void GiveRandomEffect()

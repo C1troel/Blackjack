@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Singleplayer
@@ -31,7 +32,7 @@ namespace Singleplayer
 
         private void RestoreEffectCards()
         {
-            foreach (var effectCard in EnemyEffectCardsHandler.effectCardsList)
+            foreach (var effectCard in EnemyEffectCardsHandler.effectCardsList.ToList())
                 EnemyEffectCardsHandler.RemoveEffectCard(effectCard);
 
             for (int i = 0; i < 2; i++)

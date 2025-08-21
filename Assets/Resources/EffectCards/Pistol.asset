@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f91851c51771a5429b0a8c95f56e107, type: 3}
   m_Name: Pistol
   m_EditorClassIdentifier: 
-  _effectCardSprite: {fileID: 21300000, guid: 8da3770ed794a2440b5b91acc6d4cede, type: 3}
+  _effectCardSprite: {fileID: 21300000, guid: eddf8685afb6b9e43ab7a843a8ce5dfe, type: 3}
   _effectiveDistanceInPanels: 10
   _effectsDuration: 0
   _effectCardMaterials: 01000000

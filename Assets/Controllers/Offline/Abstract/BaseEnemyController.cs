@@ -16,7 +16,7 @@ namespace Singleplayer
         MrBet
     }
 
-    public abstract class BaseEnemy : MonoBehaviour, IEntity
+    public abstract class BaseEnemy : MonoBehaviour, IEntity, IOutlinable
     {
         protected const string DEAD_CLIP_NAME = "Die";
 
@@ -43,6 +43,9 @@ namespace Singleplayer
 
         public event Action<IEntity> moveEndEvent;
         public event Action<IEntity> OnSelfClickHandled;
+        public event Action<bool> OnOutlineChanged;
+
+        public event Action OnHpChange;
         public Animator Animator { get; protected set; }
 
         public bool SuppressPanelEffectTrigger { get; set; } = true;
@@ -65,7 +68,7 @@ namespace Singleplayer
                 moving = StartCoroutine(Move(this));
             }
 
-            if (Mathf.Abs(transform.position.y - previousCordY) > 10)
+            /*if (Mathf.Abs(transform.position.y - previousCordY) > 10)
             {
                 if (transform.position.y < previousCordY)
                 {
@@ -79,7 +82,12 @@ namespace Singleplayer
                 }
             }
 
-            transform.position = new Vector3(transform.position.x, transform.position.y, initialZ);
+            transform.position = new Vector3(transform.position.x, transform.position.y, initialZ);*/
+        }
+
+        private void LateUpdate()
+        {
+            spriteRenderer.sortingOrder = Mathf.RoundToInt(-transform.position.y * 0.5f);
         }
 
         public virtual void SetupEnemy(EnemyInfo enemyInfo)
@@ -97,6 +105,7 @@ namespace Singleplayer
             EnemyEffectCardsHandler = new EnemyEffectCardsHandler(this, enemyInfo.MaxEffectCards);
             SetupSpecialAbility();
 
+            OnHpChange?.Invoke();
             //direction = ??? // код для визначення можливої траекторії руху після спавну ворога
         }
 
@@ -149,6 +158,12 @@ namespace Singleplayer
 
         public virtual void StartMove(Direction direction = Direction.Standart, PanelScript panel = null)
         {
+            if (leftSteps == 0)
+            {
+                MoveEnd();
+                return;
+            }
+
             if (!isBoss)
             {
                 StartMoveToPlayer();
@@ -168,7 +183,6 @@ namespace Singleplayer
             Debug.Log($"Coroutine Started, StepsLeft {leftSteps}");
             moving = StartCoroutine(Move(this, direction, panel));
             canMove = true;
-            Walk();
         }
 
         public virtual IEnumerator Move(IEntity enemy, Direction direction = Direction.Standart, PanelScript panel = null)
@@ -300,7 +314,11 @@ namespace Singleplayer
                 Debug.LogWarning($"Left Steps: {leftSteps}");
 
                 if (!canMove)
+                {
+                    WalkOff();
+                    moving = null;
                     yield break;
+                }
             }
 
             WalkOff();
@@ -359,12 +377,17 @@ namespace Singleplayer
             def = enemyInfo.DefaultDef;
         }
 
-        protected virtual void NormalizeHp() => hp = Mathf.Min(hp, maxHp);
+        protected virtual void NormalizeHp()
+        {
+            hp = Mathf.Min(hp, maxHp);
+            OnHpChange?.Invoke();
+        }
 
         public virtual void GetDamage(int value)
         {
             hp -= value;
             hp = Mathf.Max(hp, 0);
+            OnHpChange?.Invoke();
 
             if (hp == 0)
                 Knockout();
@@ -416,10 +439,11 @@ namespace Singleplayer
             var clickHandler = GetComponentInChildren<ClickHandler>();
             if (clickHandler != null)
             {
-                clickHandler.OnEntityClickEvent -= OnEntityClickEvent;
+                clickHandler.OnEntityClickEvent -= OnEntityClick;
             }
 
             // Очищення власних івентів (для запобігання memory leak)
+            OnHpChange = null;
             moveEndEvent = null;
             OnSelfClickHandled = null;
         }
@@ -444,10 +468,12 @@ namespace Singleplayer
             if ((hp + value) > maxHp)
             {
                 hp = maxHp;
+                OnHpChange?.Invoke();
                 return;
             }
 
             hp += value;
+            OnHpChange?.Invoke();
         }
 
         public void EnableAttacking() => isEventAttack = true;
@@ -485,8 +511,17 @@ namespace Singleplayer
 
         public void PickUpMoney(int amount) => money += amount;
 
-        public void SetOutline() => spriteRenderer.material = outlineSpriteMaterial;
-        public void RemoveOutline() => spriteRenderer.material = defaultSpriteMaterial;
+        public void SetOutline()
+        {
+            spriteRenderer.material = outlineSpriteMaterial;
+            OnOutlineChanged?.Invoke(true);
+        }
+
+        public void RemoveOutline()
+        {
+            spriteRenderer.material = defaultSpriteMaterial;
+            OnOutlineChanged?.Invoke(false);
+        }
         #endregion
 
         #region Маніпуляції з ефектними картами
@@ -571,10 +606,10 @@ namespace Singleplayer
         private void SubscribeToClickEvent()
         {
             var clickHandler = GetComponentInChildren<ClickHandler>();
-            clickHandler.OnEntityClickEvent += OnEntityClickEvent;
+            clickHandler.OnEntityClickEvent += OnEntityClick;
         }
 
-        private void OnEntityClickEvent()
+        public void OnEntityClick()
         {
             Debug.Log($"Entity {enemyInfo.CharacterName} being clicked");
             OnSelfClickHandled?.Invoke(this);
@@ -597,6 +632,7 @@ namespace Singleplayer
         public int GetEntityMoney => money;
         public int GetEntityAtk => atk;
         public int GetEntityLeftCards => leftCards;
+        public int GetEntityLeftSteps => leftSteps;
         public bool GetEntityAttackAccess => isEventAttack;
         public bool CanTriggerPanels => canTriggerPanels;
         public string GetEntitySuit => ""; // optional

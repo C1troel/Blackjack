@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Fate
   m_EditorClassIdentifier: 
   _effect: 9
-  _sprite: {fileID: 0}
+  _sprite: {fileID: 21300000, guid: 8287cac67c8c9bf4aa2fb4004a36a010, type: 3}
   _isSpawn: 0
   _allowDuplicates: 1
   _isForceStop: 0

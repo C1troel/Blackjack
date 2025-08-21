@@ -19,6 +19,8 @@ namespace Singleplayer
         [SerializeField] private TextMeshProUGUI playerChipsText;
 
         [SerializeField] private TextMeshProUGUI roundCountText;
+        [SerializeField] private TextMeshProUGUI stealedMoneyText;
+        [SerializeField] private TextMeshProUGUI choosingText;
         [SerializeField] private TextMeshProUGUI leftCardsText;
         [SerializeField] private TextMeshProUGUI stepsLeftText;
 
@@ -28,6 +30,7 @@ namespace Singleplayer
         [SerializeField] private PlayerEffectCardsHandler playerEffectCardsHandler;
         [SerializeField] private SavingMoneyController savingMoneyController;
         [SerializeField] private ShoppingController shoppingController;
+        [SerializeField] private EffectCardInfoController effectCardInfoController;
 
         private BasePlayerController managedPlayer;
 
@@ -45,8 +48,22 @@ namespace Singleplayer
             managedPlayer.LeftEffectCardsChangeEvent += OnLeftEffectCardsChange;
             managedPlayer.LeftStepsChangeEvent += OnLeftStepsChange;
             TurnManager.Instance.OnNewRoundStarted += OnNewRoundStart;
+            GameManager.Instance.OnChoosingTriggered += OnChoosingTriggered;
 
             UpdateAllHud();
+        }
+
+        public void OnStealedMoneySave(int totalStealedMoney, int targetStealMoney)
+        {
+            stealedMoneyText.text = $"{totalStealedMoney}/{targetStealMoney}";
+        }
+
+        private void OnChoosingTriggered()
+        {
+            if (GameManager.Instance.IsChoosing)
+                choosingText.gameObject.SetActive(true);
+            else
+                choosingText.gameObject.SetActive(false);
         }
 
         private void UpdateAllHud()
@@ -97,5 +114,6 @@ namespace Singleplayer
 
         public SavingMoneyController GetSavingMoneyController => savingMoneyController;
         public ShoppingController GetShoppingController => shoppingController;
+        public EffectCardInfoController GetEffectCardInfoController => effectCardInfoController;
     }
 }

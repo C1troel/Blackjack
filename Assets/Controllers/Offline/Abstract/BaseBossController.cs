@@ -11,28 +11,53 @@ namespace Singleplayer
         protected virtual int KillersCallAmount => 1;
         protected virtual int BodyguardsCallAmount => 2;
         protected virtual int HenchmensCallResetValue => 3;
+        protected virtual int PunishmentConuterResetValue => 10;
+
         protected int henchmensCallCounter;
 
-        protected int pursuitCounter;
+        protected int punishmentCounter;
         protected virtual int EffectCardCounterResetValue => 3;
         protected int effectCardCounter;
         protected int pregamePlayerChips;
 
-        protected bool IsBeingTriggered = false;
+        protected bool CanPursuit = false;
+        protected bool CanSummon = false;
 
         public override void SetupEnemy(EnemyInfo enemyInfo)
         {
             BlackjackManager.Instance.OnBlackjackGameStart += OnBlackjackGameStart;
             BlackjackManager.Instance.OnBlackjackGameEnd += OnBlackjackGameEnd;
+            DealerUIContoller.Instance.dealerInteractionStart += OnDealerInteractionStart;
 
             base.SetupEnemy(enemyInfo);
 
             RestoreEffectCards();
         }
 
+        private void OnDealerInteractionStart()
+        {
+            punishmentCounter++;
+        }
+
         public override void OnNewTurnStart()
         {
-            StartCoroutine(ProcessBossTurnStart());
+            if (punishmentCounter >= PunishmentConuterResetValue)
+            {
+                CanPursuit = true;
+                CanSummon = true;
+                punishmentCounter -= PunishmentConuterResetValue;
+            }
+
+            effectCardCounter++;
+
+            if (effectCardCounter == EffectCardCounterResetValue)
+            {
+                effectCardCounter = 0;
+
+                RestoreEffectCards();
+            }
+
+            base.OnNewTurnStart();
         }
 
         public override void StartTurn()
@@ -44,12 +69,18 @@ namespace Singleplayer
                 return;
             }
 
-            base.StartTurn();
+            StartCoroutine(ProcessBossTurnStart());
         }
 
         public override void StartMove(Direction direction = Direction.Standart, PanelScript panel = null)
         {
-            if (pursuitCounter != 0)
+            if (leftSteps == 0)
+            {
+                MoveEnd();
+                return;
+            }
+
+            if (CanPursuit)
             {
                 StartMoveToPlayer();
                 return;
@@ -68,12 +99,11 @@ namespace Singleplayer
             Debug.Log($"Coroutine Started, StepsLeft {leftSteps}");
             moving = StartCoroutine(Move(this, direction, panel));
             canMove = true;
-            Walk();
         }
 
         protected override IEnumerator TryToStartBattle(IEntity Atk, IEntity Def)
         {
-            if (pursuitCounter <= 0)
+            if (!CanPursuit)
                 yield break;
 
             Debug.Log("BattlStart");
@@ -83,7 +113,7 @@ namespace Singleplayer
             Debug.LogWarning($"ATK: {Atk.GetEntityName} DEF: {Def.GetEntityName}");
             battleManager.TryToStartBattle(Atk, Def);
             yield return new WaitUntil(() => !battleManager.IsBattleActive);
-            pursuitCounter--;
+            CanPursuit = false;
             StartMove();
         }
 
@@ -95,22 +125,13 @@ namespace Singleplayer
 
         protected virtual IEnumerator ProcessBossTurnStart()
         {
-            effectCardCounter++;
-
-            if (effectCardCounter == EffectCardCounterResetValue)
+            if (CanSummon)
             {
-                effectCardCounter = 0;
-
-                RestoreEffectCards();
-            }
-
-            if (IsBeingTriggered)
-            {
-                IsBeingTriggered = false;
+                CanSummon = false;
                 yield return StartCoroutine(CallHenchmens());
             }
 
-            base.OnNewTurnStart();
+            base.StartTurn();
         }
 
         protected virtual IEnumerator CallHenchmens()
@@ -143,14 +164,13 @@ namespace Singleplayer
 
         public override void GetDamage(int value)
         {
-            IsBeingTriggered = true;
-            pursuitCounter++;
+            punishmentCounter += 4;
             base.GetDamage(value);
         }
 
         protected override void Knockout()
         {
-            pursuitCounter += 2;
+            punishmentCounter += 10;
 
             Dead();
             DropMoney();
@@ -191,16 +211,16 @@ namespace Singleplayer
             if (player.GetEntityChips == pregamePlayerChips)
                 return;
 
-            pursuitCounter++;
-            IsBeingTriggered = true;
+            punishmentCounter += 2;
         }
 
         protected virtual void RestoreEffectCards()
         {
-            foreach (var effectCard in EnemyEffectCardsHandler.effectCardsList)
+            foreach (var effectCard in EnemyEffectCardsHandler.effectCardsList.ToList())
                 EnemyEffectCardsHandler.RemoveEffectCard(effectCard);
 
             EffectCardDealer.Instance.DealRandomEffectCard(this);
+            /*EffectCardDealer.Instance.DealEffectCardOfType(this, EffectCardType.Hourglass);*/
         }
     }
 }

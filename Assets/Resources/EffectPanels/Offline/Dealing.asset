@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Dealing
   m_EditorClassIdentifier: 
   _effect: 7
-  _sprite: {fileID: 0}
+  _sprite: {fileID: 21300000, guid: 5673b164224eb2d4d88b5ddeb3abba92, type: 3}
   _isSpawn: 0
   _allowDuplicates: 1
   _isForceStop: 0

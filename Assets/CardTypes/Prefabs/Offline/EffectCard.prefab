@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3774597609297564238}
   - component: {fileID: 8232548404967156054}
   - component: {fileID: 3315896964427870996}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: EffectCard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
