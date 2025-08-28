@@ -8,6 +8,7 @@ using System.Reflection;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 namespace Singleplayer
@@ -26,6 +27,7 @@ namespace Singleplayer
 
         [SerializeField] Canvas playerHUD;
         [SerializeField] PlayerHUDManager playerHUDManager;
+        [SerializeField] Volume globalVolume;
 
         [SerializeField] MapManager mapManager;
         [SerializeField] float playersZCordOffset;
@@ -142,22 +144,19 @@ namespace Singleplayer
         private void TestAddingEffectCards()
         {
             var player = entitiesList[0];
+            var enemy = entitiesList[1];
 
-            /*for (int i = 0; i < 3; i++)
-                EffectCardDealer.Instance.DealRandomEffectCard(player);*/
+            for (int i = 0; i < 3; i++)
+                EffectCardDealer.Instance.DealRandomEffectCard(player);
 
-            for (int i = 0; i < 5; i++)
+            /*for (int i = 0; i < 5; i++)
             {
-                EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BigAttackPack);
-            }
+                EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.Pistol);
+            }*/
 
-            /*EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BigSwing);
-            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.SplitReach);
-            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.Trick);
-            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BigAttackPack);
-            EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.BigAttackPack);
+            /*EffectCardDealer.Instance.DealEffectCardOfType(player, EffectCardType.KindlyMirror);*/
 
-            EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.BigDefensePack);*/
+            /*EffectCardDealer.Instance.DealEffectCardOfType(enemy, EffectCardType.Pistol);*/
         }
         #endregion
 
@@ -216,6 +215,8 @@ namespace Singleplayer
 
             yield return StartCoroutine(OnPlayerLoad(CharacterType.TimeStopper, playerSpawn.transform.position));
             yield return StartCoroutine(SpawnEnemy(EnemyType.MrBet, casinoPanel.transform.position)); // спавн босса
+            /*yield return StartCoroutine(SpawnEnemy(EnemyType.Bodyguard, casinoPanel.transform.position));
+            entitiesList[2].PassiveEffectHandler.TryToAddEffect(new Plague(3));*/
 
             yield return null;
 
@@ -268,8 +269,9 @@ namespace Singleplayer
             spawnedEnemy.SetRandomAvailableDirection();
         }
 
-        public void StartChoosingTarget(Action<IEntity> callback, List<IEntity> allowedTargets = null)
+        public void StartChoosingTarget(Action<IEntity> callback, List<IOutlinable> outlinedTargets = null)
         {
+            var allowedTargets = outlinedTargets?.Cast<IEntity>().ToList();
             Debug.Log("Choosing is started");
             IsChoosing = true;
             OnChoosingTriggered?.Invoke();
@@ -436,6 +438,7 @@ namespace Singleplayer
         public List<IEntity> GetEntitiesList() => entitiesList;
 
         public GameObject GetDroppedMoneyPrefab => droppedMoneyPrefab;
+        public Volume GetGlobalVolume => globalVolume;
         public SavingMoneyController GetSavingMoneyController => playerHUDManager.GetSavingMoneyController;
         public ShoppingController GetShoppingController => playerHUDManager.GetShoppingController;
         public EffectCardInfoController GetEffectCardInfoController => playerHUDManager.GetEffectCardInfoController;

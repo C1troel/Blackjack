@@ -81,6 +81,7 @@ namespace Singleplayer
                 player.Pay(CARD_PRICE_IN_MONEY, false);
 
             EffectCardDealer.Instance.DealEffectCardOfType(player, purchasedCard);
+            ShowPlayerMoney();
 
             Destroy(clickedCard.gameObject);
         }

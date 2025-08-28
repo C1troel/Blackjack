@@ -48,7 +48,8 @@ namespace Singleplayer
 
         private bool CheckForAvailableTargets()
         {
-            return TargetEnemiesList.Any(entity =>
+            var targetEntities = TargetObjectsList.Cast<IEntity>().ToList();
+            return targetEntities.Any(entity =>
                 entity.GetEntityHp > 0 &&
                 entity.GetCurrentPanel.GetEffectPanelInfo.Effect != PanelEffect.VIPClub);
         }

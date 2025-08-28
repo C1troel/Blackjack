@@ -9,9 +9,6 @@ namespace Singleplayer
 {
     public class Pistol : BaseEffectCardLogic
     {
-        private const int DAMAGE = 20;
-        private float spawnCordsOffset = -60f;
-
         public override IEnumerator ApplyEffect(Action onComplete, IEntity entityInit = null)
         {
             IEntity target = null;
@@ -25,7 +22,7 @@ namespace Singleplayer
                     gameManager.StartChoosingTarget(choosed =>
                     {
                         target = choosed;
-                    }, TargetEnemiesList);
+                    }, TargetObjectsList);
                     break;
 
                 case EntityType.Enemy:
@@ -60,7 +57,9 @@ namespace Singleplayer
 
         private IEntity HandleEnemyTargeting()
         {
-            var aliveTargets = TargetEnemiesList
+            var targetEntities = TargetObjectsList.Cast<IEntity>().ToList();
+
+            var aliveTargets = targetEntities
                 .Where(entity => entity.GetEntityHp > 0
                 && entity.GetCurrentPanel.GetEffectPanelInfo.Effect != PanelEffect.VIPClub)
                 .ToList();
@@ -82,7 +81,7 @@ namespace Singleplayer
             var pistolBulletPrefab = projectilEffectCardInfo.ProjectilePrefab;
 
             var targetsPanel = target.GetCurrentPanel;
-            Vector3 spawnPos = new Vector3(targetsPanel.transform.position.x + spawnCordsOffset, targetsPanel.transform.position.y);
+            Vector3 spawnPos = new Vector3(targetsPanel.transform.position.x + projectilEffectCardInfo.SpawnCordsOffset, targetsPanel.transform.position.y);
 
             GameObject pistolBulletGO = GameManager.Instantiate(pistolBulletPrefab, spawnPos, Quaternion.identity);
 

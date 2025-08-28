@@ -76,12 +76,19 @@ namespace Singleplayer
                 if (activeEffects.Count == 0)
                     return;
 
-                for (int i = activeEffects.Count - 1; i >= 0; i--)
-                {
-                    activeEffects[i].HandlePassiveEffect(entity);
+                List<BasePassiveGlobalEffect> toRemove = new List<BasePassiveGlobalEffect>();
 
-                    if (activeEffects[i].TurnsRemaining == 0)
-                        RemoveEffect(activeEffects[i]);
+                foreach (var effect in activeEffects.ToList())
+                {
+                    effect.HandlePassiveEffect(entity);
+
+                    if (effect.TurnsRemaining == 0)
+                        toRemove.Add(effect);
+                }
+
+                foreach (var effect in toRemove)
+                {
+                    RemoveEffect(effect);
                 }
             }
 

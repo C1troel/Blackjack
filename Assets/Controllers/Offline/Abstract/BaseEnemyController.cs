@@ -94,6 +94,7 @@ namespace Singleplayer
         {
             this.enemyInfo = enemyInfo;
 
+            isBoss = enemyInfo.IsBoss;
             hp = enemyInfo.DefaultHp;
             maxHp = enemyInfo.DefaultHp;
             money = enemyInfo.DefaultMoney;
@@ -396,7 +397,11 @@ namespace Singleplayer
         protected virtual void Knockout()
         {
             ManageKnockoutAnimationHandler();
-            Dead();
+
+            if (GlobalEffectsManager.Instance.IsTimeStopped)
+                StartCoroutine(WaitUntilTimeResumed(() => Dead()));
+            else
+                Dead();
 
             CleanUpEnemyData();
 
@@ -404,6 +409,15 @@ namespace Singleplayer
 
             GameManager.Instance.RemoveEntityFromGame(this);
         }
+
+        protected virtual IEnumerator WaitUntilTimeResumed(Action onComplete)
+        {
+            yield return new WaitUntil(() => GlobalEffectsManager.Instance.IsTimeStopped == false);
+
+            yield return StartCoroutine(ResumeAnimationSmoothly(1f));
+            onComplete?.Invoke();
+        }
+
 
         protected virtual void DropMoney()
         {
@@ -417,9 +431,14 @@ namespace Singleplayer
             droppedMoneyGO.SetActive(true);
         }
 
-        private void OnKnockoutAnimationEnd()
+        public void EmptyAnimationEvent() { }
+
+        protected virtual void OnKnockoutAnimationEnd()
         {
-            Destroy(gameObject);
+            if (!isBoss)
+            {
+                Destroy(gameObject);
+            }
         }
 
         protected virtual void CleanUpEnemyData()
@@ -427,6 +446,7 @@ namespace Singleplayer
             PassiveEffectHandler.RemoveAllEffects();
 
             gameObject.GetComponent<BoxCollider2D>().enabled = false;
+            Destroy(gameObject.GetComponentInChildren<ClickHandler>());
             Destroy(gameObject.GetComponent<Rigidbody2D>());
 
             if (moving != null)
@@ -434,7 +454,7 @@ namespace Singleplayer
                 StopCoroutine(moving);
                 moving = null;
             }
-            StopAllCoroutines(); // На випадок інших корутин
+            /*StopAllCoroutines();*/ // На випадок інших корутин
 
             var clickHandler = GetComponentInChildren<ClickHandler>();
             if (clickHandler != null)
@@ -510,6 +530,20 @@ namespace Singleplayer
         }
 
         public void PickUpMoney(int amount) => money += amount;
+
+        public void HideEntity()
+        {
+            GetComponent<SpriteRenderer>().enabled = false;
+            GetComponentInChildren<ClickHandler>(true).gameObject.SetActive(false);
+            GetComponentInChildren<EnemyHpController>(true).gameObject.SetActive(false);
+        }
+
+        public void ShowEntity()
+        {
+            GetComponent<SpriteRenderer>().enabled = true;
+            GetComponentInChildren<ClickHandler>(true).gameObject.SetActive(true);
+            GetComponentInChildren<EnemyHpController>(true).gameObject.SetActive(true);
+        }
 
         public void SetOutline()
         {
@@ -665,7 +699,7 @@ namespace Singleplayer
             MapManager.Instance.MakeADraw(this);
         }
 
-        protected void ManageKnockoutAnimationHandler()
+        protected virtual void ManageKnockoutAnimationHandler()
         {
             AnimationClip clip = GetAnimationClipByName(Animator, DEAD_CLIP_NAME);
             if (clip == null)

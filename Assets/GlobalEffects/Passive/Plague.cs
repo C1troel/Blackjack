@@ -9,7 +9,7 @@ namespace Singleplayer
     {
         public class Plague : BasePassiveGlobalEffect
         {
-            const int DAMAGE_AMOUNT = 10;
+            const int DAMAGE_AMOUNT = 10; // 10
             public Plague(PassiveGlobalEffectInfo passiveGlobalEffectInfo) : base(passiveGlobalEffectInfo)
             {}
 

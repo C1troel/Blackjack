@@ -25,6 +25,8 @@ namespace Singleplayer
         IEnumerator ResumeAnimationSmoothly(float duration);
         void SetOutline();
         void RemoveOutline();
+        void HideEntity();
+        void ShowEntity();
         void SetRandomAvailableDirection();
         void TurnEntity();
         void EnableAttacking();

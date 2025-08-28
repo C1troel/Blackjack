@@ -34,15 +34,14 @@ namespace Singleplayer
             animator.enabled = true;
             entityOnCompleteCallback = onComplete;
 
-            if (GlobalEffectsManager.Instance.isTimeStopped)
+            ProjectileManager.Instance.AddAvaitingProjectile(this);
+
+            if (GlobalEffectsManager.Instance.IsTimeStopped)
             {
-                ProjectileManager.Instance.AddAvaitingProjectile(this);
                 entityOnCompleteCallback?.Invoke();
                 entityOnCompleteCallback = null;
                 return;
             }
-
-            StartProjectileActivity(null);
         }
 
         public void StartProjectileActivity(Action<IProjectile> callback)

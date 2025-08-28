@@ -15,6 +15,7 @@ MonoBehaviour:
   _effectCardSprite: {fileID: 21300000, guid: dcabd942a88bdfa47ae127b583f57d40, type: 3}
   _effectiveDistanceInPanels: 6
   _effectsDuration: 1
+  _unlockedByDefault: 1
   _effectCardMaterials: 05000000
   _effectCardPurposes: 00000000
   _effectCardDmgType: 0

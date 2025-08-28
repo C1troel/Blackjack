@@ -38,7 +38,7 @@ namespace Singleplayer
 
         private void TryToStartProjectileActivity()
         {
-            if (avaitingProjectiles.Count == 0 || GlobalEffectsManager.Instance.isTimeStopped)
+            if (avaitingProjectiles.Count == 0 || GlobalEffectsManager.Instance.IsTimeStopped)
                 return;
 
             StartProjectileActivity(avaitingProjectiles[0]);

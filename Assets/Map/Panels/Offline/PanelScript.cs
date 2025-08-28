@@ -103,6 +103,12 @@ namespace Singleplayer
 
             if (effectPanelInfo.Sprite != null)
                 panelSprite.sprite = effectPanelInfo.Sprite;
+
+            var framePrefab = MapManager.Instance.PanelFramePrefab;
+            var panelFrame = Instantiate(framePrefab, this.transform);
+            var frameSpriteRenderer = panelFrame.GetComponent<SpriteRenderer>();
+            frameSpriteRenderer.sortingOrder = panelSprite.sortingOrder + 5;
+            frameSpriteRenderer.sprite = effectPanelInfo.FrameSprite;
         }
 
         private IPanelEffect GetPanelEffectInstance(EffectPanelInfoSingleplayer effectPanelInfo)
@@ -600,7 +606,7 @@ namespace Singleplayer
         private void SpawnPreviewsHandler()
         {
             foreach (var entity in entitiesOnPanel)
-                HideEntity(entity);
+                entity.HideEntity();
 
             var previewsHandlerPrefab = MapManager.Instance.PreviewsHandlerPrefab;
             activePreviewsHandler = Instantiate(previewsHandlerPrefab, this.transform.position, Quaternion.identity)
@@ -618,21 +624,7 @@ namespace Singleplayer
             OnEntityRemoved = null;
 
             foreach (var entity in entitiesOnPanel)
-                ShowEntity(entity);
-        }
-
-        private void HideEntity(IEntity entity)
-        {
-            var entityMono = entity as MonoBehaviour;
-            entityMono.GetComponent<SpriteRenderer>().enabled = false;
-            entityMono.GetComponentInChildren<ClickHandler>(true).gameObject.SetActive(false);
-        }
-
-        private void ShowEntity(IEntity entity)
-        {
-            var entityMono = entity as MonoBehaviour;
-            entityMono.GetComponent<SpriteRenderer>().enabled = true;
-            entityMono.GetComponentInChildren<ClickHandler>(true).gameObject.SetActive(true);
+                entity.ShowEntity();
         }
 
         private IEnumerator HandleMapObjectsAndEffect(IEntity entity)

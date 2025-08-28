@@ -42,7 +42,7 @@ namespace Singleplayer
 
             ProjectileManager.Instance.AddAvaitingProjectile(this);
 
-            if (GlobalEffectsManager.Instance.isTimeStopped)
+            if (GlobalEffectsManager.Instance.IsTimeStopped)
             {
                 entityOnCompleteCallback?.Invoke();
                 entityOnCompleteCallback = null;

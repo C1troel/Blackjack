@@ -11,6 +11,7 @@ namespace Singleplayer
     public class MapManager : MonoBehaviour
     {
         [SerializeField] private GameObject previewsHandlerPrefab;
+        [SerializeField] private GameObject panelFramePrefab;
         [SerializeField] private GameObject parentOfAllPanels; // на даний момент використовується для помічення кожної панелі при телепортації
         [SerializeField] private EffectRevealCard usedCard;
 
@@ -25,9 +26,11 @@ namespace Singleplayer
 
         public event Action<ulong> playerMoveEnd;
         public event Action<IEffectCardLogic> OnEffectCardPlayedEvent;
+        public event Action OnChoosingTriggered;
 
         public List<PanelScript> panels { get; private set; }
         public bool IsPossiblePlayerTeleportation { get; private set; } = false;
+        public bool IsChoosing { get; private set; } = false;
         public static MapManager Instance { get; private set; }
 
         private void Awake()
@@ -266,6 +269,8 @@ namespace Singleplayer
         public void StartChoosingPanel(Action<PanelScript> callback, List<PanelScript> allowedPanels = null)
         {
             Debug.Log("Start choosing panel");
+            IsChoosing = true;
+            OnChoosingTriggered?.Invoke();
 
             PanelScript chosenPanel = null;
 
@@ -277,6 +282,8 @@ namespace Singleplayer
                 panel.SetOutline(true);
             }
 
+            IsChoosing = true;
+
             void OnPanelChosen(PanelScript panel)
             {
                 chosenPanel = panel;
@@ -286,6 +293,9 @@ namespace Singleplayer
                     p.OnPanelClicked -= OnPanelChosen;
                     p.SetOutline(false);
                 }
+
+                IsChoosing = false;
+                OnChoosingTriggered?.Invoke();
 
                 callback?.Invoke(panel);
             }
@@ -885,6 +895,7 @@ namespace Singleplayer
 
         public GameObject ParentOfAllPanels => parentOfAllPanels;
         public GameObject PreviewsHandlerPrefab => previewsHandlerPrefab;
+        public GameObject PanelFramePrefab => panelFramePrefab;
 
         /*private void AccessPlayerTeleportation()
         {

@@ -53,6 +53,7 @@ namespace Singleplayer
 
         private void OnEntityAddedToPanel(IEntity addedEntity)
         {
+            addedEntity.HideEntity();
             var entityPreview = Instantiate(entityPreviewPrefab, previewsContainer.transform)
                 .GetComponent<EntityPreviewHandler>();
 
@@ -66,6 +67,7 @@ namespace Singleplayer
 
         private void OnEntityRemovedFromPanel(IEntity removedEntity)
         {
+            removedEntity.ShowEntity();
             var previewToRemove = previews.FirstOrDefault(p => p.ManagedEntity == removedEntity);
             if (previewToRemove != null)
             {

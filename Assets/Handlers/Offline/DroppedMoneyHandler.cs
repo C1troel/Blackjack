@@ -3,15 +3,26 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Singleplayer
 {
-    public class DroppedMoneyHandler : MonoBehaviour, IMapObject
+    public class DroppedMoneyHandler : MonoBehaviour, IMapObject, IOutlinable
     {
         private PanelScript currentPanel;
         private int moneyAmount;
+
+        private SpriteRenderer spriteRenderer;
+        private Material defaultSpriteMaterial;
+        private Material outlineSpriteMaterial;
+
+        public event Action<bool> OnOutlineChanged;
+
         public void ManageDroppedMoney(int moneyAmount)
         {
+            spriteRenderer = GetComponent<SpriteRenderer>();
+            defaultSpriteMaterial = spriteRenderer.material;
+            outlineSpriteMaterial = EffectCardDealer.Instance.GetEffectCardOutlineMaterial; // заглушка, щоб була хоч якась обводка
             this.moneyAmount = moneyAmount;
         }
 
@@ -43,6 +54,16 @@ namespace Singleplayer
 
             currentPanel.TryToRemoveMapObject(gameObject);
             Destroy(gameObject);
+        }
+
+        public void SetOutline()
+        {
+            spriteRenderer.material = outlineSpriteMaterial;
+        }
+
+        public void RemoveOutline()
+        {
+            spriteRenderer.material = defaultSpriteMaterial;
         }
 
         void OnTriggerEnter2D(Collider2D collision)

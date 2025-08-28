@@ -38,7 +38,7 @@ namespace Singleplayer
                     .ToList();
 
                 List<Vector2> shuffledPositions = new List<Vector2>(originalPositions);
-                ShuffleList(shuffledPositions);
+                ShuffleWithoutFixedPoints(shuffledPositions, originalPositions);
 
                 for (int i = 0; i < entities.Count; i++)
                 {
@@ -52,17 +52,35 @@ namespace Singleplayer
                 OnGlobalEffectStateChange();
             }
 
-            private void ShuffleList<T>(List<T> list)
+            private void ShuffleWithoutFixedPoints<T>(List<T> list, List<T> original)
             {
+                if (list.Count <= 1)
+                    return;
+
                 System.Random rng = new System.Random();
                 int n = list.Count;
 
-                while (n > 1)
+                bool hasFixedPoint;
+
+                do
                 {
-                    n--;
-                    int k = rng.Next(n + 1);
-                    (list[n], list[k]) = (list[k], list[n]);
-                }
+                    for (int i = n - 1; i > 0; i--)
+                    {
+                        int k = rng.Next(i + 1);
+                        (list[i], list[k]) = (list[k], list[i]);
+                    }
+
+                    hasFixedPoint = false;
+                    for (int i = 0; i < n; i++)
+                    {
+                        if (EqualityComparer<T>.Default.Equals(list[i], original[i]))
+                        {
+                            hasFixedPoint = true;
+                            break;
+                        }
+                    }
+
+                } while (hasFixedPoint);
             }
 
             public override void OnNewTurnStart()

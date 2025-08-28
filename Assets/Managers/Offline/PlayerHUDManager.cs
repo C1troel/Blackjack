@@ -49,6 +49,8 @@ namespace Singleplayer
             managedPlayer.LeftStepsChangeEvent += OnLeftStepsChange;
             TurnManager.Instance.OnNewRoundStarted += OnNewRoundStart;
             GameManager.Instance.OnChoosingTriggered += OnChoosingTriggered;
+            MapManager.Instance.OnChoosingTriggered += OnPanelChoosingTriggered;
+
 
             UpdateAllHud();
         }
@@ -61,6 +63,14 @@ namespace Singleplayer
         private void OnChoosingTriggered()
         {
             if (GameManager.Instance.IsChoosing)
+                choosingText.gameObject.SetActive(true);
+            else
+                choosingText.gameObject.SetActive(false);
+        }
+
+        private void OnPanelChoosingTriggered()
+        {
+            if (MapManager.Instance.IsChoosing)
                 choosingText.gameObject.SetActive(true);
             else
                 choosingText.gameObject.SetActive(false);

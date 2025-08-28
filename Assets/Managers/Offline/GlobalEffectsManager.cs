@@ -14,7 +14,7 @@ namespace Singleplayer
         private List<BasePassiveGlobalEffect> activeEffectsList = new List<BasePassiveGlobalEffect>();
         private CameraController mainPlayerCamera;
 
-        public bool isTimeStopped { get; private set; }
+        public bool IsTimeStopped { get; private set; }
         public static GlobalEffectsManager Instance { get; private set; }
 
         private void Awake()
@@ -50,10 +50,10 @@ namespace Singleplayer
 
         public void StopTime(IEntity entityInit)
         {
-            if (isTimeStopped)
+            if (IsTimeStopped)
                 { return; }
 
-            isTimeStopped = true;
+            IsTimeStopped = true;
             mainPlayerCamera.FadeInGrayscale(1);
 
             TryToFreezeAllInStoppedTime();
@@ -64,7 +64,7 @@ namespace Singleplayer
             if (CheckForTimeStoppers(entityInit))
                 return;
 
-            isTimeStopped = false;
+            IsTimeStopped = false;
 
             mainPlayerCamera.FadeOutGrayscale(1);
 

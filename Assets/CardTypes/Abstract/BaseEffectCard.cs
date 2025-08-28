@@ -36,19 +36,19 @@ namespace Singleplayer
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (!EffectCardLogic.CanUse || EffectCardLogic.TargetEnemiesList == null || GameManager.Instance.IsChoosing)
+            if (!EffectCardLogic.CanUse || EffectCardLogic.TargetObjectsList == null || GameManager.Instance.IsChoosing)
                 return;
 
-            foreach (var entity in EffectCardLogic.TargetEnemiesList)
+            foreach (var entity in EffectCardLogic.TargetObjectsList)
                 entity.SetOutline();
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            if (!EffectCardLogic.CanUse || EffectCardLogic.TargetEnemiesList == null || GameManager.Instance.IsChoosing)
+            if (!EffectCardLogic.CanUse || EffectCardLogic.TargetObjectsList == null || GameManager.Instance.IsChoosing)
                 return;
 
-            foreach (var entity in EffectCardLogic.TargetEnemiesList)
+            foreach (var entity in EffectCardLogic.TargetObjectsList)
                 entity.RemoveOutline();
         }
 

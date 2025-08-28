@@ -279,7 +279,8 @@ namespace Singleplayer
             Debug.Log("OnSplitDefButtonClick");
             Split();
 
-            StopTimer();
+            battleEffectCardsApplier.ToggleBattleCardApplier(false);
+            battleEffectCardsHandler.HideAndReturnPlayerBattleEffectCards();
         }
 
         private void DefForEnemy(IEntity entity)
@@ -784,7 +785,7 @@ namespace Singleplayer
 
         private bool IsFrozenDuringTimeStop(IEntity entity)
         {
-            return GlobalEffectsManager.Instance.isTimeStopped &&
+            return GlobalEffectsManager.Instance.IsTimeStopped &&
                 !entity.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.Chronomaster);
         }
 

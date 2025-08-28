@@ -29,9 +29,12 @@ namespace Singleplayer
             Instance = this;
         }
 
-        private void Start()
+        public void ManageUnlockedCardList()
         {
-            effectCardInfosList = InfosLoadManager.Instance.GetAllEffectCardInfos().ToList();
+            var allEffectCards = InfosLoadManager.Instance.GetAllEffectCardInfos();
+            effectCardInfosList = allEffectCards
+                .Where(card => UnlockManager.Instance.IsCardUnlocked(card.EffectCardType))
+                .ToList();
         }
 
         private void AttachEffectCardScript(GameObject effectCardGO, EffectCardType effectCardType)

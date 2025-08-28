@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 
 namespace Singleplayer
@@ -12,10 +14,15 @@ namespace Singleplayer
         private const string BLOCKING_SWIPE_LAYER_NAME = "BlockSwipe";
         private Camera _camera;
         private Transform _transform;
+        private Transform target;
+
+        private Volume globalVolume;
+        private ColorAdjustments colorAdjustments;
 
         [SerializeField] private Material grayscaleMaterial;
 
         [Header("Moving settings")]
+        [SerializeField] private float followSpeed = 5f;
         [SerializeField] private float speedMultiplier;
         [SerializeField] private float swipeSpeedMultiplier;
         [SerializeField] private int additionalBorderValue;
@@ -37,9 +44,19 @@ namespace Singleplayer
 
         void Start()
         {
+            globalVolume = GameManager.Instance.GetGlobalVolume;
+            if (globalVolume.profile.TryGet<ColorAdjustments>(out var ca))
+            {
+                colorAdjustments = ca;
+            }
+            else
+            {
+                Debug.LogError("Volume не содержит Color Adjustments!");
+            }
             panelGridParent = MapManager.Instance.ParentOfAllPanels.transform;
             _camera = GetComponent<Camera>();
             _transform = GetComponent<Transform>();
+            target = GetComponentInParent<Transform>();
 
             CalculateBounds();
         }
@@ -129,6 +146,23 @@ namespace Singleplayer
             _transform.position = pos;
         }
 
+        void LateUpdate()
+        {
+            if (target == null) return;
+
+            // Целевая позиция камеры
+            Vector3 targetPos = new Vector3(target.position.x, target.position.y, _transform.position.z);
+
+            // Плавное движение к цели
+            Vector3 smoothPos = Vector3.Lerp(_transform.position, targetPos, followSpeed * Time.deltaTime);
+
+            // Применяем границы
+            smoothPos.x = Mathf.Clamp(smoothPos.x, minX, maxX);
+            smoothPos.y = Mathf.Clamp(smoothPos.y, minY, maxY);
+
+            _transform.position = smoothPos;
+        }
+
         private float GetAdjustedSwipeMultiplier()
         {
             return swipeSpeedMultiplier * (_camera.orthographicSize / maxZoom);
@@ -200,25 +234,30 @@ namespace Singleplayer
 
         public void FadeInGrayscale(float duration)
         {
-            StartCoroutine(FadeEffect(duration, 1f));
+            StartCoroutine(FadeEffect(duration, -100f)); // полная серость
         }
 
         public void FadeOutGrayscale(float duration)
         {
-            StartCoroutine(FadeEffect(duration, 0f));
+            StartCoroutine(FadeEffect(duration, 0f)); // возвращаем цвет
         }
 
-        private IEnumerator FadeEffect(float duration, float target)
+        private IEnumerator FadeEffect(float duration, float targetSaturation)
         {
-            float start = intensity;
+            if (colorAdjustments == null)
+                yield break;
+
+            float start = colorAdjustments.saturation.value;
             float t = 0f;
+
             while (t < duration)
             {
                 t += Time.deltaTime;
-                intensity = Mathf.Lerp(start, target, t / duration);
+                colorAdjustments.saturation.value = Mathf.Lerp(start, targetSaturation, t / duration);
                 yield return null;
             }
-            intensity = target;
+
+            colorAdjustments.saturation.value = targetSaturation;
         }
 
         public void ForceSnapToPlayer()

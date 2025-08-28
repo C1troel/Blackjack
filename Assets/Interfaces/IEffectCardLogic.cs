@@ -14,7 +14,7 @@ namespace Singleplayer
         void ToggleMarkAsCounterCard(bool isMarked);
 
         EffectCardInfo EffectCardInfo { get; }
-        List<IEntity> TargetEnemiesList { get; }
+        List<IOutlinable> TargetObjectsList { get; }
         bool CanUse { get; }
         bool CanCounter { get; }
        /* public List<EffectCardMaterial> EffectCardMaterials { get; }

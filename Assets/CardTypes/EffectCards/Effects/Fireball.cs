@@ -23,7 +23,7 @@ namespace Singleplayer
                     gameManager.StartChoosingTarget(choosed =>
                     {
                         target = choosed;
-                    }, TargetEnemiesList);
+                    }, TargetObjectsList);
                     break;
 
                 case EntityType.Enemy:
@@ -58,7 +58,9 @@ namespace Singleplayer
 
         private IEntity HandleEnemyTargeting()
         {
-            var aliveTargets = TargetEnemiesList
+            var targetEntities = TargetObjectsList.Cast<IEntity>().ToList();
+
+            var aliveTargets = targetEntities
                 .Where(entity => entity.GetEntityHp > 0
                 && entity.GetCurrentPanel.GetEffectPanelInfo.Effect != PanelEffect.VIPClub)
                 .ToList();

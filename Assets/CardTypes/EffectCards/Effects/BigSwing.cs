@@ -22,7 +22,7 @@ namespace Singleplayer
                     gameManager.StartChoosingTarget(choosed =>
                     {
                         target = choosed;
-                    }, TargetEnemiesList);
+                    }, TargetObjectsList);
                     break;
 
                 case EntityType.Enemy:
@@ -78,7 +78,7 @@ namespace Singleplayer
             }
 
             CanUse = true;
-            TargetEnemiesList = entitiesInEffectiveCardRadius;
+            TargetObjectsList = entitiesInEffectiveCardRadius.Cast<IOutlinable>().ToList();
             return true;
         }
     }

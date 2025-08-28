@@ -23,7 +23,7 @@ namespace Singleplayer
                     gameManager.StartChoosingTarget(choosed =>
                     {
                         target = choosed;
-                    }, TargetEnemiesList);
+                    }, TargetObjectsList);
                     break;
 
                 case EntityType.Enemy:
@@ -51,7 +51,9 @@ namespace Singleplayer
         
         private IEntity HandleEnemyTargeting(IEntity entityInit)
         {
-            var damagedTargets = TargetEnemiesList
+            var targetEntities = TargetObjectsList.Cast<IEntity>().ToList();
+
+            var damagedTargets = targetEntities
                 .Where(entity => entity.GetEntityHp > 0 
                 && entity.GetEntityHp < 20 
                 && entity.GetCurrentPanel.GetEffectPanelInfo.Effect != PanelEffect.VIPClub)
@@ -97,7 +99,7 @@ namespace Singleplayer
             }
 
             CanUse = true;
-            TargetEnemiesList = entitiesInEffectiveCardRadius;
+            TargetObjectsList = entitiesInEffectiveCardRadius.Cast<IOutlinable>().ToList();
             return true;
         }
     }

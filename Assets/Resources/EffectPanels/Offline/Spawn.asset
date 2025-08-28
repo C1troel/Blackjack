@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _effect: 13
   _sprite: {fileID: 21300000, guid: caa9699a9487c864583c51e552eb90a6, type: 3}
+  _frameSprite: {fileID: 21300000, guid: 07326c52d097e0044badcaa394ffb7f7, type: 3}
   _isSpawn: 1
   _allowDuplicates: 0
   _isForceStop: 1

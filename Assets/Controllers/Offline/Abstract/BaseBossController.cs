@@ -171,6 +171,7 @@ namespace Singleplayer
         protected override void Knockout()
         {
             punishmentCounter += 10;
+            ManageKnockoutAnimationHandler();
 
             Dead();
             DropMoney();
@@ -186,6 +187,26 @@ namespace Singleplayer
             var droppedMoneyHandler = droppedMoneyGO.GetComponent<DroppedMoneyHandler>();
             droppedMoneyHandler.ManageDroppedMoney(droppedMoneyAmount);
             droppedMoneyGO.SetActive(true);
+        }
+
+        protected override void ManageKnockoutAnimationHandler()
+        {
+            AnimationClip clip = GetAnimationClipByName(Animator, DEAD_CLIP_NAME);
+            if (clip == null)
+            {
+                Debug.LogWarning($"Клип {DEAD_CLIP_NAME} не найден!");
+                return;
+            }
+
+            AnimationEvent[] events = clip.events;
+            if (events.Length == 0)
+            {
+                Debug.LogWarning($"Клип {clip.name} не содержит событий!");
+                return;
+            }
+
+            events[0].functionName = nameof(EmptyAnimationEvent);
+            clip.events = events;
         }
 
         protected virtual void OnBlackjackGameStart()
@@ -220,7 +241,7 @@ namespace Singleplayer
                 EnemyEffectCardsHandler.RemoveEffectCard(effectCard);
 
             EffectCardDealer.Instance.DealRandomEffectCard(this);
-            /*EffectCardDealer.Instance.DealEffectCardOfType(this, EffectCardType.Hourglass);*/
+            //EffectCardDealer.Instance.DealEffectCardOfType(this, EffectCardType.PoisonFlask);
         }
     }
 }

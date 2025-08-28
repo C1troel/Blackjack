@@ -14,6 +14,7 @@ namespace Singleplayer
         [Header("Settings")]
         [SerializeField] int _effectiveDistanceInPanels;
         [SerializeField] int _effectsDuration;
+        [SerializeField] bool _unlockedByDefault = false;
         [SerializeField] List<EffectCardMaterial> _effectCardMaterials;
         [SerializeField] List<EffectCardPurpose> _effectCardPurposes;
         [SerializeField] EffectCardDmgType _effectCardDmgType;
@@ -30,5 +31,6 @@ namespace Singleplayer
         public Sprite EffectCardSprite => _effectCardSprite;
         public int EffectiveDistanceInPanels => _effectiveDistanceInPanels;
         public int EffectsDuration => _effectsDuration;
+        public bool UnlockedByDefault => _unlockedByDefault;
     }
 }

@@ -463,7 +463,16 @@ namespace Singleplayer
                 var handController = hand.GetComponent<HandController>();
                 int playerHandScore = handController.GetHandScores();
 
-                if (playerHandScore > 21)
+                if (handController.hasBlackjack && dealerHandScore != 21)
+                {
+                    Debug.Log("Player has blackjack!");
+                    int win = (int)(handController.hasBlackjack ? handController.handBet * 2.5 : handController.handBet * 2);
+                    int totalWin = handController.isInsured ? win * 2 : win;
+
+                    player.GainMoney(totalWin, false);
+                    Debug.Log($"Hand with total score of {playerHandScore} win with total prize of {totalWin}");
+                }
+                else if (playerHandScore > 21)
                 {
                     Debug.Log("Hand is being busted!");
                 }

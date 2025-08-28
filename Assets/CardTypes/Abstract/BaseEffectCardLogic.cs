@@ -46,7 +46,7 @@ namespace Singleplayer
 
     public abstract class BaseEffectCardLogic : IEffectCardLogic
     {
-        public List<IEntity> TargetEnemiesList { get; protected set; }
+        public List<IOutlinable> TargetObjectsList { get; protected set; }
         public EffectCardInfo EffectCardInfo { get; protected set; }
         public bool CanUse {  get; protected set; }
 
@@ -106,7 +106,7 @@ namespace Singleplayer
             }
 
             CanUse = true;
-            TargetEnemiesList = entitiesInEffectiveCardRadius;
+            TargetObjectsList = entitiesInEffectiveCardRadius.Cast<IOutlinable>().ToList();
             return true;
         }
         public void ToggleMarkAsCounterCard(bool isMarked)

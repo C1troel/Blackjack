@@ -81,7 +81,8 @@ namespace Singleplayer
                         break;
                 }
 
-                turnQueue.Enqueue(CurrentTurnEntity);
+                if (GameManager.Instance.GetEntitiesList().Contains(CurrentTurnEntity))
+                    turnQueue.Enqueue(CurrentTurnEntity);
             }
         }
 
@@ -118,7 +119,7 @@ namespace Singleplayer
             if (!isTurnActive) yield break;
 
             while (ProjectileManager.Instance.avaitingProjectiles.Count > 0
-                   && !GlobalEffectsManager.Instance.isTimeStopped
+                   && !GlobalEffectsManager.Instance.IsTimeStopped
                    && isTurnActive)
             {
                 yield return null;
@@ -152,7 +153,7 @@ namespace Singleplayer
             if (!isTurnActive) yield break;
 
             while (ProjectileManager.Instance.avaitingProjectiles.Count > 0
-                   && !GlobalEffectsManager.Instance.isTimeStopped
+                   && !GlobalEffectsManager.Instance.IsTimeStopped
                    && isTurnActive)
             {
                 yield return null;
@@ -246,7 +247,7 @@ namespace Singleplayer
 
         private bool IsFrozenDuringTimeStop(IEntity entity)
         {
-            return GlobalEffectsManager.Instance.isTimeStopped &&
+            return GlobalEffectsManager.Instance.IsTimeStopped &&
                 !entity.PassiveEffectHandler.CheckForActiveEffectType(PassiveEffectType.Chronomaster);
         }
 

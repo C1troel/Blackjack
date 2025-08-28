@@ -390,6 +390,7 @@ namespace Singleplayer
         {
             DeadOff();
             hp = characterInfo.DefaultHp;
+            HpChange();
         }
 
         public virtual void Heal(int value)
@@ -437,6 +438,18 @@ namespace Singleplayer
             }
 
             Animator.speed = targetSpeed;
+        }
+
+        public void HideEntity()
+        {
+            GetComponent<SpriteRenderer>().enabled = false;
+            GetComponentInChildren<ClickHandler>(true).gameObject.SetActive(false);
+        }
+
+        public void ShowEntity()
+        {
+            GetComponent<SpriteRenderer>().enabled = true;
+            GetComponentInChildren<ClickHandler>(true).gameObject.SetActive(true);
         }
 
         public void SetOutline()

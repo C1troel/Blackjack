@@ -9,7 +9,7 @@ namespace Singleplayer
 {
     public class PistolBulletProjectile : MonoBehaviour, IProjectile
     {
-        private const int DAMAGE = 50;
+        private const int DAMAGE = 20;
         private const string EXPLOSION_TRIGGER = "Explode"; // заглушка
         private const string FLY_ANIMATION_NAME = "FireballFly"; // заглушка
 
@@ -43,7 +43,7 @@ namespace Singleplayer
 
             ProjectileManager.Instance.AddAvaitingProjectile(this);
 
-            if (GlobalEffectsManager.Instance.isTimeStopped)
+            if (GlobalEffectsManager.Instance.IsTimeStopped)
             {
                 entityOnCompleteCallback?.Invoke();
                 entityOnCompleteCallback = null;
