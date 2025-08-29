@@ -376,6 +376,11 @@ namespace Singleplayer
             Debug.Log($"PlayerHUD activeness after: {playerHUD.gameObject.activeSelf}");
         }
 
+        public void TogglePlayerSpecialAbilityBtn(bool enable)
+        {
+            playerHUDManager.ToggleSpecialAbilityBtn(enable);
+        }
+
         /*public void ToggleInputBlock(bool isActive)
         {
             inputBlock.SetActive(isActive);

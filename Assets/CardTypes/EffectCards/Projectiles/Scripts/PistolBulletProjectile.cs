@@ -1,4 +1,5 @@
 using Singleplayer;
+using Singleplayer.ActiveEffects;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -125,7 +126,7 @@ namespace Singleplayer
             Destroy(gameObject);
         }
 
-        private void TryToDamageTarget()
+        /*private void TryToDamageTarget()
         {
             if (!landingPanel.EntitiesOnPanel.Contains(targetEntity))
             {
@@ -195,6 +196,145 @@ namespace Singleplayer
             if (usedEddectCard == null)
             {
                 Debug.Log("Player is skipped countering incoming projectile");
+                DamageTarget();
+                return;
+            }
+
+            OnProjectileCountered();
+        }
+
+        private void OnProjectileCountered()
+        {
+            DeleteProjectile();
+        }*/
+
+        private void TryToDamageTarget()
+        {
+            if (!landingPanel.EntitiesOnPanel.Contains(targetEntity))
+            {
+                Debug.Log($"Entity {targetEntity.GetEntityName} escaped from landed projectile panel {landingPanel.name}");
+                Explode();
+                return;
+            }
+
+            List<IEffectCardLogic> possibleCounterCards = null;
+            BaseActiveGlobalEffect targetAbility = null;
+            bool showAbilityButton = false;
+            bool hasStrongAbility = false;
+
+            switch (targetEntity.GetEntityType)
+            {
+                case EntityType.Player:
+                    {
+                        var player = targetEntity as BasePlayerController;
+                        possibleCounterCards = player.EffectCardsHandler.GetCounterCards(effectCardInfo.EffectCardDmgType);
+                        targetAbility = player.SpecialAbility;
+
+                        if (targetAbility != null)
+                        {
+                            var abilityVulnerabilities = targetAbility.ActiveGlobalEffectInfo.Vulnerabilities;
+                            var abilityInteractionStrength = CombatInteractionEvaluator.Evaluate(
+                                abilityVulnerabilities,
+                                effectCardInfo.EffectCardDmgType
+                            );
+
+                            hasStrongAbility = abilityInteractionStrength == CombatInteractionEvaluator.InteractionStrength.Strong
+                                               && targetAbility.CooldownRounds == 0;
+
+                            showAbilityButton = hasStrongAbility; // для UI у игрока
+                        }
+                        break;
+                    }
+
+                case EntityType.Enemy:
+                    {
+                        var enemy = targetEntity as BaseEnemy;
+                        possibleCounterCards = enemy.EnemyEffectCardsHandler.GetCounterCards(effectCardInfo.EffectCardDmgType);
+
+                        if (enemy.SpecialAbility != null)
+                        {
+                            var abilityVulnerabilities = enemy.SpecialAbility.ActiveGlobalEffectInfo.Vulnerabilities;
+                            var interactionStrength = CombatInteractionEvaluator.Evaluate(
+                                abilityVulnerabilities,
+                                effectCardInfo.EffectCardDmgType
+                            );
+
+                            hasStrongAbility = interactionStrength == CombatInteractionEvaluator.InteractionStrength.Strong
+                                               && enemy.SpecialAbility.CooldownRounds == 0;
+                        }
+                        break;
+                    }
+
+                case EntityType.Ally:
+                    // пока нет логики для союзников
+                    break;
+
+                default:
+                    break;
+            }
+
+            bool hasCards = possibleCounterCards != null && possibleCounterCards.Count > 0;
+
+            // если нет защиты ни картами, ни способностью — наносим урон
+            if (!hasCards && !hasStrongAbility)
+            {
+                DamageTarget();
+                return;
+            }
+
+            if (targetEntity is BasePlayerController playerTarget)
+            {
+                // игроку показываем UI с кнопками карт и/или абилки
+                playerTarget.ShowCounterOptions(
+                    possibleCounterCards,
+                    OnCounterCardUsed,
+                    OnAbilityCounterUsedProjectile,
+                    showAbilityButton
+                );
+            }
+            else if (targetEntity is BaseEnemy enemyTarget)
+            {
+                // враг сам решает — карта или абилка
+                IEffectCardLogic cardToUse = hasCards ? possibleCounterCards[0] : null;
+                HandleEnemyCounterCardUsage(enemyTarget, cardToUse, hasStrongAbility);
+            }
+        }
+
+        private void HandleEnemyCounterCardUsage(BaseEnemy enemy, IEffectCardLogic effectCard, bool strongAbility)
+        {
+            if (effectCard != null)
+            {
+                effectCard.TryToUseCard(isUsed =>
+                {
+                    enemy.EnemyEffectCardsHandler.RemoveEffectCard(effectCard);
+                    OnCounterCardUsed(effectCard);
+                }, enemy);
+
+                return;
+            }
+
+            if (strongAbility)
+                enemy.SpecialAbility.TryToActivate();
+        }
+
+        // коллбек для карты
+        private void OnCounterCardUsed(IEffectCardLogic usedEffectCard)
+        {
+            if (usedEffectCard == null)
+            {
+                Debug.Log("Player skipped countering incoming projectile with card");
+                return;
+            }
+
+            OnProjectileCountered();
+        }
+
+        // коллбек для абилки
+        private void OnAbilityCounterUsedProjectile(bool usedAbility)
+        {
+            if (!usedAbility)
+            {
+                Debug.Log("Player skipped countering incoming projectile with ability");
                 DamageTarget();
                 return;
             }

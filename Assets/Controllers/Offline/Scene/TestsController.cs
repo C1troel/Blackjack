@@ -28,7 +28,30 @@ namespace Singleplayer
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 Debug.Log("Пробел нажат!");
-                TriggerTornadoEffect();
+                TestProjectileCountering();
+            }
+        }
+
+        private void GiveAllHourglasses()
+        {
+            foreach (var entity in GameManager.Instance.GetEntitiesList())
+            {
+                EffectCardDealer.Instance.DealEffectCardOfType(entity, EffectCardType.Hourglass);
+            }
+        }
+
+        private void TestProjectileCountering()
+        {
+            foreach (var entity in GameManager.Instance.GetEntitiesList())
+            {
+                if (entity.GetEntityType == EntityType.Player)
+                {
+                    EffectCardDealer.Instance.DealEffectCardOfType(entity, EffectCardType.Mirror);
+                }
+                else
+                {
+                    EffectCardDealer.Instance.DealEffectCardOfType(entity, EffectCardType.Pistol);
+                }
             }
         }
 

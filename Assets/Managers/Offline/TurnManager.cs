@@ -175,7 +175,7 @@ namespace Singleplayer
                 yield return null;
         }
 
-        private void HandleTimeStopCounters(IEntity entity)
+        /*private void HandleTimeStopCounters(IEntity entity)
         {
             List<IEffectCardLogic> possibleCounterCards = null;
 
@@ -243,7 +243,135 @@ namespace Singleplayer
             }
 
             CurrentTurnEntity.StartTurn();
+        }*/
+         
+        private void HandleTimeStopCounters(IEntity entity)
+        {
+            List<IEffectCardLogic> possibleCounterCards = null;
+
+            switch (entity.GetEntityType)
+            {
+                case EntityType.Player:
+                    {
+                        var player = entity as BasePlayerController;
+                        possibleCounterCards = player.EffectCardsHandler.GetCounterCards(PassiveEffectType.TimeStop);
+
+                        bool showAbilityButton = false;
+                        if (player.SpecialAbility != null)
+                        {
+                            var abilityVulnerabilities = player.SpecialAbility.ActiveGlobalEffectInfo.Vulnerabilities;
+                            var abilityInteractionStrength = CombatInteractionEvaluator.Evaluate(
+                                abilityVulnerabilities,
+                                PassiveEffectType.TimeStop
+                            );
+
+                            showAbilityButton = abilityInteractionStrength == CombatInteractionEvaluator.InteractionStrength.Strong
+                                                && player.SpecialAbility.CooldownRounds == 0;
+                        }
+
+                        if ((possibleCounterCards == null || possibleCounterCards.Count == 0) && !showAbilityButton)
+                        {
+                            EndTurnRequest(entity);
+                            return;
+                        }
+
+                        player.ShowCounterOptions(
+                            possibleCounterCards,
+                            OnCounterCardUsed,
+                            OnAbilityCounterUsed,
+                            showAbilityButton
+                        );
+                        break;
+                    }
+
+
+                case EntityType.Enemy:
+                    {
+                        var enemy = entity as BaseEnemy;
+                        possibleCounterCards = enemy.EnemyEffectCardsHandler.GetCounterCards(PassiveEffectType.TimeStop);
+
+                        bool hasCards = possibleCounterCards != null && possibleCounterCards.Count > 0;
+                        bool hasStrongAbility = false;
+
+                        if (enemy.SpecialAbility != null)
+                        {
+                            var vulnerabilities = enemy.SpecialAbility.ActiveGlobalEffectInfo.Vulnerabilities;
+                            var interactionStrength = CombatInteractionEvaluator.Evaluate(
+                                vulnerabilities,
+                                PassiveEffectType.TimeStop
+                            );
+
+                            hasStrongAbility = interactionStrength == CombatInteractionEvaluator.InteractionStrength.Strong
+                                               && enemy.SpecialAbility.CooldownRounds == 0;
+                        }
+
+                        if (!hasCards && !hasStrongAbility)
+                        {
+                            EndTurnRequest(entity);
+                        }
+                        else
+                        {
+                            IEffectCardLogic cardToUse = hasCards ? possibleCounterCards[0] : null;
+                            HandleEnemyCounterCardUsage(enemy, cardToUse, hasStrongAbility);
+                        }
+                        break;
+                    }
+
+                case EntityType.Ally:
+                    // если появится логика для союзников
+                    EndTurnRequest(entity);
+                    break;
+
+                default:
+                    EndTurnRequest(entity);
+                    break;
+            }
         }
+
+        private void HandleEnemyCounterCardUsage(BaseEnemy enemy, IEffectCardLogic effectCard, bool strongAbility)
+        {
+            if (effectCard != null)
+            {
+                effectCard.TryToUseCard(isUsed =>
+                {
+                    enemy.EnemyEffectCardsHandler.RemoveEffectCard(effectCard);
+                    OnCounterCardUsed(effectCard);
+                }, enemy);
+
+                return;
+            }
+
+            if (strongAbility)
+                enemy.SpecialAbility.TryToActivate();
+        }
+
+        private void OnCounterCardUsed(IEffectCardLogic usedEffectCard)
+        {
+            if (usedEffectCard == null)
+            {
+                Debug.Log("Player skipped countering with a card");
+                return; // не завершаем ход здесь, ждём ответа от абилки
+            }
+
+            // карта была сыграна
+            CurrentTurnEntity.StartTurn();
+        }
+
+        private void OnAbilityCounterUsed(bool usedAbility)
+        {
+            if (!usedAbility)
+            {
+                Debug.Log("Player skipped using special ability");
+                // если до этого карта тоже была null реально конец
+                if (CurrentTurnEntity != null)
+                    EndTurnRequest(CurrentTurnEntity);
+                return;
+            }
+
+            // способность была использована
+            CurrentTurnEntity.StartTurn();
+        }
+
 
         private bool IsFrozenDuringTimeStop(IEntity entity)
         {
@@ -270,6 +398,8 @@ namespace Singleplayer
             if (CurrentTurnEntity.GetEntityType == EntityType.Player)
             {
                 GameManager.Instance.TogglePlayerHudButtons(false);
+                var player = CurrentTurnEntity as BasePlayerController;
+                player.EffectCardsHandler.OnTurnEnd();
             }
 
             if (currentTurnHandling != null)

@@ -15,6 +15,7 @@ namespace Singleplayer
     public abstract class BasePlayerController : MonoBehaviour, IEntity, IOutlinable
     {
         private Action<IEffectCardLogic> onCounterChoiceCallback;
+        private Action<bool> onAbilityCounterChoiceCallback;
         public event Action<IEntity> moveEndEvent;
         public event Action<IEntity> OnSelfClickHandled;
 
@@ -188,7 +189,8 @@ namespace Singleplayer
 
         public abstract void ActivateAbility();
 
-        public void ShowCounterCardOptions(List<IEffectCardLogic> counterCards, Action<IEffectCardLogic> callback)
+        #region Старий код Контрпіка проти чогось
+        /*public void ShowCounterCardOptions(List<IEffectCardLogic> counterCards, Action<IEffectCardLogic> callback)
         {
             onCounterChoiceCallback = callback;
 
@@ -196,10 +198,22 @@ namespace Singleplayer
 
             EffectCardApplier.Instance.gameObject.SetActive(true);
             var counterSkipBtn = EffectCardApplier.Instance.GetCounterSkipBtn;
-            counterSkipBtn.onClick.AddListener(OnCounterCardSkip);
+            counterSkipBtn.onClick.AddListener(OnCounterSkip);
             counterSkipBtn.gameObject.SetActive(true);
 
             MapManager.Instance.OnEffectCardPlayedEvent += HandleCardSelected;
+        }
+
+        public void GiveAbilityCounterOption(Action<bool> callback)
+        {
+            onAbilityCounterChoiceCallback = callback;
+            GameManager.Instance.TogglePlayerSpecialAbilityBtn(true);
+
+            var counterSkipBtn = EffectCardApplier.Instance.GetCounterSkipBtn;
+            counterSkipBtn.onClick.AddListener(OnAbilityCounterSkip);
+            counterSkipBtn.gameObject.SetActive(true);
+
+            SpecialAbility.GlobalEffectStateEvent += OnAbilityUsageForCounter;
         }
 
         private void HandleCardSelected(IEffectCardLogic selectedCard)
@@ -208,10 +222,22 @@ namespace Singleplayer
             onCounterChoiceCallback?.Invoke(selectedCard);
         }
 
-        private void OnCounterCardSkip()
+        private void OnCounterSkip()
         {
             DisableCounterPick();
             onCounterChoiceCallback?.Invoke(null);
+        }
+
+        private void OnAbilityUsageForCounter()
+        {
+            DisableAbilityCounter();
+            onAbilityCounterChoiceCallback?.Invoke(true);
+        }
+
+        private void OnAbilityCounterSkip()
+        {
+            DisableAbilityCounter();
+            onAbilityCounterChoiceCallback?.Invoke(false);
         }
 
         private void DisableCounterPick()
@@ -223,6 +249,82 @@ namespace Singleplayer
 
             MapManager.Instance.OnEffectCardPlayedEvent -= HandleCardSelected;
             EffectCardsHandler.DisableAndRemoveOutlineOfCounterCards();
+        }
+
+        private void DisableAbilityCounter()
+        {
+            var counterSkipBtn = EffectCardApplier.Instance.GetCounterSkipBtn;
+            counterSkipBtn.onClick.RemoveAllListeners();
+            counterSkipBtn.gameObject.SetActive(false);
+
+            SpecialAbility.GlobalEffectStateEvent -= OnAbilityUsageForCounter;
+        }*/
+        #endregion
+
+        public void ShowCounterOptions(List<IEffectCardLogic> counterCards, Action<IEffectCardLogic> onCardChoice, 
+            Action<bool> onAbilityChoice, bool showAbilityBtn)
+        {
+            onCounterChoiceCallback = onCardChoice;
+            onAbilityCounterChoiceCallback = onAbilityChoice;
+
+            EffectCardApplier.Instance.gameObject.SetActive(true);
+
+            // --- Карты ---
+            if (counterCards != null && counterCards.Count > 0)
+            {
+                EffectCardsHandler.EnableAndOutlineCounterCards(counterCards);
+                MapManager.Instance.OnEffectCardPlayedEvent += HandleCardSelected;
+            }
+
+            // --- Абилка ---
+            if (showAbilityBtn && SpecialAbility != null)
+            {
+                GameManager.Instance.TogglePlayerSpecialAbilityBtn(true);
+                SpecialAbility.GlobalEffectStateEvent += OnAbilityUsageForCounter;
+            }
+
+            // --- Общая кнопка Skip ---
+            var counterSkipBtn = EffectCardApplier.Instance.GetCounterSkipBtn;
+            counterSkipBtn.onClick.AddListener(OnGlobalSkip);
+            counterSkipBtn.gameObject.SetActive(true);
+        }
+
+        private void HandleCardSelected(IEffectCardLogic selectedCard)
+        {
+            CleanupUI();
+            onCounterChoiceCallback?.Invoke(selectedCard);
+        }
+
+        private void OnAbilityUsageForCounter()
+        {
+            CleanupUI();
+            onAbilityCounterChoiceCallback?.Invoke(true);
+            onCounterChoiceCallback?.Invoke(null); // карта считается невыбранной
+        }
+
+        private void OnGlobalSkip()
+        {
+            CleanupUI();
+            onCounterChoiceCallback?.Invoke(null);
+            onAbilityCounterChoiceCallback?.Invoke(false);
+        }
+
+        private void CleanupUI()
+        {
+            var counterSkipBtn = EffectCardApplier.Instance.GetCounterSkipBtn;
+            counterSkipBtn.onClick.RemoveAllListeners();
+            counterSkipBtn.gameObject.SetActive(false);
+
+            EffectCardApplier.Instance.gameObject.SetActive(false);
+
+            // снять подписки
+            MapManager.Instance.OnEffectCardPlayedEvent -= HandleCardSelected;
+            EffectCardsHandler.DisableAndRemoveOutlineOfCounterCards();
+
+            if (SpecialAbility != null)
+                SpecialAbility.GlobalEffectStateEvent -= OnAbilityUsageForCounter;
+
+            GameManager.Instance.TogglePlayerSpecialAbilityBtn(false);
         }
 
         #region PlayerActions

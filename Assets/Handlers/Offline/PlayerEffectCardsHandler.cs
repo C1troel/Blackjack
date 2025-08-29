@@ -94,12 +94,19 @@ namespace Singleplayer
         public void OnTurnEnd()
         {
             RemoveCardsOutline();
+            ResetCardsUsage();
         }
 
         private void RemoveCardsOutline()
         {
             foreach (var card in playerEffectCardsList)
                 card.RemoveCardOutline();
+        }
+
+        private void ResetCardsUsage()
+        {
+            foreach (var card in playerEffectCardsList)
+                card.ResetUsage();
         }
 
         private void CheckAllCardsUsability()

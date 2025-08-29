@@ -98,6 +98,11 @@ namespace Singleplayer
             specialAbilityBtn.interactable = isActive;
         }
 
+        public void ToggleSpecialAbilityBtn(bool isActive)
+        {
+            specialAbilityBtn.interactable = isActive;
+        }
+
         private void OnPlayerSpecialAbilityStateChange()
         {
             bool isAbilityReady = managedPlayer.SpecialAbility.CooldownRounds == 0;

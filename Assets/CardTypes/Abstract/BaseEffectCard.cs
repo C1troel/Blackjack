@@ -173,6 +173,11 @@ namespace Singleplayer
                 OutlineCard();
         }
 
+        public void ResetUsage()
+        {
+            EffectCardLogic.ResetUsage();
+        }
+
         public void OutlineCard() => _image.material = outlineMaterial;
 
         public void RemoveCardOutline() => _image.material = deafaultCardMaterial;

@@ -112,7 +112,13 @@ namespace Singleplayer
                 RemoveEffectCard(card);
         }
 
-        public void RemoveEffectCard(IEffectCardLogic effectCard) => effectCardsList.Remove(effectCard);
+        public void RemoveEffectCard(IEffectCardLogic effectCard)
+        {
+            effectCardsList.Remove(effectCard);
+
+            if (possibleEffectCardsForThatTurn.Contains(effectCard))
+                possibleEffectCardsForThatTurn.Remove(effectCard);
+        }
 
         private void OnEnemyTryingToUseCard(bool isUsed, IEffectCardLogic possibleEffectCard)
         {

@@ -11,6 +11,7 @@ namespace Singleplayer
         void TryToUseCard(Action<bool> onComplete, IEntity entityInit);
         void SetupEffectCardLogic(EffectCardInfo info);
         bool CheckIfCanBeUsed(IEntity entityOwner);
+        void ResetUsage();
         void ToggleMarkAsCounterCard(bool isMarked);
 
         EffectCardInfo EffectCardInfo { get; }

@@ -109,6 +109,11 @@ namespace Singleplayer
             TargetObjectsList = entitiesInEffectiveCardRadius.Cast<IOutlinable>().ToList();
             return true;
         }
+        public void ResetUsage()
+        {
+            CanUse = false;
+            CanCounter = false;
+        }
         public void ToggleMarkAsCounterCard(bool isMarked)
         {
             CanCounter = isMarked;
